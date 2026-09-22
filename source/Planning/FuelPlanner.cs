@@ -31,6 +31,29 @@ namespace HungryPathing.Planning
         public bool Usable => !float.IsNaN(TravelHours) && !float.IsInfinity(TravelHours) && !float.IsNaN(Value);
     }
 
+    // Which rules apply to one need in one decision, and the numbers they compare. Forced is the builder who has
+    // just let a site go to top off this need; JustInTime and PreFuel are true inside those rules' windows.
+    public readonly struct TripRules
+    {
+        public readonly bool Forced;
+        public readonly bool JustInTime;
+        public readonly bool PreFuel;
+        public readonly float HoursLeft;
+        public readonly float WarningHours;
+        public readonly float NearFoodHours;
+
+        public TripRules(bool forced, bool justInTime, bool preFuel, float hoursLeft, float warningHours,
+            float nearFoodHours)
+        {
+            Forced = forced;
+            JustInTime = justInTime;
+            PreFuel = preFuel;
+            HoursLeft = hoursLeft;
+            WarningHours = warningHours;
+            NearFoodHours = nearFoodHours;
+        }
+    }
+
     public static class FuelPlanner
     {
         // A need that never decays never runs out.
@@ -80,18 +103,19 @@ namespace HungryPathing.Planning
             return hoursLeft - warningHours < travelToSite + workHours + siteToFoodHours;
         }
 
-        // Index of the storage to use, or -1. closestFirst: the least walking wins, except that any candidate
+        // Index of the storage to use, or -1. Only candidates within maxTravelHours take part, exactly as if the
+        // others had not been measured. closestFirst: the least walking wins, except that any candidate
         // within varietyToleranceHours of the closest one may win on value. The window is measured from the
         // closest candidate, never from a running best, so the answer does not depend on list order. Otherwise
         // value wins and walking breaks ties, which is how the base game orders things. Remaining ties fall to
         // the lowest index, so the result is the same on every machine given the same list.
         public static int PickCandidate(IReadOnlyList<Candidate> candidates, float varietyToleranceHours,
-            bool closestFirst)
+            bool closestFirst, float maxTravelHours = float.PositiveInfinity)
         {
             float minTravel = float.PositiveInfinity;
             for (int i = 0; i < candidates.Count; i++)
             {
-                if (candidates[i].Usable && candidates[i].TravelHours < minTravel)
+                if (InReach(candidates[i], maxTravelHours) && candidates[i].TravelHours < minTravel)
                 {
                     minTravel = candidates[i].TravelHours;
                 }
@@ -104,7 +128,7 @@ namespace HungryPathing.Planning
             for (int i = 0; i < candidates.Count; i++)
             {
                 Candidate candidate = candidates[i];
-                if (!candidate.Usable)
+                if (!InReach(candidate, maxTravelHours))
                 {
                     continue;
                 }
@@ -118,6 +142,58 @@ namespace HungryPathing.Planning
                 }
             }
             return best;
+        }
+
+        // Why to start a trip now to a storage travelHours away, or None. The builder who let a site go always goes.
+        public static TripReason ReasonFor(float travelHours, in TripRules rules)
+        {
+            if (rules.Forced)
+            {
+                return TripReason.BuilderJob;
+            }
+            if (rules.JustInTime && ShouldLeaveNow(rules.HoursLeft, travelHours, rules.WarningHours))
+            {
+                return TripReason.JustInTime;
+            }
+            if (rules.PreFuel && travelHours <= rules.NearFoodHours)
+            {
+                return TripReason.PreFuel;
+            }
+            return TripReason.None;
+        }
+
+        // The storage for one decision and the reason to go there now. It is PickCandidate's choice within
+        // maxTravelHours, except when that choice gives no reason to go and pre-fuel applies: then the choice among
+        // the storages within NearFoodHours is taken instead, since pre-fuel only asks for food nearby. Otherwise a
+        // better food just past the near limit, which wins on value, would stop pre-fuel although a near storage
+        // exists. Returns -1 when nothing is in reach; an index with TripReason.None is where the beaver would go
+        // once it is time, which the just-in-time wake-up is measured against.
+        public static int PickTrip(IReadOnlyList<Candidate> candidates, float varietyToleranceHours, bool closestFirst,
+            float maxTravelHours, in TripRules rules, out TripReason reason)
+        {
+            reason = TripReason.None;
+            int best = PickCandidate(candidates, varietyToleranceHours, closestFirst, maxTravelHours);
+            if (best < 0)
+            {
+                return -1;
+            }
+            reason = ReasonFor(candidates[best].TravelHours, rules);
+            if (reason == TripReason.None && rules.PreFuel)
+            {
+                int near = PickCandidate(candidates, varietyToleranceHours, closestFirst,
+                    Math.Min(maxTravelHours, rules.NearFoodHours));
+                if (near >= 0)
+                {
+                    reason = ReasonFor(candidates[near].TravelHours, rules);
+                    return near;
+                }
+            }
+            return best;
+        }
+
+        private static bool InReach(Candidate candidate, float maxTravelHours)
+        {
+            return candidate.Usable && candidate.TravelHours <= maxTravelHours;
         }
 
         private static bool Better(Candidate candidate, Candidate best)

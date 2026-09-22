@@ -13,11 +13,11 @@ there to compare.
 | `JustInTime` | `true` | Leave for the closest stocked storage early enough to arrive with the buffer in hand. |
 | `JustInTimeLeadHours` | `4` | How many hours before the buffer would be reached the walk starts being measured. Larger values measure earlier and cost more path queries. |
 | `PreFuel` | `true` | Top off when food is near and the beaver would not last the rest of the shift plus the buffer. |
-| `PreFuelNearFoodHours` | `0.5` | "Near" for pre-fuel: walking time to the storage, in hours. |
+| `PreFuelNearFoodHours` | `0.5` | "Near" for pre-fuel and the builder job check: walking time to the storage, in hours. Both choose only among storages this near, so a better food a little farther away does not stop a top-off. |
 | `BuilderJobCheck` | `true` | A builder that has just reserved a site it would not last at lets it go and tops off first. |
 | `BuilderJobWorkHours` | `1.0` | Hours of building assumed at the site when judging that. |
 | `WorkTimeClosestFood` | `true` | Rank storages by walking time while working. `false` ranks by need points first, as the game does. |
-| `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. |
+| `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. For pre-fuel and the builder job check it applies among the storages within `PreFuelNearFoodHours` only. |
 | `RedirectCriticalTrips` | `true` | Apply the same ranking to the game's own penalty-state trips during working hours. |
 | `CandidateLimit` | `8` | At most this many storages, nearest by straight line, get a real path query per decision. |
 | `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again. |

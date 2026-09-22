@@ -102,7 +102,8 @@ does, in the same order. For a need, the planner:
 2. sorts by straight-line distance, breaking ties by insertion order;
 3. asks `Walker.CalculateTravelTimeInHours` for the nearest `CandidateLimit` storages;
 4. picks with `FuelPlanner.PickCandidate`: least walking, except a higher score wins within
-   `VarietyToleranceHours`.
+   `VarietyToleranceHours`. Pre-fuel and the builder job check pick only among the storages within
+   `PreFuelNearFoodHours`, so a better food a little past that limit cannot hide a near one.
 
 The return leg is the walk back to where the beaver stands, which during a shift is the job.
 
@@ -112,16 +113,18 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
 
 - **Just in time**: inside `hoursLeft <= buffer + JustInTimeLeadHours`, measure the walk to the best storage and
   go when `hoursLeft - walk <= buffer`. Outside the window the beaver sleeps until it could enter it.
-- **Pre-fuel**: when `hoursLeft < hoursToShiftEnd + buffer` and the best storage is within `PreFuelNearFoodHours`,
-  go now. Both sides fall one hour per hour, so the first test only changes when the beaver eats or a new shift
-  starts; it is re-evaluated at each day change and after every trip.
+- **Pre-fuel**: when `hoursLeft < hoursToShiftEnd + buffer` and a storage is within `PreFuelNearFoodHours`, go now
+  to the best storage within that limit. The storage just in time would pick may be a better food farther away;
+  pre-fuel does not wait for it, since a top-off only asks for food nearby. Both sides fall one hour per hour, so the
+  first test only changes when the beaver eats or a new shift starts; it is re-evaluated at each day change and after
+  every trip.
 - **Builder job check**: a postfix on `BuildBehavior.Decide` catches the decision that starts the walk to a freshly
   reserved site. With `travelToSite` from the walker, `siteToFood` the straight-line estimate from the site to the
-  nearest scoring storage, and `foodNow` the real walk to the best storage from here: if `foodNow` is near, the
-  site is farther than the food, and `hoursLeft - buffer < travelToSite + BuilderJobWorkHours + siteToFood`, the
-  builder calls `Builder.Unreserve()` and returns `Decision.ReleaseNextTick()`, which is the game's own path for a
-  site it cannot reach. The planner is asked next tick with the need forced and starts the trip. The site goes back
-  to the pool.
+  nearest scoring storage, and `foodNow` the real walk to the best storage within `PreFuelNearFoodHours` of here: if
+  there is one, the site is farther than the food, and
+  `hoursLeft - buffer < travelToSite + BuilderJobWorkHours + siteToFood`, the builder calls `Builder.Unreserve()` and
+  returns `Decision.ReleaseNextTick()`, which is the game's own path for a site it cannot reach. The planner is asked
+  next tick with the need forced and starts the trip. The site goes back to the pool.
 - **Critical redirect**: a prefix on `CriticalNeederRootBehavior.Decide`. In the work context, if Hunger or Thirst
   is critical, the planner picks the storage its own way for the more important of the two and answers instead of
   the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the

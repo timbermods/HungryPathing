@@ -34,14 +34,6 @@ namespace HungryPathing
             public int Order;
         }
 
-        private struct Pick
-        {
-            public NeedBehavior Behavior;
-            public float TravelHours;
-            public float Value;
-            public int Index;
-        }
-
         // A beaver with hours to spare sleeps this long at most between evaluations, so a changed working day is
         // noticed the same shift. Evaluations that measure nothing cost a few comparisons.
         private const float MaxSleepHours = 3f;
@@ -185,34 +177,37 @@ namespace HungryPathing
                     continue;
                 }
                 // Pre-fuel only wants storages within PreFuelNearFoodHours; measuring farther ones cannot change
-                // its answer, so they are not measured.
+                // its answer, so they are not measured, and walks that turn out longer are not picked.
                 float measureUpTo = isForced || justInTime ? float.MaxValue : settings.PreFuelNearFoodHours;
-                if (!TryFindBest(index, needId, settings, null, now, measureUpTo, out Pick pick))
+                if (!MeasureCandidates(index, needId, settings, null, now, measureUpTo))
                 {
                     continue;
                 }
+                TripRules rules = new TripRules(isForced, justInTime, preFuel, hoursLeft, warning,
+                    settings.PreFuelNearFoodHours);
                 while (true)
                 {
-                    TripReason reason = ReasonFor(pick, isForced, justInTime, preFuel, hoursLeft, warning, settings);
+                    int best = FuelPlanner.PickTrip(_candidates, settings.VarietyToleranceHours,
+                        settings.WorkTimeClosestFood, measureUpTo, rules, out TripReason reason);
+                    if (best < 0)
+                    {
+                        break;
+                    }
                     if (reason == TripReason.None)
                     {
                         if (justInTime)
                         {
-                            delay = Mathf.Min(delay,
-                                FuelPlanner.DelayUntilLeaving(hoursLeft, pick.TravelHours, warning, settings.RetryHours));
+                            delay = Mathf.Min(delay, FuelPlanner.DelayUntilLeaving(hoursLeft,
+                                _candidates[best].TravelHours, warning, settings.RetryHours));
                         }
                         break;
                     }
-                    if (TryStart(agent, pick, reason, needId, hoursLeft, now, out Decision decision))
+                    if (TryStart(agent, best, reason, needId, hoursLeft, now, out Decision decision))
                     {
                         return decision;
                     }
-                    // That storage could not start a trip: try the next best one measured in this same decision.
-                    RemoveCandidate(pick.Index);
-                    if (!PickFromCandidates(settings, out pick))
-                    {
-                        break;
-                    }
+                    // That storage could not start a trip: pick again among the others measured in this decision.
+                    RemoveCandidate(best);
                 }
             }
             _nextCheckHours = now + (delay == float.MaxValue ? settings.RetryHours : delay);
@@ -275,21 +270,23 @@ namespace HungryPathing
                 return false;
             }
             float now = Now();
-            if (!TryFindBest(index, chosen, settings, null, now, float.MaxValue, out Pick pick))
+            if (!MeasureCandidates(index, chosen, settings, null, now, float.MaxValue))
             {
                 return false;
             }
             while (true)
             {
-                if (TryStart(agent, pick, TripReason.CriticalRedirect, chosen, 0f, now, out decision))
-                {
-                    return true;
-                }
-                RemoveCandidate(pick.Index);
-                if (!PickFromCandidates(settings, out pick))
+                int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours,
+                    settings.WorkTimeClosestFood);
+                if (best < 0)
                 {
                     return false;
                 }
+                if (TryStart(agent, best, TripReason.CriticalRedirect, chosen, 0f, now, out decision))
+                {
+                    return true;
+                }
+                RemoveCandidate(best);
             }
         }
 
@@ -360,13 +357,17 @@ namespace HungryPathing
                 {
                     continue;
                 }
-                // Only storages near the builder right now matter; farther ones are not measured.
-                if (!TryFindBest(index, needId, settings, sitePosition, now, settings.PreFuelNearFoodHours, out Pick pick))
+                // Only storages near the builder right now matter: farther ones are not measured, and the pick is
+                // made among the near ones, so a better food just past the limit cannot hide a near storage.
+                if (!MeasureCandidates(index, needId, settings, sitePosition, now, settings.PreFuelNearFoodHours))
                 {
                     continue;
                 }
-                if (!FuelPlanner.BuilderShouldTopOff(hoursLeft, warning, travelToSite, settings.BuilderJobWorkHours,
-                        _siteToFoodHours, pick.TravelHours, settings.PreFuelNearFoodHours))
+                int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours,
+                    settings.WorkTimeClosestFood, settings.PreFuelNearFoodHours);
+                if (best < 0 || !FuelPlanner.BuilderShouldTopOff(hoursLeft, warning, travelToSite,
+                        settings.BuilderJobWorkHours, _siteToFoodHours, _candidates[best].TravelHours,
+                        settings.PreFuelNearFoodHours))
                 {
                     continue;
                 }
@@ -376,40 +377,24 @@ namespace HungryPathing
                 if (settings.Diagnostics)
                 {
                     Log.Info($"{Name}: lets a site {travelToSite:0.00}h away go to top off {needId} first " +
-                             $"({hoursLeft:0.0}h left, storage {pick.TravelHours:0.00}h away).");
+                             $"({hoursLeft:0.0}h left, storage {_candidates[best].TravelHours:0.00}h away).");
                 }
                 return true;
             }
             return false;
         }
 
-        private static TripReason ReasonFor(Pick pick, bool isForced, bool justInTime, bool preFuel, float hoursLeft,
-            float warning, Config settings)
+        // Starts a trip to the measured candidate at that index, or backs that storage off and returns false.
+        private bool TryStart(BehaviorAgent agent, int candidate, TripReason reason, string needId, float hoursLeft,
+            float now, out Decision decision)
         {
-            if (isForced)
-            {
-                return TripReason.BuilderJob;
-            }
-            if (justInTime && FuelPlanner.ShouldLeaveNow(hoursLeft, pick.TravelHours, warning))
-            {
-                return TripReason.JustInTime;
-            }
-            if (preFuel && pick.TravelHours <= settings.PreFuelNearFoodHours)
-            {
-                return TripReason.PreFuel;
-            }
-            return TripReason.None;
-        }
-
-        private bool TryStart(BehaviorAgent agent, Pick pick, TripReason reason, string needId, float hoursLeft, float now,
-            out Decision decision)
-        {
-            Decision inner = pick.Behavior.Decide(agent);
+            NeedBehavior behavior = _candidateBehaviors[candidate];
+            Decision inner = behavior.Decide(agent);
             if (inner.ShouldReleaseNow || (inner.Executor == null && !inner.ShouldReturnToBehavior))
             {
                 // Nothing to take there after all (stock reserved meanwhile, or no way in). Leave that storage alone
                 // for a while; the caller tries the next one.
-                _backoffBehavior = pick.Behavior;
+                _backoffBehavior = behavior;
                 _backoffUntilHours = now + 2f * Plugin.Settings.RetryHours;
                 decision = default;
                 return false;
@@ -418,22 +403,21 @@ namespace HungryPathing
             Stats.Count(reason);
             if (Plugin.Settings.Diagnostics)
             {
-                Log.Info($"{Name}: {reason} trip for {needId} ({hoursLeft:0.0}h left) to {pick.Behavior.Name}, " +
-                         $"{pick.TravelHours:0.00}h away.");
+                Log.Info($"{Name}: {reason} trip for {needId} ({hoursLeft:0.0}h left) to {behavior.Name}, " +
+                         $"{_candidates[candidate].TravelHours:0.00}h away.");
             }
-            decision = Decision.TransferNow(pick.Behavior, in inner);
+            decision = Decision.TransferNow(behavior, in inner);
             return true;
         }
 
         // Ranks the district's stocked storages for one need: straight-line distance first for everything, then
-        // real walking time for the nearest CandidateLimit within measureUpToHours by straight line, then the
-        // planner's pick. Storages the beaver cannot take a full unit from score zero with the game's own appraiser
-        // and drop out before any path query. The measured candidates stay available for a re-pick if the chosen
-        // one cannot start a trip.
-        private bool TryFindBest(HungryPathingDistrictIndex index, string needId, Config settings, Vector3? site,
-            float now, float measureUpToHours, out Pick pick)
+        // real walking time for the nearest CandidateLimit within measureUpToHours by straight line. Storages the
+        // beaver cannot take a full unit from score zero with the game's own appraiser and drop out before any path
+        // query. The caller picks from the measured candidates with FuelPlanner, and they stay available for a
+        // re-pick if the chosen one cannot start a trip. False when nothing could be measured.
+        private bool MeasureCandidates(HungryPathingDistrictIndex index, string needId, Config settings, Vector3? site,
+            float now, float measureUpToHours)
         {
-            pick = default;
             _scored.Clear();
             _candidates.Clear();
             _candidateBehaviors.Clear();
@@ -520,25 +504,7 @@ namespace HungryPathing
                 _candidates.Add(new Candidate(travel, _scored[i].Value));
                 _candidateBehaviors.Add(_scored[i].Behavior);
             }
-            return PickFromCandidates(settings, out pick);
-        }
-
-        private bool PickFromCandidates(Config settings, out Pick pick)
-        {
-            int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours, settings.WorkTimeClosestFood);
-            if (best < 0)
-            {
-                pick = default;
-                return false;
-            }
-            pick = new Pick
-            {
-                Behavior = _candidateBehaviors[best],
-                TravelHours = _candidates[best].TravelHours,
-                Value = _candidates[best].Value,
-                Index = best
-            };
-            return true;
+            return _candidates.Count > 0;
         }
 
         private void RemoveCandidate(int index)
