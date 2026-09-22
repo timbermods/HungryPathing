@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (beta), 2026-09-22
+
+- Fixed: the first day with construction queued tripped the circuit breaker in the builder job check. A
+  construction site entity carries two `Accessible` components (its own and the finished building's), so the
+  component lookup introduced in 0.2.0 was ambiguous and threw. The check now reads the destination from the walk
+  the builder has just started, with the site's dedicated accessible as the fallback. The breaker did its job: the
+  session continued with the game's own behavior and one warning in the log.
+
 ## 0.2.0 (beta), 2026-09-22
 
 First release after a code review and eight days in a live colony (see TESTING.md).

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HungryPathing.Planning;
 using Timberborn.BaseComponentSystem;
 using Timberborn.BehaviorSystem;
+using Timberborn.BuildingsNavigation;
 using Timberborn.Common;
 using Timberborn.ConstructionSites;
 using Timberborn.GameDistricts;
@@ -603,13 +604,20 @@ namespace HungryPathing
             return _dayNightCycle.DayNumber * 24f + _dayNightCycle.HoursPassedToday;
         }
 
-        // A construction site has one access point per open neighbour, so the game's single-access accessor would
-        // throw; the nearest access to the builder stands in for the walk's destination.
+        // Where the builder is about to walk. The walk to the site was launched a moment before this is called, so
+        // the walker's path ends exactly there. A site entity carries two Accessible components (the site's own and
+        // the finished building's, disabled until then), so a plain component lookup is ambiguous and throws; the
+        // fallbacks go through the site's dedicated accessible instead, then the entity position.
         private Vector3 SitePosition(ConstructionSite site)
         {
-            if (site.TryGetComponent(out Accessible accessible) && accessible.Enabled)
+            ReadOnlyList<PathCorner> corners = _walker.PathCorners;
+            if (corners.Count > 0)
             {
-                ReadOnlyList<Vector3> accesses = accessible.Accesses;
+                return corners[corners.Count - 1].Position;
+            }
+            if (site.TryGetComponent(out ConstructionSiteAccessible siteAccessible) && siteAccessible.Accessible != null)
+            {
+                ReadOnlyList<Vector3> accesses = siteAccessible.Accessible.Accesses;
                 if (accesses.Count > 0)
                 {
                     Vector3 here = Transform.position;

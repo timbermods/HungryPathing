@@ -106,8 +106,10 @@ Over the 33-day run the rules fired on average 49 just-in-time trips, 133 pre-fu
 redirects a day. Path queries were about 8,300 a day on 0.1.0 and 7,500 on 0.2.0, which measures fewer walks that
 could not change the answer. The walks that remain are distance to any stocked storage at all: in that colony the
 median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers and the method.
-Not yet seen: a construction-heavy day for the builder job check, because that colony does not build. If anything
-in the mod throws, it logs the stack trace once and switches itself off for the session.
+The first day with construction queued found a second site-lookup bug in the builder job check; the circuit
+breaker caught it, the session carried on with the game's own behavior, and 0.2.1 fixes it. What the builder rule
+decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once
+and switches itself off for the session.
 
 ## Checking that it works
 

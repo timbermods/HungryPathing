@@ -91,9 +91,24 @@ three hours between checks, but those extra evaluations measure nothing and cost
 net effect is 30 to 40 percent fewer path queries per day. Trip counts differ a little from the 0.1.0 replay, as
 expected from the changed tolerance and backoff logic; the two versions are not meant to make identical decisions.
 
-Still unexercised after 36 days: the builder job check, because this colony does not build. The 9 to 20
-penalty-state redirects a day are beavers that reach zero inside a long work task, which the planner does not
-interrupt by design; they now walk to the closest storage.
+The 9 to 20 penalty-state redirects a day are beavers that reach zero inside a long work task, which the planner
+does not interrupt by design; they now walk to the closest storage.
+
+### The builder job check, first contact
+
+On day 321 construction was queued for the first time in this colony, and the first builder job check tripped the
+circuit breaker:
+
+```
+Switched off for this session after an error in HungryPathingRootBehavior.BuilderShouldTopOffFirst.
+System.InvalidOperationException: More than one component of type Timberborn.Navigation.Accessible found in TripleLodge.Folktails(Clone)
+```
+
+A construction site entity carries two `Accessible` components, its own and the finished building's, so the
+component lookup that 0.2.0 introduced to avoid the single-access accessor was ambiguous. The breaker worked as
+intended: the session continued on the game's own behavior with one warning. 0.2.1 reads the destination from the
+walk the builder has just started instead. The rule's own decisions, whether a hungry builder actually lets a far
+site go and tops off first, are still to be observed on a construction day with 0.2.1.
 
 ## Reproducing the analysis
 

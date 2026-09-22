@@ -129,8 +129,11 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
   needs, and a redirected trip skips that refresh. Hunger and Thirst are `State`-type needs with no such icon, so
   the only visible effect would be a stale icon from an earlier action-type trip during a redirected walk.
 
-The builder check reads the site's position from the nearest of its access points. A site has one access per open
-neighbour column, so the game's single-access accessor, which storages use, would throw on it.
+The builder check reads the site's position from the end of the walk the builder has just started, which is where
+the game is sending it. Two ways of asking the site itself are traps: the game's single-access accessor, which
+storages use, throws because a site has one access per open neighbour column, and a plain lookup of the site's
+`Accessible` throws because the entity also carries the finished building's, disabled until construction ends.
+The fallback goes through `ConstructionSiteAccessible`, which names the site's own.
 
 ### Guardrails
 
