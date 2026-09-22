@@ -20,7 +20,7 @@ there to compare.
 | `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. For pre-fuel and the builder job check it applies among the storages within `PreFuelNearFoodHours` only. |
 | `RedirectCriticalTrips` | `true` | Apply the same ranking to the game's own penalty-state trips during working hours. |
 | `CandidateLimit` | `8` | At most this many storages, nearest by straight line, get a real path query per decision. |
-| `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again. |
+| `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again. A storage that failed to start a trip is left alone for twice this long, and after a penalty-state redirect in which every measured storage failed, the game's own behavior answers for this long. |
 | `DailyReport` | `true` | One summary line per in-game day in Player.log. |
 | `Diagnostics` | `false` | One line per trip the mod starts, and per site a builder lets go. Verbose. |
 

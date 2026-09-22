@@ -138,7 +138,7 @@
               <li>Is the storage in the beaver's <strong>district</strong>? Beavers only see storages registered with their own district center.</li>
               <li>Does it hold food or water <strong>right now</strong>? Units already reserved by beavers on their way count as gone, so a small warehouse can be empty for the next arrival.</li>
               <li>Is the beaver <strong>off duty</strong>? Evenings run the game's own behavior on purpose, and that is where variety-seeking happens.</li>
-              <li>Is it a <strong>penalty-state</strong> trip during work? Those follow the mod only while <code>RedirectCriticalTrips = true</code>.</li>
+              <li>Is it a <strong>penalty-state</strong> trip during work? Those follow the mod only while <code>RedirectCriticalTrips = true</code>, and not for <code>RetryHours</code> after a redirect in which every storage the mod measured failed to start a trip. Each such failure counts in the daily line's <strong>failed launches</strong>.</li>
               <li>Read the daily <code>Day N: trips started by rule</code> line. If every count is zero, the planner never fires: check the <a href="#buffer-zero">buffer</a> and that <code>Enabled = true</code>. Set <code>Diagnostics = true</code> to see each trip and the walking time it measured.</li>
             </ol>
           </dd>

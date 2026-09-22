@@ -92,12 +92,14 @@ the game's single value is used and the log says so.
 A beaver far from any trigger sleeps until it could reach one, and a beaver inside the window re-checks every half
 hour of game time. A check costs at most `CandidateLimit` (default 8) path queries, taken from the storages nearest
 by straight line, and only after the game's own appraiser confirmed the beaver can take a full unit. The daily log
-line reports evaluations and path queries so the cost is visible.
+line reports evaluations, failed launches (a chosen storage that could not start a trip after all) and path queries
+so the cost is visible.
 
 ## Saves
 
-The mod adds two components (one per adult beaver, one per district center) that keep only caches rebuilt from the
-simulation. Nothing is saved. A save made with the mod loads without it and the other way round.
+The mod adds two components (one per adult beaver, one per district center) that keep only caches and short
+per-beaver timers (which storages to leave alone for a while, when to look again), all started afresh when a game
+loads. Nothing is saved. A save made with the mod loads without it and the other way round.
 
 ## What it did in a real colony
 
@@ -136,7 +138,7 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. ...
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: ...
-[HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 3104 path queries.
+[HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.
 ```
 
 `<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a

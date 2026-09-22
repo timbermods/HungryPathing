@@ -11,6 +11,7 @@ namespace HungryPathing
         public static int BuilderJob;
         public static int BuilderChecks;
         public static int CriticalRedirect;
+        public static int FailedLaunches;
 
         public static bool ThresholdsLogged;
 
@@ -18,7 +19,8 @@ namespace HungryPathing
 
         public static void Reset()
         {
-            Evaluations = PathQueries = JustInTime = PreFuel = BuilderJob = BuilderChecks = CriticalRedirect = 0;
+            Evaluations = PathQueries = JustInTime = PreFuel = BuilderJob = BuilderChecks = CriticalRedirect =
+                FailedLaunches = 0;
             _reportedDay = -1;
             ThresholdsLogged = false;
         }
@@ -57,9 +59,10 @@ namespace HungryPathing
             {
                 Log.Info($"Day {_reportedDay}: trips started by rule: just-in-time {JustInTime}, pre-fuel {PreFuel}, " +
                          $"builder job {BuilderJob} (of {BuilderChecks} job checks), critical redirected {CriticalRedirect}. " +
-                         $"{Evaluations} evaluations, {PathQueries} path queries.");
+                         $"{Evaluations} evaluations, {FailedLaunches} failed launches, {PathQueries} path queries.");
             }
-            Evaluations = PathQueries = JustInTime = PreFuel = BuilderJob = BuilderChecks = CriticalRedirect = 0;
+            Evaluations = PathQueries = JustInTime = PreFuel = BuilderJob = BuilderChecks = CriticalRedirect =
+                FailedLaunches = 0;
             _reportedDay = day;
         }
     }

@@ -21,7 +21,7 @@ namespace HungryPathing
     // Sits in each adult beaver's root behavior list just above WorkerRootBehavior (see Patches), so it is asked at
     // the same moments the game would hand the beaver its next piece of work. It only ever answers with one of the
     // game's own storage need behaviors (walk in, take a unit, eat), or declines. It keeps no saved state: every
-    // field here is a cache that is rebuilt from the simulation after a load.
+    // field here is a cache or a per-beaver timer, created empty when a game loads on every player.
     public class HungryPathingRootBehavior : RootBehavior, IAwakableComponent
     {
         private struct Scored
@@ -62,6 +62,8 @@ namespace HungryPathing
         private bool _ready;
 
         private readonly List<Scored> _scored = new List<Scored>();
+        // Where each storage sits in _scored while it is being filled. Only looked up, never iterated.
+        private readonly Dictionary<NeedBehavior, int> _scoredIndex = new Dictionary<NeedBehavior, int>();
         private readonly List<Candidate> _candidates = new List<Candidate>();
         private readonly List<NeedBehavior> _candidateBehaviors = new List<NeedBehavior>();
         private readonly List<string> _needOrder = new List<string>();
@@ -73,8 +75,12 @@ namespace HungryPathing
         private string _forcedNeedId;
         private float _forcedUntilHours;
         private float _nextBuilderCheckHours = float.NegativeInfinity;
-        private NeedBehavior _backoffBehavior;
-        private float _backoffUntilHours;
+        private readonly RedirectThrottle _criticalThrottle = new RedirectThrottle();
+        // Storages this beaver saw fail to start a trip. Two whole failed decisions fit, whatever CandidateLimit is;
+        // past that the oldest failure is forgotten, which costs one repeat attempt. Settings are loaded before any
+        // beaver exists, so every player sizes it alike.
+        private readonly LaunchBackoff<NeedBehavior> _backoff =
+            new LaunchBackoff<NeedBehavior>(LaunchBackoff<NeedBehavior>.CapacityFor(Plugin.Settings.CandidateLimit));
 
         // Set by the patch that puts this behavior into the root behavior list.
         internal bool Registered;
@@ -273,24 +279,35 @@ namespace HungryPathing
                 return false;
             }
             float now = Now();
+            if (_criticalThrottle.IsHeld(now))
+            {
+                return false;
+            }
             if (!MeasureCandidates(index, chosen, settings, null, now, float.MaxValue))
             {
                 return false;
             }
+            int failedLaunches = 0;
             while (true)
             {
                 int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours,
                     settings.WorkTimeClosestFood);
                 if (best < 0)
                 {
-                    return false;
+                    break;
                 }
                 if (TryStart(agent, best, TripReason.CriticalRedirect, chosen, 0f, now, out decision))
                 {
                     return true;
                 }
+                failedLaunches++;
                 RemoveCandidate(best);
             }
+            // No trip started. If storages were tried, every one failed and is backed off: the game's own critical
+            // behavior then answers for RetryHours, so a beaver the game keeps asking does not measure the next
+            // nearest storages again at every ask. A pass that had nothing to try holds nothing back.
+            _criticalThrottle.PassEnded(now, failedLaunches, false, settings.RetryHours);
+            return false;
         }
 
         // Called from the postfix on BuildBehavior.Decide the moment a builder starts walking to a reserved site.
@@ -395,9 +412,9 @@ namespace HungryPathing
             if (inner.ShouldReleaseNow || (inner.Executor == null && !inner.ShouldReturnToBehavior))
             {
                 // Nothing to take there after all (stock reserved meanwhile, or no way in). Leave that storage alone
-                // for a while; the caller tries the next one.
-                _backoffBehavior = behavior;
-                _backoffUntilHours = now + 2f * Plugin.Settings.RetryHours;
+                // for a while, alongside any others that failed recently; the caller tries the next one.
+                _backoff.Add(behavior, now, now + 2f * Plugin.Settings.RetryHours);
+                Stats.FailedLaunches++;
                 decision = default;
                 return false;
             }
@@ -424,6 +441,7 @@ namespace HungryPathing
             float now, float measureUpToHours)
         {
             _scored.Clear();
+            _scoredIndex.Clear();
             _candidates.Clear();
             _candidateBehaviors.Clear();
             _siteToFoodHours = float.MaxValue;
@@ -434,6 +452,7 @@ namespace HungryPathing
                 return false;
             }
             Vector3 here = Transform.position;
+            _backoff.Prune(now);
             IReadOnlyList<HungryPathingDistrictIndex.Group> groups = index.GroupsFor(needId);
             int order = 0;
             for (int g = 0; g < groups.Count; g++)
@@ -451,7 +470,7 @@ namespace HungryPathing
                 for (int b = 0; b < group.Behaviors.Count; b++)
                 {
                     NeedBehavior behavior = group.Behaviors[b];
-                    if (behavior == _backoffBehavior && FuelPlanner.StillBackedOff(now, _backoffUntilHours))
+                    if (_backoff.IsBackedOff(behavior, now))
                     {
                         continue;
                     }
@@ -460,8 +479,7 @@ namespace HungryPathing
                     {
                         continue;
                     }
-                    int existing = IndexOfScored(behavior);
-                    if (existing >= 0)
+                    if (_scoredIndex.TryGetValue(behavior, out int existing))
                     {
                         // One storage with several foods: it counts once, at its best value.
                         if (value > _scored[existing].Value)
@@ -472,6 +490,7 @@ namespace HungryPathing
                         }
                         continue;
                     }
+                    _scoredIndex.Add(behavior, _scored.Count);
                     _scored.Add(new Scored
                     {
                         Behavior = behavior,
@@ -518,18 +537,6 @@ namespace HungryPathing
         {
             _candidates.RemoveAt(index);
             _candidateBehaviors.RemoveAt(index);
-        }
-
-        private int IndexOfScored(NeedBehavior behavior)
-        {
-            for (int i = 0; i < _scored.Count; i++)
-            {
-                if (_scored[i].Behavior == behavior)
-                {
-                    return i;
-                }
-            }
-            return -1;
         }
 
         private float HeuristicHours(Vector3 from, Vector3 to, float speed)

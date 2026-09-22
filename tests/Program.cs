@@ -209,6 +209,74 @@ internal static class Program
         Check(Near(FuelPlanner.DelayUntilLeaving(6f, 1f, 3f, 0.5f), 0.5f), "wake-up is bounded by the retry interval");
         Check(Near(FuelPlanner.DelayUntilLeaving(3.5f, 1f, 3f, 0.5f), 0.1f), "wake-up never waits past the leaving time");
 
+        // Storages that failed to launch a trip, remembered per beaver. Keys are compared by reference, like the
+        // game's components.
+        object storageA = new object(), storageB = new object(), storageC = new object();
+        LaunchBackoff<object> backoff = new LaunchBackoff<object>(16);
+        backoff.Add(storageA, 0f, 1.0f);
+        backoff.Add(storageB, 0f, 1.0f);
+        Check(backoff.IsBackedOff(storageA, 0.5f) && backoff.IsBackedOff(storageB, 0.5f),
+            "two storages that failed in one pass are both left alone");
+        Check(!backoff.IsBackedOff(storageC, 0.5f), "a storage that never failed is not left alone");
+        Check(!backoff.IsBackedOff(storageA, 1.0f) && !backoff.IsBackedOff(storageB, 1.0f),
+            "both are considered again on the deadline");
+        LaunchBackoff<object> repeat = new LaunchBackoff<object>(16);
+        repeat.Add(storageA, 0f, 1.0f);
+        repeat.Add(storageA, 0.5f, 1.5f);
+        Check(repeat.Count == 1 && repeat.IsBackedOff(storageA, 1.2f), "a repeat failure keeps one entry, later deadline");
+        repeat.Add(storageA, 0.6f, 1.1f);
+        Check(repeat.Count == 1 && repeat.IsBackedOff(storageA, 1.2f), "a repeat failure never shortens the deadline");
+        LaunchBackoff<object> full = new LaunchBackoff<object>(2);
+        full.Add(storageA, 0f, 1.0f);
+        full.Add(storageB, 0.1f, 1.1f);
+        full.Add(storageC, 0.2f, 1.2f);
+        Check(full.Count == 2 && !full.IsBackedOff(storageA, 0.5f) && full.IsBackedOff(storageB, 0.5f) &&
+              full.IsBackedOff(storageC, 0.5f), "a full list forgets the oldest failure first");
+        LaunchBackoff<object> roomy = new LaunchBackoff<object>(2);
+        roomy.Add(storageA, 0f, 2.0f);
+        roomy.Add(storageB, 0.1f, 1.0f);
+        roomy.Add(storageC, 1.05f, 2.05f);
+        Check(roomy.Count == 2 && roomy.IsBackedOff(storageA, 1.05f) && roomy.IsBackedOff(storageC, 1.05f),
+            "an expired failure makes room before a live one is forgotten");
+        LaunchBackoff<object> refreshed = new LaunchBackoff<object>(2);
+        refreshed.Add(storageA, 0f, 1.0f);
+        refreshed.Add(storageB, 0.1f, 1.1f);
+        refreshed.Add(storageA, 0.2f, 1.2f);
+        refreshed.Add(storageC, 0.3f, 1.3f);
+        Check(refreshed.IsBackedOff(storageA, 0.5f) && !refreshed.IsBackedOff(storageB, 0.5f) &&
+              refreshed.IsBackedOff(storageC, 0.5f), "a repeat failure counts as the newest");
+        LaunchBackoff<object> expiring = new LaunchBackoff<object>(16);
+        expiring.Add(storageA, 0f, 1.0f);
+        expiring.Add(storageB, 0.5f, 1.5f);
+        expiring.Prune(1.0f);
+        Check(expiring.Count == 1 && expiring.IsBackedOff(storageB, 1.0f), "pruning drops only what has expired");
+        expiring.Add(storageC, 2.0f, 3.0f);
+        Check(expiring.Count == 1 && expiring.IsBackedOff(storageC, 2.0f), "a new failure prunes what has expired");
+        Check(LaunchBackoff<object>.CapacityFor(8) == 16 && LaunchBackoff<object>.CapacityFor(1) == 16 &&
+              LaunchBackoff<object>.CapacityFor(20) == 40, "the list holds two whole decisions, and at least 16");
+        LaunchBackoff<object> wide = new LaunchBackoff<object>(LaunchBackoff<object>.CapacityFor(20));
+        object[] widePass = new object[20];
+        for (int i = 0; i < widePass.Length; i++)
+        {
+            widePass[i] = new object();
+            wide.Add(widePass[i], 0f, 1.0f);
+        }
+        Check(wide.Count == 20 && wide.IsBackedOff(widePass[0], 0.5f),
+            "a pass that failed at every one of 20 candidates forgets none of them");
+
+        // Penalty-state redirects after a pass in which every storage tried failed to start a trip.
+        RedirectThrottle quiet = new RedirectThrottle();
+        Check(!quiet.IsHeld(0f), "redirects start out not held back");
+        quiet.PassEnded(1.0f, 0, false, 0.5f);
+        Check(!quiet.IsHeld(1.0f), "a redirect pass that tried no storage holds nothing back");
+        RedirectThrottle launched = new RedirectThrottle();
+        launched.PassEnded(1.0f, 2, true, 0.5f);
+        Check(!launched.IsHeld(1.0f), "a redirect pass that started a trip holds nothing back");
+        RedirectThrottle held = new RedirectThrottle();
+        held.PassEnded(1.0f, 3, false, 0.5f);
+        Check(held.IsHeld(1.0f) && held.IsHeld(1.49f), "a redirect pass where every storage failed holds back the next");
+        Check(!held.IsHeld(1.5f), "held-back redirects measure again on the deadline");
+
         Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
         Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
         Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
