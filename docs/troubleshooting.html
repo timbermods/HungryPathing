@@ -159,7 +159,7 @@
         <h2>A builder keeps letting go of the same site</h2>
         <dl>
           <dt>What should happen</dt>
-          <dd>A builder lets a site go at most once per half hour of game time, tops off, and then takes whatever site the game hands it next. Seeing the same builder drop a site repeatedly without eating in between means the food it counted on was gone by the time it got there.</dd>
+          <dd>A builder lets a site go at most once per half hour of game time (<code>RetryHours</code>), tops off, and then takes whatever site the game hands it next. Seeing the same builder drop a site repeatedly without eating in between means the food it counted on was gone by the time it got there.</dd>
           <dt>Fix</dt>
           <dd>Set <code>BuilderJobCheck = false</code> for now and <a href="#report">report it</a> with <code>Diagnostics = true</code> lines around the event. The other rules keep working.</dd>
         </dl>
@@ -169,7 +169,7 @@
         <h2>Stutter in a big colony</h2>
         <dl>
           <dt>What to look at</dt>
-          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. A few thousand per day for a few hundred beavers is normal and cheap; tens of thousands is not.</dd>
+          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. Several thousand per day for a few hundred beavers is normal and cheap (about 7,500 a day in the 355-beaver test colony on 0.2.0); tens of thousands is not.</dd>
           <dt>Fix</dt>
           <dd>Lower <code>CandidateLimit</code> (path queries per check), raise <code>RetryHours</code> (time between checks), or lower <code>JustInTimeLeadHours</code> (how early walks start being measured). All three are simulation settings, so co-op peers must change them together.</dd>
         </dl>
@@ -179,7 +179,7 @@
         <h2>A co-op game drifts apart after installing the mod</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>The players run different versions of the mod or different settings files. Both change what beavers decide. Or the mod <a href="#switched-off">switched off</a> after an error on one computer only; that computer's log has the warning and <code>Day N: switched off</code> lines the others do not have.</dd>
+          <dd>The players run different versions of the mod, different game versions or different settings files. All three change what beavers decide. Or the mod <a href="#switched-off">switched off</a> after an error on one computer only; that computer's log has the warning and <code>Day N: switched off</code> lines the others do not have.</dd>
           <dt>Fix</dt>
           <dd>Compare the <code>Simulation settings:</code> line each player's log prints at startup, and the version in the <code>loading.</code> line. Make them identical, then start from a fresh sync.</dd>
         </dl>
@@ -213,8 +213,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial Timberborn mod.</p>
-      <p>Timberborn is made by Mechanistry. This is a fan project and is not affiliated with or endorsed by them.</p>
+      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
+      <p>Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>
@@ -223,6 +223,7 @@
       <li><a href="https://github.com/timbermods/HungryPathing">Source</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/releases">Releases</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/issues">Report a problem</a></li>
+      <li><a href="https://timbermods.github.io/">More mods from Timbermods</a></li>
     </ul>
   </div>
 </footer>

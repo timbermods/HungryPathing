@@ -73,7 +73,7 @@
         <h2>The buffer and the settings</h2>
         <details class="q" id="buffer">
           <summary>What is the three-hour buffer, and where does the number come from?</summary>
-          <div class="a"><p>Every need blueprint has an <code>HoursWarningThreshold</code> field. The base game sets it to 3.5 and 4.5 hours for bots' Energy and Biofuel and reads it for them, but ships every beaver need at zero and never reads it for beavers. The mod sets Hunger and Thirst to 3 hours through two partial blueprints and honors the value. Three hours at 0.8 hunger a day is 0.1 of the bar: the beaver starts walking with that in hand and arrives with it.</p></div>
+          <div class="a"><p>Every need blueprint has an <code>HoursWarningThreshold</code> field. The base game sets it to 3.5 and 4.5 hours for bots' Energy and Biofuel and reads it for them, but ships every beaver need at zero and never reads it for beavers. The mod sets Hunger and Thirst to 3 hours through two partial blueprints and honors the value. Three hours at 0.8 hunger a day is 0.1 of the bar: the beaver leaves early enough to arrive with that still in hand.</p></div>
         </details>
         <details class="q" id="change-buffer">
           <summary>Can I change the buffer?</summary>
@@ -93,7 +93,7 @@
         <h2>Compatibility</h2>
         <details class="q" id="coop">
           <summary>Does it work in co-op with BeaverBuddies?</summary>
-          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player runs the same version with an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p><p>If the mod switches itself off after an error on one computer only, that computer runs the base game while the others run the mod. Since 0.3.1 a dialog on that computer says so. The host then saves and hosts that save again, and every player joins it; the load turns the mod back on for everyone.</p></div>
+          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player installs the same version of the mod, runs the same game version and uses an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p><p>If the mod switches itself off after an error on one computer only, that computer runs the base game while the others run the mod. Since 0.3.1 a dialog on that computer says so. The host then saves and hosts that save again, and every player joins it; the load turns the mod back on for everyone.</p></div>
         </details>
         <details class="q" id="saves">
           <summary>Is it safe to add to or remove from an existing colony?</summary>
@@ -117,7 +117,7 @@
         <h2>Status</h2>
         <details class="q" id="alpha">
           <summary>Why is it called a beta?</summary>
-          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. 0.1.0 and 0.2.0 ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, with identical results when days were replayed and the before-and-after numbers on the <a href="index.html#results">overview</a>; the one error found there was fixed in 0.2.1. The 0.3 releases, which refine which storage a beaver picks, have offline checks but have not been played in a live colony yet. One colony is still one colony, and the builder rule has not yet seen a construction-heavy day, so it is a beta rather than a 1.0. If anything in it throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p></div>
+          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. 0.1.0 and 0.2.0 ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, with identical results when days were replayed and the before-and-after numbers on the <a href="index.html#results">overview</a>; the one error found there was fixed in 0.2.1. The 0.3 releases, which refine which storage a beaver picks, have offline checks but have not been played in a live colony yet. One colony is still one colony, and the builder rule has not yet seen a construction-heavy day, so it is a beta rather than a 1.0. Beta is not a pre-release label: the release marked Latest on GitHub is a stable release, and "beta" says it is still being tested and tuned. If anything in it throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p></div>
         </details>
         <details class="q" id="help">
           <summary>How can I help?</summary>
@@ -131,8 +131,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial Timberborn mod.</p>
-      <p>Timberborn is made by Mechanistry. This is a fan project and is not affiliated with or endorsed by them.</p>
+      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
+      <p>Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>
@@ -141,6 +141,7 @@
       <li><a href="https://github.com/timbermods/HungryPathing">Source</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/releases">Releases</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/issues">Report a problem</a></li>
+      <li><a href="https://timbermods.github.io/">More mods from Timbermods</a></li>
     </ul>
   </div>
 </footer>

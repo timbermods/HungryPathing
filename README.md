@@ -57,8 +57,14 @@ eating earlier does not eat more. Total consumption per day is unchanged; only i
 
 ## Install
 
-Unzip the release into `Documents\Timberborn\Mods` so that you have `Mods\HungryPathing\version-1.1\manifest.json`,
-then enable the mod in the game's mod manager. Harmony must be installed and enabled as well.
+1. Download `HungryPathing-X.Y.Z.zip` from **Assets** on the [latest release](https://github.com/timbermods/HungryPathing/releases/latest),
+   not the *Source code* archive.
+2. With the game closed, extract it into `Documents\Timberborn\Mods` so that you have
+   `Mods\HungryPathing\version-1.1\manifest.json`.
+3. Start the game and enable Hungry Pathing in the mod manager. Harmony must be installed and enabled as well.
+
+The [install guide](https://timbermods.github.io/HungryPathing/install.html) has the full folder layout and how to check
+that the mod loaded.
 
 ## Settings
 
@@ -69,9 +75,9 @@ ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
 
 Every rule reads only the simulation and the game's own path queries; nothing depends on the clock, the frame rate
 or random numbers, and storages are ranked in a fixed order with fixed tie-breaks. The counters in the daily log
-line never feed back into a decision. Two players running the same version with identical settings files make
-identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
-games will drift apart.
+line never feed back into a decision. When every player installs the same version of the mod, runs the same game
+version and uses an identical settings file, every player makes identical decisions. At startup the log prints one
+`Simulation settings:` line; if two players' lines differ, their games will drift apart.
 
 If the mod switches itself off after an error, it is built to do so on every player at the same moment, since the
 code that threw reads only the simulation, and it is back on for everyone after the next load, which all players
@@ -96,24 +102,25 @@ the game's single value is used and the log says so.
 
 ## Performance
 
-A beaver far from any trigger sleeps until it could reach one, and a beaver inside the window re-checks every half
-hour of game time. A check costs at most `CandidateLimit` (default 8) path queries, taken from the storages nearest
-by straight line, and only after the game's own appraiser confirmed the beaver can take a full unit. The daily log
-line reports evaluations, failed launches (a chosen storage that could not start a trip after all) and path queries
-so the cost is visible.
+A beaver far from any trigger sleeps until it could reach one (three hours at most), and a beaver inside the window
+re-checks every half hour of game time (`RetryHours`). A check costs at most `CandidateLimit` (default 8) path
+queries for each need it looks at, taken from the storages nearest by straight line, and only after the game's own
+appraiser confirmed the beaver can take a full unit. The daily log line reports evaluations, failed launches (a
+chosen storage that could not start a trip after all) and path queries so the cost is visible.
 
 ## Saves
 
 The mod adds two components (one per adult beaver, one per district center) that keep only caches and short
 per-beaver timers (which storages to leave alone for a while, when to look again), all started afresh when a game
-loads. Nothing is saved. A save made with the mod loads without it and the other way round.
+loads. Nothing is saved. A save made with the mod loads without it and the other way around.
 
 ## What it did in a real colony
 
-36 in-game days in a 355-adult, single-district Folktails colony, nearly all of them as a BeaverBuddies host with
-a guest connected: 33 on 0.1.0 and the first days of 0.2.0. No exceptions, all five hooks installed, the buffer
-read 3h. Three of the early days were played twice from the same save and produced identical daily counters and
-identical co-op consistency hashes both times, which is the determinism the multiplayer section promises.
+36 in-game days in a single-district Folktails colony of 330 to 355 adults, nearly all of them as a BeaverBuddies
+host with a guest connected: 33 on 0.1.0 and the first days of 0.2.0. All five hooks installed and the buffer read
+3h. There was one exception, on 0.2.0, and 0.2.1 fixes it (see below). Three of the early days were played twice
+from the same save and produced identical daily counters and identical co-op consistency hashes both times, which is
+what the multiplayer section relies on.
 
 Measured an hour before the end of the shift, from the saves themselves:
 
@@ -141,18 +148,20 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 
 ```
 [HungryPathing] <version> loading.
+[HungryPathing] Settings read from ...
 [HungryPathing] Simulation settings: ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. ...
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: ...
+[HungryPathing] MultiColony: ...
 [HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.
 ```
 
 `<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a
 measured day ([TESTING.md](TESTING.md) has measured ones). If the `Needs in this game` line shows a buffer of 0h,
 the blueprint patches did not load. A `Switched off for the rest of this game` warning, a dialog in the game and
-`Day N: switched off on this computer` lines mean the mod hit an error; see the Multiplayer section. `Diagnostics = true` logs one line per trip the mod starts.
-`tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
+`Day N: switched off on this computer` lines mean the mod hit an error; see the Multiplayer section.
+`Diagnostics = true` logs one line per trip the mod starts. `tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
 arguments.
 
 ## Building
