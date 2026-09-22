@@ -124,7 +124,7 @@ and switches itself off for the session.
 Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) shows, in order:
 
 ```
-[HungryPathing] 0.1.0 loading.
+[HungryPathing] <version> loading.
 [HungryPathing] Simulation settings: ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. ...
@@ -132,9 +132,11 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 [HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 3104 path queries.
 ```
 
-If the `Needs in this game` line shows a buffer of 0h, the blueprint patches did not load. `Diagnostics = true`
-logs one line per trip the mod starts. `tools\run-save.ps1` asks Steam to launch the game straight into a save;
-Steam shows a prompt to confirm the extra arguments.
+`<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a
+measured day ([TESTING.md](TESTING.md) has measured ones). If the `Needs in this game` line shows a buffer of 0h,
+the blueprint patches did not load. `Diagnostics = true` logs one line per trip the mod starts.
+`tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
+arguments.
 
 ## Building
 

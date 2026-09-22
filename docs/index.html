@@ -39,11 +39,11 @@
   <div class="hero">
     <div class="container hero-grid">
       <div>
-        <span class="eyebrow">Timberborn mod <span class="ver" data-latest-version hidden></span></span>
+        <span class="eyebrow">Timberborn mod <span class="ver"><span data-release="tag"></span><span data-release-show="prerelease" hidden> preview</span></span></span>
         <h1>Beavers that eat before the shift, not after the penalty.</h1>
         <p class="lede">Working beavers top off before a shift they cannot finish, leave far jobs early enough to reach food before the hunger penalty, and eat at the closest stocked storage instead of crossing the map for a fancier meal.</p>
         <div class="btn-row">
-          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download latest release</a>
+          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
           <a class="btn btn-secondary" href="install.html">Install guide</a>
         </div>
         <ul class="chips" aria-label="At a glance">
@@ -154,7 +154,7 @@
             <li>Hunger and Thirst by default; any need satisfied by consumable goods in storages can be added</li>
             <li>Every rule, threshold and cost bound is a setting in one plain text file</li>
             <li>One summary line per in-game day in the log, and optional per-trip diagnostics</li>
-            <li>Folktails and Iron Teeth</li>
+            <li>Folktails tested; Iron Teeth expected to work, untested (<a href="faq.html#factions">see tubeways</a>)</li>
           </ul>
         </div>
         <div class="card">
@@ -185,7 +185,7 @@
       <table>
         <tbody>
           <tr><th scope="row">Game version</th><td>Timberborn <strong>1.1.2.4</strong>. Built and checked against 1.1.2.4; the hooks were written from that version's code and disable themselves if a later version moves them.</td></tr>
-          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so peers running the same version with an <strong>identical settings file</strong> make identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours, and the storage index is per district, so colonies never eat from each other's storages.</td></tr>
+          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so peers running the same version with an <strong>identical settings file</strong> make identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages.</td></tr>
           <tr><th scope="row">Other mods</th><td>Requires <strong>Harmony</strong> from the Steam Workshop. A mod that also edits the Hunger or Thirst blueprints will merge with this one by load order; a mod that replaces the game's need-picking behavior for beavers would overlap.</td></tr>
           <tr><th scope="row">Saves</th><td>Untouched. You can remove the mod at any time.</td></tr>
           <tr><th scope="row">Language</th><td>No user interface text. Log lines are in English.</td></tr>
@@ -199,7 +199,7 @@
       <h2>Ready to try it?</h2>
       <p>Beta: one colony of 355 beavers has run it for 36 in-game days, nearly all in co-op, with no errors, and the numbers above are from its saves. Try it on a copy of your save first.</p>
       <div class="btn-row">
-        <a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download latest release</a>
+        <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
         <a class="btn btn-secondary" href="install.html">Read the install guide</a>
       </div>
     </div>
@@ -222,6 +222,6 @@
     </ul>
   </div>
 </footer>
-<script src="assets/site.js" defer></script>
+<script src="assets/release.js" defer data-repo="timbermods/HungryPathing" data-asset="^HungryPathing-[\d.]+\.zip$"></script>
 </body>
 </html>

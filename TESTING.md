@@ -11,6 +11,25 @@ behind each rule: hours left from points and decay, the just-in-time window and 
 that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in both orders, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 
+## Site checks (no game needed)
+
+```
+node tests/test-site.mjs
+```
+
+Needs only Node, no packages and no network. It parses every page in `docs\` into a small stub DOM, runs the
+scripts each page loads against a fetch that answers like GitHub's API, and checks what the download buttons offer:
+GitHub's Latest release, the newest pre-release only when there is no Latest, never a draft, and the page as written
+(buttons leading to the Latest release page) when GitHub does not answer. Every link with
+`data-release-href="download"` and every `btn` link that says "download" counts as a download button. It also applies
+the stylesheet rules that hide parts of a page until the script has run, and fails when a label such as the install
+guide's `File:` line shows without its value, or when a sample `loading.` log line on the site or in `README.md`
+names a version number instead of `<version>`. `docs\assets\release.js` is the release script the timbermods sites
+share; keep it byte-identical to theirs.
+
+GitHub Actions runs both sets of checks on every pull request and every push to main
+(`.github\workflows\tests.yml`).
+
 ## In the game
 
 `tools\run-save.ps1` starts the game straight into a save; the game itself reads `-settlementName` and `-saveName`

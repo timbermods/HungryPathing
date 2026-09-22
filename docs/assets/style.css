@@ -231,3 +231,5 @@ details.q .a > :last-child { margin-bottom: 14px; }
 .ui-btn:disabled:hover { background: #294f45; }
 
 .file-name { margin: 10px 0 0; font-size: .9rem; }
+/* assets/release.js fills in the file name and then marks the page; until then there is no name to show. */
+html:not([data-release-ready]) .file-name { display: none; }
