@@ -21,7 +21,7 @@ namespace HungryPathing
     // Sits in each adult beaver's root behavior list just above WorkerRootBehavior (see Patches), so it is asked at
     // the same moments the game would hand the beaver its next piece of work. It only ever answers with one of the
     // game's own storage need behaviors (walk in, take a unit, eat), or declines. It keeps no saved state: every
-    // field here is a cache that is rebuilt from the simulation after a load.
+    // field here is a cache or a per-beaver timer, created empty when a game loads on every player.
     public class HungryPathingRootBehavior : RootBehavior, IAwakableComponent
     {
         private struct Scored
@@ -45,10 +45,6 @@ namespace HungryPathing
         // A beaver with hours to spare sleeps this long at most between evaluations, so a changed working day is
         // noticed the same shift. Evaluations that measure nothing cost a few comparisons.
         private const float MaxSleepHours = 3f;
-
-        // Storages one beaver remembers as having failed to start a trip. A whole failed decision at the default
-        // CandidateLimit fits twice; past that the oldest failure is forgotten, which costs one repeat attempt.
-        private const int BackoffCapacity = 16;
 
         // Straight-line order, then insertion order: List.Sort is unstable, so the tie-break keeps it deterministic.
         private static readonly Comparison<Scored> ByHeuristic = (a, b) =>
@@ -86,8 +82,12 @@ namespace HungryPathing
         private string _forcedNeedId;
         private float _forcedUntilHours;
         private float _nextBuilderCheckHours = float.NegativeInfinity;
-        private float _nextCriticalCheckHours = float.NegativeInfinity;
-        private readonly LaunchBackoff<NeedBehavior> _backoff = new LaunchBackoff<NeedBehavior>(BackoffCapacity);
+        private readonly RedirectThrottle _criticalThrottle = new RedirectThrottle();
+        // Storages this beaver saw fail to start a trip. Two whole failed decisions fit, whatever CandidateLimit is;
+        // past that the oldest failure is forgotten, which costs one repeat attempt. Settings are loaded before any
+        // beaver exists, so every player sizes it alike.
+        private readonly LaunchBackoff<NeedBehavior> _backoff =
+            new LaunchBackoff<NeedBehavior>(LaunchBackoff<NeedBehavior>.CapacityFor(Plugin.Settings.CandidateLimit));
 
         // Set by the patch that puts this behavior into the root behavior list.
         internal bool Registered;
@@ -281,7 +281,7 @@ namespace HungryPathing
                 return false;
             }
             float now = Now();
-            if (now < _nextCriticalCheckHours)
+            if (_criticalThrottle.IsHeld(now))
             {
                 return false;
             }
@@ -289,22 +289,25 @@ namespace HungryPathing
             {
                 return false;
             }
+            int failedLaunches = 0;
             while (true)
             {
                 if (TryStart(agent, pick, TripReason.CriticalRedirect, chosen, 0f, now, out decision))
                 {
                     return true;
                 }
+                failedLaunches++;
                 RemoveCandidate(pick.Index);
                 if (!PickFromCandidates(settings, out pick))
                 {
-                    // Every storage measured for this beaver failed to start a trip. Each one is backed off, and the
-                    // game's own critical behavior answers for RetryHours, so a beaver the game keeps asking does not
-                    // measure the next nearest storages again at every ask.
-                    _nextCriticalCheckHours = now + settings.RetryHours;
-                    return false;
+                    break;
                 }
             }
+            // Every storage measured for this beaver failed to start a trip, and each one is backed off. The game's
+            // own critical behavior answers for RetryHours, so a beaver the game keeps asking does not measure the
+            // next nearest storages again at every ask.
+            _criticalThrottle.PassEnded(now, failedLaunches, false, settings.RetryHours);
+            return false;
         }
 
         // Called from the postfix on BuildBehavior.Decide the moment a builder starts walking to a reserved site.

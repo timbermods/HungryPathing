@@ -124,6 +124,30 @@ internal static class Program
         Check(expiring.Count == 1 && expiring.IsBackedOff(storageB, 1.0f), "pruning drops only what has expired");
         expiring.Add(storageC, 2.0f, 3.0f);
         Check(expiring.Count == 1 && expiring.IsBackedOff(storageC, 2.0f), "a new failure prunes what has expired");
+        Check(LaunchBackoff<object>.CapacityFor(8) == 16 && LaunchBackoff<object>.CapacityFor(1) == 16 &&
+              LaunchBackoff<object>.CapacityFor(20) == 40, "the list holds two whole decisions, and at least 16");
+        LaunchBackoff<object> wide = new LaunchBackoff<object>(LaunchBackoff<object>.CapacityFor(20));
+        object[] widePass = new object[20];
+        for (int i = 0; i < widePass.Length; i++)
+        {
+            widePass[i] = new object();
+            wide.Add(widePass[i], 0f, 1.0f);
+        }
+        Check(wide.Count == 20 && wide.IsBackedOff(widePass[0], 0.5f),
+            "a pass that failed at every one of 20 candidates forgets none of them");
+
+        // Penalty-state redirects after a pass in which every storage tried failed to start a trip.
+        RedirectThrottle quiet = new RedirectThrottle();
+        Check(!quiet.IsHeld(0f), "redirects start out not held back");
+        quiet.PassEnded(1.0f, 0, false, 0.5f);
+        Check(!quiet.IsHeld(1.0f), "a redirect pass that tried no storage holds nothing back");
+        RedirectThrottle launched = new RedirectThrottle();
+        launched.PassEnded(1.0f, 2, true, 0.5f);
+        Check(!launched.IsHeld(1.0f), "a redirect pass that started a trip holds nothing back");
+        RedirectThrottle held = new RedirectThrottle();
+        held.PassEnded(1.0f, 3, false, 0.5f);
+        Check(held.IsHeld(1.0f) && held.IsHeld(1.49f), "a redirect pass where every storage failed holds back the next");
+        Check(!held.IsHeld(1.5f), "held-back redirects measure again on the deadline");
 
         if (_failures == 0)
         {

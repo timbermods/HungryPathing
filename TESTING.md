@@ -8,7 +8,8 @@ dotnet run --project tests/HungryPathing.Tests.csproj
 
 or `.\build.ps1 -Test`. The checks compile the files in `source\Planning` on their own and assert the arithmetic
 behind each rule: hours left from points and decay, the just-in-time window and leaving time, the storages a beaver
-leaves alone after they failed to start a trip, the shift test and
+leaves alone after they failed to start a trip and when a failed penalty-state redirect holds back the next, the
+shift test and
 that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in both orders, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 

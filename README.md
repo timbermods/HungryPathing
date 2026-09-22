@@ -90,8 +90,9 @@ so the cost is visible.
 
 ## Saves
 
-The mod adds two components (one per adult beaver, one per district center) that keep only caches rebuilt from the
-simulation. Nothing is saved. A save made with the mod loads without it and the other way round.
+The mod adds two components (one per adult beaver, one per district center) that keep only caches and short
+per-beaver timers (which storages to leave alone for a while, when to look again), all started afresh when a game
+loads. Nothing is saved. A save made with the mod loads without it and the other way round.
 
 ## What it did in a real colony
 

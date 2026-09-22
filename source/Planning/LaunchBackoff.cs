@@ -20,6 +20,14 @@ namespace HungryPathing.Planning
 
         public int Count => _keys.Count;
 
+        // How many storages a beaver keeps: two whole decisions' worth of candidates, and at least 16. The list is
+        // sized once, from the settings every player must share, so it is the same size on every player.
+        public static int CapacityFor(int candidateLimit)
+        {
+            const int least = 16;
+            return (int)Math.Min(Math.Max(least, 2L * candidateLimit), int.MaxValue);
+        }
+
         // key failed at hour now: leave it alone until untilHours. A key already in the list moves to the newest end
         // and keeps the later of its two deadlines.
         public void Add(T key, float now, float untilHours)

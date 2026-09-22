@@ -149,12 +149,14 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   candidates, the next best measured one is tried at once, and every storage that failed is left alone for twice
   `RetryHours`. This matters because the walker's travel-time query never reports "unreachable": it substitutes the
   straight-line time, so an unreachable storage can look like the best candidate until the launch fails. Each beaver
-  keeps its failed storages in a short list in the order they failed, 16 at most with the oldest forgotten first,
-  and only ever asks it whether it holds a storage. When every storage measured for a penalty-state redirect fails,
-  the game's own critical behavior answers for that beaver for `RetryHours` before the planner measures again, so a
-  beaver the game keeps asking does not measure the next nearest storages at every ask. The daily line counts the
-  failed launches.
-- **No saved state.** Both components hold caches only. `BehaviorManager` saves the *running* behavior, and a trip
+  keeps its failed storages in a short list in the order they failed, twice `CandidateLimit` and at least 16, with
+  the oldest forgotten first, and only ever asks it whether it holds a storage. When a penalty-state redirect tried
+  storages and every one failed to start a trip, the game's own critical behavior answers for that beaver for
+  `RetryHours` before the planner measures again, so a beaver the game keeps asking does not measure the next nearest
+  storages at every ask; a redirect that found nothing to try holds nothing back (`Planning/RedirectThrottle`). The
+  daily line counts the failed launches.
+- **No saved state.** Both components hold caches and per-beaver timers only, all created empty when a game loads,
+  so a reload retries storages that failed before it. `BehaviorManager` saves the *running* behavior, and a trip
   the mod starts is recorded as the vanilla `InventoryNeedBehavior`, not as the planner, so a save made mid-trip
   loads without the mod.
 - **No oscillation, no blocked work.** The planner never returns a decision without a vanilla behavior behind it;
