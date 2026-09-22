@@ -2,9 +2,10 @@ namespace HungryPathing.Planning
 {
     // A switch-off that lasts exactly one game: the circuit breaker's (Safety) and the MultiColony bridge's. It is kept
     // apart from the settings, which outlive the game. It feeds decisions, which makes it simulation state. The code
-    // it guards reads only the simulation, so every player trips it at the same tick, and NewGame is called only when
-    // a game is loaded, which every player does together (a load, a join or a rehost). Clearing it at any other moment
-    // on one player alone would split the players' games.
+    // it guards reads only the simulation, so every player should trip it at the same tick (a trip only one player hit
+    // is said in the game, see SwitchedOff), and NewGame is called only when a game is loaded, which every player does
+    // together (a load, a join or a rehost). Clearing it at any other moment on one player alone would split the
+    // players' games.
     public sealed class Breaker
     {
         public bool Tripped { get; private set; }

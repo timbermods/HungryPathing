@@ -172,7 +172,7 @@
         </div>
         <div class="card">
           <h3>Fails on its own</h3>
-          <p>If a game update moves one of the five hooks, the mod installs none of them and says so in the log. If anything in the mod throws, it logs the stack trace once and switches itself off for the rest of that game.</p>
+          <p>If a game update moves one of the five hooks, the mod installs none of them and says so in the log. If anything in the mod throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p>
         </div>
       </div>
       <p style="margin-top:18px;color:var(--muted)">Running a large colony? A well-fed beaver sleeps until a rule could apply, a beaver near a trigger re-checks every half hour of game time, and a check costs at most eight path queries. The daily log line reports the totals so the cost stays visible.</p>
@@ -185,10 +185,10 @@
       <table>
         <tbody>
           <tr><th scope="row">Game version</th><td>Timberborn <strong>1.1.2.4</strong>. Built and checked against 1.1.2.4; the hooks were written from that version's code and disable themselves if a later version moves them.</td></tr>
-          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so peers running the same version with an <strong>identical settings file</strong> make identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages.</td></tr>
+          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so peers running the same version with an <strong>identical settings file</strong> make identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages. If the mod switches itself off after an error on one computer only, a dialog there says so and asks the host to save and host that save again (since 0.3.1).</td></tr>
           <tr><th scope="row">Other mods</th><td>Requires <strong>Harmony</strong> from the Steam Workshop. A mod that also edits the Hunger or Thirst blueprints will merge with this one by load order; a mod that replaces the game's need-picking behavior for beavers would overlap.</td></tr>
           <tr><th scope="row">Saves</th><td>Untouched. You can remove the mod at any time.</td></tr>
-          <tr><th scope="row">Language</th><td>No user interface text. Log lines are in English.</td></tr>
+          <tr><th scope="row">Language</th><td>No user interface text, except one dialog in English if the mod switches itself off after an error. Log lines are in English.</td></tr>
         </tbody>
       </table>
     </div>
