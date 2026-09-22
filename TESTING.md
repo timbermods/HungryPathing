@@ -11,6 +11,12 @@ behind each rule: hours left from points and decay, the just-in-time window and 
 that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in both orders, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 
+They also read the hooks' source under `source\` (the hooks need the game's assemblies to compile, the checks do
+not) and check two Harmony rules for lockstep co-op: every prefix that can return `false` carries
+`[HarmonyPriority(Priority.Last)]`, and nothing calls `UnpatchAll`, or `Unpatch` by patch type without naming an
+owner (which means every owner), so a failed install takes off only this mod's patches. The scan ignores comments
+and strings and is itself checked on a sample that breaks each rule.
+
 ## In the game
 
 `tools\run-save.ps1` starts the game straight into a save; the game itself reads `-settlementName` and `-saveName`

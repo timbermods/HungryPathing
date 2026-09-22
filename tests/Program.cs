@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic. They compile the planner source directly and need no game files:
+// Checks on the planner arithmetic, plus rules for the Harmony hooks read from their source (HarmonyRules.cs). They
+// compile the planner source directly and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -80,6 +81,52 @@ internal static class Program
         int lead300 = UnitsEatenOver(300, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(300, 0.8f, 0.3f, 0.0f);
         Check(lead30 >= 0 && lead30 <= 2 && lead300 == lead30,
             $"eating earlier does not eat more (lead after 30 days {lead30}, after 300 days {lead300})");
+
+        // The Harmony hooks need the game to compile, so these read their source. In lockstep co-op the order of
+        // prefixes on one method must not depend on each player's mod load order, and a failed install must take off
+        // only this mod's patches.
+        List<(string Name, string Code)> sources = HarmonyRules.ReadModSources();
+        List<string> replacing = HarmonyRules.ReplacingPrefixes(sources, out List<string> notLast);
+        Check(replacing.Contains("Patches.cs: CriticalDecidePrefix"),
+            "harmony: the source scan finds the critical redirect's prefix (found: " + string.Join(", ", replacing) + ")");
+        Check(notLast.Count == 0,
+            "harmony: every prefix that can return false has [HarmonyPriority(Priority.Last)] (missing on: " +
+            string.Join(", ", notLast) + ")");
+        List<string> unscoped = HarmonyRules.UnscopedUnpatches(sources);
+        Check(unscoped.Count == 0,
+            "harmony: a failed install takes off only this mod's patches (found: " + string.Join(", ", unscoped) + ")");
+        // The scan itself, on code that breaks each rule.
+        List<(string Name, string Code)> sample = new List<(string Name, string Code)>
+        {
+            ("Sample.cs", HarmonyRules.CodeOnly(
+                "// [HarmonyPriority(Priority.Last)]\n" +
+                "private static bool CommentedPrefix(ref bool __result) { return false; }\n" +
+                "[HarmonyPriority(Priority.Last)]\nprivate static bool LastPrefix(object __instance) { return true; }\n" +
+                "[HarmonyPrefix] static bool Guard() { return true; }\n" +
+                "private static bool Unnamed(object __instance,\n    ref int __result) { return false; }\n" +
+                "private static void VoidPrefix(object __instance) { }\n" +
+                "private static bool PassPostfix(bool __result) { return __result; }\n" +
+                "private static bool Helper(int x) { return x > 0; }\n" +
+                "string url = \"http://x // [HarmonyPriority(Priority.Last)]\"; static bool QuotedPrefix() => true;\n" +
+                "harmony.UnpatchAll(id); /* harmony.UnpatchAll(); */ harmony.Unpatch(m, HarmonyPatchType.All);\n" +
+                "harmony.Unpatch(m, HarmonyPatchType.Prefix, id); harmony.Unpatch(m, patch);\n" +
+                "Log($\"{s.Trim('\"')} // x\"); harmony.UnpatchAll();\n" +
+                "harmony.Unpatch(AccessTools.Method(typeof(T), \"M\", new[] { typeof(int) }), HarmonyPatchType.All);\n"))
+        };
+        List<string> sampleReplacing = HarmonyRules.ReplacingPrefixes(sample, out List<string> sampleNotLast);
+        Check(string.Join(", ", sampleReplacing) ==
+              "Sample.cs: CommentedPrefix, Sample.cs: LastPrefix, Sample.cs: Guard, Sample.cs: Unnamed, Sample.cs: QuotedPrefix" &&
+              string.Join(", ", sampleNotLast) ==
+              "Sample.cs: CommentedPrefix, Sample.cs: Guard, Sample.cs: Unnamed, Sample.cs: QuotedPrefix",
+            "harmony: the scan tells bool prefixes from other methods and ignores the attribute in comments and strings " +
+            "(prefixes: " + string.Join(", ", sampleReplacing) + "; not last: " + string.Join(", ", sampleNotLast) + ")");
+        List<string> sampleUnscoped = HarmonyRules.UnscopedUnpatches(sample);
+        Check(sampleUnscoped.Count == 4 && sampleUnscoped[0] == "Sample.cs: UnpatchAll" &&
+              sampleUnscoped[1] == "Sample.cs: UnpatchAll" &&
+              sampleUnscoped[2] == "Sample.cs: Unpatch(m, HarmonyPatchType.All) with no owner" &&
+              sampleUnscoped[3].EndsWith("}), HarmonyPatchType.All) with no owner", StringComparison.Ordinal),
+            "harmony: the scan finds UnpatchAll, also after strings inside an interpolation, and an Unpatch that takes " +
+            "off every owner's patches (found: " + string.Join(", ", sampleUnscoped) + ")");
 
         if (_failures == 0)
         {

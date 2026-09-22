@@ -127,7 +127,11 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
   the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the
   saved set of "needs being critically satisfied" that drives floating status icons for `Action`-type critical
   needs, and a redirected trip skips that refresh. Hunger and Thirst are `State`-type needs with no such icon, so
-  the only visible effect would be a stale icon from an earlier action-type trip during a redirected walk.
+  the only visible effect would be a stale icon from an earlier action-type trip during a redirected walk. This is
+  the one hook that can skip the game's own method (a prefix returning `false`), so it has Harmony's
+  `Priority.Last`: if another mod also prefixes `CriticalNeederRootBehavior.Decide`, that prefix runs first on every
+  machine (unless it asks to run last too), rather than in the order each player's mod list loaded them, and when it
+  has already answered this one is skipped.
 
 The builder check reads the site's position from the end of the walk the builder has just started, which is where
 the game is sending it. Two ways of asking the site itself are traps: the game's single-access accessor, which
