@@ -20,25 +20,31 @@ namespace HungryPathing
     {
         private const int NoDay = int.MinValue;
 
-        private static readonly List<string> Names = new List<string>();
-        private static readonly List<string> Effects = new List<string>();
+        private struct Entry
+        {
+            // What switched off and after which error.
+            public string Name;
+            // What beavers on this computer do now.
+            public string Effect;
+        }
+
+        private static readonly List<Entry> Entries = new List<Entry>();
+        // The last day the notice saw, kept while nothing is off too, so a switch-off on a day's last tick is still
+        // reported for that day when the next frame already reads the next day.
         private static int _reminderDay = NoDay;
 
         // How many things switched off in this game. Only goes up until the next load.
-        public static int Count => Names.Count;
+        public static int Count => Entries.Count;
 
-        // name says what switched off and after which error, effect what beavers on this computer do now.
         public static void Report(string name, string effect)
         {
-            Names.Add(name);
-            Effects.Add(effect);
+            Entries.Add(new Entry { Name = name, Effect = effect });
         }
 
         // Only GameLoad.Reset calls this, at every load, join and rehost: the load turns everything back on.
         public static void NewGame()
         {
-            Names.Clear();
-            Effects.Clear();
+            Entries.Clear();
             _reminderDay = NoDay;
         }
 
@@ -56,23 +62,29 @@ namespace HungryPathing
         }
 
         // The log line for the in-game day that has just ended, said on the first frame of each later day of this game
-        // while something is switched off; null otherwise. The day of the switch-off has the warning, so the first line
-        // comes at the next day change. It is numbered like the daily summary line, which a player whose mod is
+        // while something is switched off; null otherwise. The notice calls it on every frame, also while nothing is
+        // off, so it knows which day a switch-off happened on. The day of the switch-off has the warning, so its line
+        // comes at the next day change. It is numbered like the daily summary line, which a player whose whole mod is
         // switched off no longer writes, so two players' logs compare day by day.
         public static string TakeReminder(int day)
         {
-            if (Count == 0 || day == _reminderDay)
+            if (day == _reminderDay)
             {
                 return null;
             }
             int ended = _reminderDay;
             _reminderDay = day;
-            if (ended == NoDay)
+            if (Count == 0 || ended == NoDay)
             {
                 return null;
             }
+            List<string> names = new List<string>(Entries.Count);
+            foreach (Entry entry in Entries)
+            {
+                names.Add(entry.Name);
+            }
             return "Day " + ended + ": switched off on this computer until a game is loaded: " +
-                   string.Join("; ", Names) + ". In multiplayer the other players may still run the mod: the host " +
+                   string.Join("; ", names) + ". In multiplayer the other players' computers may not have: the host " +
                    "should save and host that save again, and every player join it, before playing on together.";
         }
 
@@ -82,13 +94,13 @@ namespace HungryPathing
             StringBuilder text = new StringBuilder();
             text.Append("Hungry Pathing\n\n");
             text.Append("An error on this computer switched this off for the rest of this game:\n");
-            for (int i = 0; i < Names.Count; i++)
+            foreach (Entry entry in Entries)
             {
-                text.Append("\n- ").Append(Names[i]).Append(": ").Append(Effects[i]).Append('.');
+                text.Append("\n- ").Append(entry.Name).Append(": ").Append(entry.Effect).Append('.');
             }
             text.Append("\n\nPlayer.log has the details; please report it.\n\n");
-            text.Append("In multiplayer the other players' computers may still run the mod, and the games can drift " +
-                        "apart. Before playing on together, the host should save and host that save again, and every " +
+            text.Append("In multiplayer the other players' computers may not have switched this off, and the games " +
+                        "can drift apart. Before playing on together, the host should save and host that save again, and every " +
                         "player join it: loading a game turns the mod back on for everyone.\n\n");
             text.Append("In single player nothing else is needed; loading a game turns the mod back on.");
             return text.ToString();

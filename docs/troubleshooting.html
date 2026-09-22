@@ -179,7 +179,7 @@
         <h2>A co-op game drifts apart after installing the mod</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>The players run different versions of the mod or different settings files. Both change what beavers decide. Or the mod <a href="#switched-off">switched off</a> after an error on one computer only; that computer's log has the warning and <code>Day N: switched off</code> lines where the others have the daily summary.</dd>
+          <dd>The players run different versions of the mod or different settings files. Both change what beavers decide. Or the mod <a href="#switched-off">switched off</a> after an error on one computer only; that computer's log has the warning and <code>Day N: switched off</code> lines the others do not have.</dd>
           <dt>Fix</dt>
           <dd>Compare the <code>Simulation settings:</code> line each player's log prints at startup, and the version in the <code>loading.</code> line. Make them identical, then start from a fresh sync.</dd>
         </dl>
@@ -193,7 +193,7 @@
         <li><code>[HungryPathing] &lt;version&gt; loading.</code>, the settings line, <code>Hooks installed (5/5).</code> and <code>Active.</code> when the mod started normally.</li>
         <li><code>Needs in this game: ...</code> once a colony is running, with the buffer per need.</li>
         <li><code>Day N: trips started by rule: ...</code> once per in-game day.</li>
-        <li><code>Switched off for the rest of this game ...</code> followed by a stack trace, if something went wrong, and <code>Day N: switched off on this computer ...</code> on each later day of that game instead of the daily line.</li>
+        <li><code>Switched off for the rest of this game ...</code> followed by a stack trace, if something went wrong, and <code>Day N: switched off on this computer ...</code> on each later day of that game (instead of the daily line when the whole mod is off).</li>
       </ul>
       <p>No <code>[HungryPathing]</code> lines at all means the game never loaded the mod, so go back to <a href="#not-listed">the first fix</a>.</p>
 

@@ -398,7 +398,7 @@ internal static class Program
             "switched off: the day of the switch-off has the warning and no reminder");
         Check(SwitchedOff.TakeReminder(322) ==
               "Day 321: switched off on this computer until a game is loaded: the MultiColony shift end (error asking " +
-              "MultiColony). In multiplayer the other players may still run the mod: the host should save and host " +
+              "MultiColony). In multiplayer the other players' computers may not have: the host should save and host " +
               "that save again, and every player join it, before playing on together.",
             "switched off: the next day change says what is off for the day that ended");
         Check(SwitchedOff.TakeReminder(322) == null, "switched off: one reminder per day");
@@ -413,7 +413,7 @@ internal static class Program
               "shift end.\n" +
               "- the whole mod (error in HungryPathingRootBehavior.Decide): beavers here behave as in the base game." +
               "\n\nPlayer.log has the details; please report it.\n\n" +
-              "In multiplayer the other players' computers may still run the mod, and the games can drift apart. " +
+              "In multiplayer the other players' computers may not have switched this off, and the games can drift apart. " +
               "Before playing on together, the host should save and host that save again, and every player join it: " +
               "loading a game turns the mod back on for everyone.\n\n" +
               "In single player nothing else is needed; loading a game turns the mod back on.",
@@ -428,9 +428,10 @@ internal static class Program
         Check(SwitchedOff.Count == 0 && !SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(325) == null,
             "switched off: the next load clears what the notice says along with the switches");
         Safety.Trip("a check in the next game", new InvalidOperationException("test"));
-        Check(SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(330) == null &&
-              SwitchedOff.TakeReminder(331).StartsWith("Day 330: "),
-            "switched off: a switch-off in the next game shows the dialog and counts its days afresh");
+        Check(SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(326).StartsWith("Day 325: "),
+            "switched off: a switch-off on a day's last tick, seen first on the next day, is counted to its own day");
+        Check(SwitchedOff.TakeReminder(326) == null && SwitchedOff.TakeReminder(327).StartsWith("Day 326: "),
+            "switched off: a switch-off in the next game counts its days afresh");
         GameLoad.Reset();
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten

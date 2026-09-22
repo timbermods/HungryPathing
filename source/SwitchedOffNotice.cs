@@ -8,8 +8,8 @@ namespace HungryPathing
     // Says in the game that something switched itself off after an error (SwitchedOff): a dialog once per switch-off,
     // and the log line on every later in-game day of that game. It looks from the frame loop, never from inside the
     // tick where the error happened, and only shows a dialog and writes to the log. It is the game's ordinary dialog,
-    // so it pauses the game wherever the game's own dialogs do. In co-op BeaverBuddies decides that, as for every
-    // other dialog: a guest never pauses for one.
+    // so it pauses the game wherever the game's own dialogs do. In co-op BeaverBuddies decides that, as it does for its
+    // own dialogs.
     public class SwitchedOffNotice : IUpdatableSingleton
     {
         private readonly DialogBoxShower _dialogBoxShower;
@@ -26,12 +26,9 @@ namespace HungryPathing
 
         public void UpdateSingleton()
         {
-            if (SwitchedOff.Count == 0)
-            {
-                return;
-            }
             try
             {
+                // Every frame, also while nothing is off, so a switch-off is counted to the day it happened on.
                 string reminder = SwitchedOff.TakeReminder(_dayNightCycle.DayNumber);
                 if (reminder != null)
                 {
