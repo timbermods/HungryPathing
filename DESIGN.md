@@ -78,7 +78,7 @@ eating early free.
 
 Two partial blueprints set `HoursWarningThreshold` to 3 for Hunger and Thirst. The planner reads the value from
 `NeedSpec` at runtime, so other data mods can change it and the settings file can override it. Three hours at 0.8
-a day is 0.1 hunger; the beaver starts its walk with that in hand and arrives with it.
+a day is 0.1 hunger; the beaver leaves early enough to arrive with that still in hand.
 
 ### The planner's place in the beaver
 
@@ -107,7 +107,8 @@ does, in the same order. For a need, the planner:
    `VarietyToleranceHours`. Pre-fuel, the builder job check and the builder's trip that follows pick only among
    the storages within `PreFuelNearFoodHours`, so a better food a little past that limit cannot hide a near one.
 
-The return leg is the walk back to where the beaver stands, which during a shift is the job.
+No return leg is measured. Ranking by the walk there amounts to assuming the beaver walks back to where it stands,
+which during a shift is the job; the game instead adds the walk from the storage to the beaver's home.
 
 ### The rules
 
@@ -130,9 +131,9 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
   the check has just made, rather than a better food past that limit and perhaps farther away than the site it let
   go; only if none of the near storages can start a trip does it take the best of the others. The site goes back to
   the pool.
-- **Critical redirect**: a prefix on `CriticalNeederRootBehavior.Decide`. In the work context, if Hunger or Thirst
-  is critical, the planner picks the storage its own way for the more important of the two and answers instead of
-  the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the
+- **Critical redirect**: a prefix on `CriticalNeederRootBehavior.Decide`. In the work context, if a tracked need (Hunger or
+  Thirst by default) is critical, the planner picks the storage its own way for the critical one with the highest
+  `ImportanceMultiplier` and answers instead of the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the
   saved set of "needs being critically satisfied" that drives floating status icons for `Action`-type critical
   needs, and a redirected trip skips that refresh. Hunger and Thirst are `State`-type needs with no such icon, so
   the only visible effect would be a stale icon from an earlier action-type trip during a redirected walk. This is
@@ -143,22 +144,26 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
 
 The builder check reads the site's position from the end of the walk the builder has just started, which is where
 the game is sending it. Two ways of asking the site itself are traps: the game's single-access accessor, which
-storages use, throws because a site has one access per open neighbour column, and a plain lookup of the site's
+storages use, throws because a site has one access per open neighbor column, and a plain lookup of the site's
 `Accessible` throws because the entity also carries the finished building's, disabled until construction ends.
 The fallback goes through `ConstructionSiteAccessible`, which names the site's own.
 
 ### Guardrails
 
-- **Determinism.** Inputs are need points, spec values, positions, the working-hours manager (or MultiColony's
-  per-colony hours), the day-night cycle and the game's path queries. Lists are iterated in insertion order and sorts
-  have total tie-breaks. No clock, no randomness, no frame timing. The only static state that changes during a game
-  is the log's counters and flags, which never feed a decision, and two switch-offs that do: the circuit breaker (see
+- **Determinism.** Inputs are the settings, need points, spec values, positions, the working-hours manager (or
+  MultiColony's per-colony hours), the day-night cycle, the game's path queries and the cheapest path cost per tile
+  of the loaded building templates (see Performance). Each beaver's timers and failed-storage list are fields of its
+  own component, created empty at every load. Lists are iterated in insertion order and sorts have total
+  tie-breaks. No clock, no randomness, no frame timing. Static state that changes during a game is of two kinds.
+  The daily counters and log-once flags (`Stats`, one warning flag in `HungryPathingRootBehavior`) and the record
+  the in-game notice reads (`SwitchedOff`) never feed a decision. Two switch-offs do: the circuit breaker (see
   failure containment below) and the MultiColony bridge's (see other mods below). Each should trip at the same tick
-  on every player, because the code it guards reads only the simulation, and each is cleared only in the
-  configurator, which every player runs when a game is loaded, joined or rehosted; nothing clears them mid-game. A
-  trip that only one player hits is the one way they can differ, and it is said loudly (see failure containment). Whether the hooks
-  installed and whether MultiColony's API was found are fixed for the process and are the same on every player with
-  the same game and mod versions.
+  on every player, because the code it guards reads only the simulation. Each is cleared only by `GameLoad.Reset`,
+  which the configurator runs on every player when a game is loaded, joined or rehosted; nothing clears them
+  mid-game. A trip that only one player hits is the one way they can differ, and it is said loudly (see failure
+  containment). The settings and whether the hooks installed are set at startup, and what the MultiColony probe
+  found is set the first time it is asked. All three then stay fixed for the process and are the same on every
+  player with the same game and mod versions and settings file.
 - **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
   and returns immediately. Appraisal runs before any path query and removes storages the beaver could not eat at.
   Path queries are capped per decision, and a pre-fuel-only check or a builder job check stops measuring at the

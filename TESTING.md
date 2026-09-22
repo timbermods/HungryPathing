@@ -12,8 +12,7 @@ leaves alone after they failed to start a trip and when a failed penalty-state r
 shift test and that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in
 both orders and within the near limit that pre-fuel, the builder check and the builder's follow-up trip pick under,
 which storage each rule goes to and why, the straight-line bound on a walk and the cheapest path cost per tile it is
-scaled by, the
-sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
+scaled by, the sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 They also compile `Safety.cs`, `MultiColonyBridge.cs`, `Stats.cs` and `GameLoad.cs` as shipped against the
 stand-ins in `tests\Stubs.cs`, and check that the circuit breaker and the MultiColony bridge stay off for the rest of
 one game only and come back through `GameLoad.Reset`, the reset the configurator runs at every load. `SwitchedOff.cs`
@@ -66,7 +65,8 @@ confirm the arguments before the game starts.
 
 Status for 0.1.0: first live run done on 2026-09-21 in a 330-adult, single-district Folktails colony, days 302 to
 304, played twice from the same autosave: once alone, once as a BeaverBuddies host with a guest whose mod list
-matched. No exceptions. The daily lines from both runs:
+matched. No exceptions. The daily lines from both runs, trimmed (0.1.0 also printed `trips started by rule:` after
+the day, and had no failed-launch count yet):
 
 ```
 Day 302: just-in-time 52, pre-fuel 93,  builder job 0 (of 0 job checks), critical redirected 12. 1341 evaluations, 9128 path queries.
@@ -74,8 +74,8 @@ Day 303: just-in-time 52, pre-fuel 144, builder job 0 (of 1 job checks), critica
 Day 304: just-in-time 50, pre-fuel 135, builder job 0 (of 0 job checks), critical redirected 12. 1153 evaluations, 7520 path queries.
 ```
 
-Identical to the counter in the second run, alongside identical BeaverBuddies consistency hashes for days 303 to
-305. Days 305 to 308 followed the same pattern: just-in-time 38 to 48, pre-fuel 117 to 137, penalty-state
+The second run printed the same counters, and the BeaverBuddies consistency hashes for days 303 to 305 were
+identical. Days 305 to 308 followed the same pattern: just-in-time 38 to 48, pre-fuel 117 to 137, penalty-state
 redirects 12 to 15 a day.
 
 ### Before and after, same point in the shift
@@ -103,7 +103,7 @@ Of the beavers mid-trip in the mod save, all 11 were walking to the nearest stoc
 remaining long walks are distance to any stocked storage at all, not choice: that colony keeps food in 22
 warehouses and water in 29 tanks, the median adult works 84 tiles from the nearest stocked food and 85 from water,
 and 280 of 355 adults are more than 60 tiles from food. Not yet seen: a construction-heavy day for the builder job
-check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning (since 0.3.1, also a dialog).
 
 ### The long run on 0.1.0
 
@@ -136,7 +136,7 @@ does not interrupt by design; they now walk to the closest storage.
 ### The builder job check, first contact
 
 On day 321 construction was queued for the first time in this colony, and the first builder job check tripped the
-circuit breaker:
+circuit breaker (0.2.0's wording; since 0.3.0 the warning says "for the rest of this game"):
 
 ```
 Switched off for this session after an error in HungryPathingRootBehavior.BuilderShouldTopOffFirst.
@@ -189,13 +189,14 @@ times 24, and the scripts print it.
 What to look for in Player.log:
 
 1. `Hooks installed (5/5).` All five hooks found their targets on this game version. If a game update moves one,
-   the line becomes a warning and the mod disables itself for the session.
+   the line becomes the warning `A hook could not be installed; the game runs unmodified.` and the mod disables
+   itself until the game is restarted.
 2. `Needs in this game: Hunger: buffer 3h ...`. Printed by the first beaver the planner evaluates. A buffer of 0h
    means the blueprint patches were not applied (wrong folder, or another mod overrides them).
 3. `Day N: trips started by rule: ...`. Once per in-game day. Just-in-time and pre-fuel counts in the dozens or
    hundreds for a colony of a few hundred are normal; builder job counts are small because builders that start a
    shift topped off never trigger it.
-4. No `HungryPathing` in any exception stack trace.
+4. No `HungryPathing` in any exception stack trace, and no `Switched off for the rest of this game` warning.
 
 ## Comparing with the base game
 

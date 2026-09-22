@@ -19,17 +19,21 @@ there to compare.
 | `WorkTimeClosestFood` | `true` | Rank storages by walking time while working. `false` ranks by need points first, as the game does. |
 | `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. For pre-fuel and the builder job check it applies among the storages within `PreFuelNearFoodHours` only. |
 | `RedirectCriticalTrips` | `true` | Apply the same ranking to the game's own penalty-state trips during working hours. |
-| `CandidateLimit` | `8` | At most this many storages, nearest by straight line, get a real path query per decision. |
-| `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again. A storage that failed to start a trip is left alone for twice this long, and after a penalty-state redirect in which every measured storage failed, the game's own behavior answers for this long. |
+| `CandidateLimit` | `8` | At most this many storages, nearest by straight line, get a real path query for each need in a decision. |
+| `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again, and a builder's job is checked at most once per this long. A storage that failed to start a trip is left alone for twice this long, and after a penalty-state redirect in which every measured storage failed, the game's own behavior answers for this long. |
 | `DailyReport` | `true` | One summary line per in-game day in Player.log. |
 | `Diagnostics` | `false` | One line per trip the mod starts, and per site a builder lets go. Verbose. |
 
+Keys are not case-sensitive, and on/off keys take `true` or `false`. A value that cannot be read keeps its default.
+Negative hours count as `0`, `CandidateLimit` is at least `1` and `RetryHours` at least `0.05`. The
+`Simulation settings:` line shows the values the mod actually uses.
+
 ## Tuning notes
 
-- The buffer is the main knob. Three hours means a beaver leaves work when the bar shows about 0.1 hunger or 0.09
-  thirst, arrives with that still in hand, and eats until another full unit would not fit. Raising it to 6 means
-  beavers eat with a third of the bar left, which is more walking during the shift for no penalty benefit unless
-  storages are very far apart.
+- The buffer is the main knob. Three hours means a beaver leaves work early enough to arrive with about 0.1 hunger
+  or 0.09 thirst still on the bar, and eats until another full unit would not fit. Raising it to 6 means beavers eat
+  with about a fifth of the bar left (0.2 hunger), which is more walking during the shift for no penalty benefit
+  unless storages are very far apart.
 - Pre-fuel at the start of a 16-hour shift triggers for a beaver below about 0.63 hunger or 0.55 thirst (16 hours
   plus the buffer, at the decay rates). Evening eating in the base game usually leaves beavers above that in the
   morning, so the rule mostly catches the ones the evening missed.
@@ -38,10 +42,10 @@ there to compare.
   not know which storages they serve, so in a colony that relies on them the quickest storage can be outside the
   nearest `CandidateLimit` and never measured. A higher limit finds it at the cost of more path queries per decision;
   the daily report counts them.
-- Pre-fuel and builder job checks only measure storages that could be within `PreFuelNearFoodHours`. Where the game
-  has tubeways (Iron Teeth) that reaches four times as far in a straight line, and with stairs or ziplines two and a
-  half times as far, since those can make a storage near that looks far. Player.log names the factor once per game
-  in a `Cheapest travel here:` line.
+- Pre-fuel and builder job checks only measure storages that could be within `PreFuelNearFoodHours`. Stairs,
+  ziplines and tubeways can make a storage that looks far quick to reach, so the straight-line cutoff is stretched:
+  two and a half times as far with stairs or ziplines, four times as far where tubeways can be built (Iron Teeth).
+  Player.log names the factor once per game in a `Cheapest travel here:` line.
 - To try one rule at a time, keep the others `false`; the daily report says how often each fired.
 
 ## Overriding the buffer with data only

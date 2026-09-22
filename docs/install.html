@@ -99,11 +99,12 @@
       <h2 id="verify">Check that it works</h2>
       <p>Load a colony, let it run for a moment, then open the game log (see <a href="troubleshooting.html#log">where to find it</a>) and search for <code>[HungryPathing]</code>. You should see, in order:</p>
 <pre><code>[HungryPathing] &lt;version&gt; loading.
+[HungryPathing] Settings read from ...
 [HungryPathing] Simulation settings: Enabled=True Needs=Hunger,Thirst WarningHours=0 ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. One summary line per in-game day follows while a game runs.
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: buffer 3h, ...</code></pre>
-      <p><code>&lt;version&gt;</code> is the version you installed. The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
+      <p><code>&lt;version&gt;</code> is the version you installed, and the <code>...</code> parts vary. The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
       <div class="callout note">
         <strong class="t">Beta</strong>
         <p>0.1.0 and 0.2.0 have run in one 355-beaver colony for 36 in-game days, nearly all as a BeaverBuddies host; the one error found there was fixed in 0.2.1. That is still one colony, and 0.3.1 has not been played in a live colony yet. Try it on a copy of your save first, and if the mod says it <a href="troubleshooting.html#switched-off">switched off</a>, please <a href="troubleshooting.html#report">report it</a> with the lines that follow the warning.</p>
@@ -126,7 +127,7 @@
       <p>The mod changes what beavers decide, so it is part of the simulation.</p>
       <div class="callout note">
         <strong class="t">Same version, same settings file, every player</strong>
-        <p>Every player must run the identical version of the mod with an identical <code>HungryPathing.cfg</code>. At startup the log prints one <code>Simulation settings:</code> line; if two players' lines differ, their games will drift apart. The <code>DailyReport</code> and <code>Diagnostics</code> keys are the only ones that may differ.</p>
+        <p>Every player installs the same version of the mod, runs the same game version and uses an identical <code>HungryPathing.cfg</code>. At startup the log prints one <code>Simulation settings:</code> line; if two players' lines differ, their games will drift apart. The <code>DailyReport</code> and <code>Diagnostics</code> keys are the only ones that may differ.</p>
       </div>
       <p>For a first co-op session with this beta, load a single-player copy of the save first and read the log.</p>
       <p>If a Hungry Pathing dialog says the mod switched off after an error, that computer now plays without the mod while the others may not. Tell the host: the host saves and hosts that save again, and every player joins it. The load turns the mod back on for everyone.</p>
@@ -149,8 +150,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial Timberborn mod.</p>
-      <p>Timberborn is made by Mechanistry. This is a fan project and is not affiliated with or endorsed by them.</p>
+      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
+      <p>Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>
@@ -159,6 +160,7 @@
       <li><a href="https://github.com/timbermods/HungryPathing">Source</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/releases">Releases</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/issues">Report a problem</a></li>
+      <li><a href="https://timbermods.github.io/">More mods from Timbermods</a></li>
     </ul>
   </div>
 </footer>

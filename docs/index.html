@@ -70,7 +70,7 @@
       <div class="cards">
         <article class="card">
           <h3><span class="ico" aria-hidden="true">1</span>A three-hour buffer</h3>
-          <p>Hunger and Thirst get the same "hours of warning" the game already gives bots, through two tiny blueprint patches. Working beavers keep that buffer in hand instead of running the bar to zero.</p>
+          <p>Hunger and Thirst get the "hours of warning" field the game already uses for bots, set to three hours through two tiny blueprint patches. Working beavers keep that buffer in hand instead of running the bar to zero.</p>
         </article>
         <article class="card">
           <h3><span class="ico" aria-hidden="true">2</span>Leaves just in time</h3>
@@ -78,11 +78,11 @@
         </article>
         <article class="card">
           <h3><span class="ico" aria-hidden="true">3</span>Tops off when food is near</h3>
-          <p>If a storage is within half an hour's walk and the beaver would not last the rest of the shift, it eats now. At the start of a shift that is breakfast; mid-shift it catches a hauler passing a warehouse.</p>
+          <p>If a storage is within half an hour's walk and the beaver would not last the rest of the shift plus the buffer, it eats now. At the start of a shift that is breakfast; mid-shift it catches a hauler passing a warehouse.</p>
         </article>
         <article class="card">
           <h3><span class="ico" aria-hidden="true">4</span>Builders check the trip</h3>
-          <p>A builder who has just reserved a site it would not last at lets the site go, through the game's own "could not get there" path, and tops off first. Another builder picks the site up.</p>
+          <p>A builder who has just reserved a site it would not last at lets the site go, through the game's own "could not get there" path, and tops off first. The site goes back to the pool for the next builder, or the same one after eating.</p>
         </article>
         <article class="card">
           <h3><span class="ico" aria-hidden="true">5</span>Closest storage while working</h3>
@@ -168,14 +168,14 @@
         </div>
         <div class="card">
           <h3>Nothing is saved</h3>
-          <p>The mod keeps only caches rebuilt from the simulation. A save made with the mod loads without it and the other way round, so it can be added to or removed from any colony.</p>
+          <p>The mod keeps only caches rebuilt from the simulation. A save made with the mod loads without it and the other way around, so it can be added to or removed from any colony.</p>
         </div>
         <div class="card">
           <h3>Fails on its own</h3>
           <p>If a game update moves one of the five hooks, the mod installs none of them and says so in the log. If anything in the mod throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p>
         </div>
       </div>
-      <p style="margin-top:18px;color:var(--muted)">Running a large colony? A well-fed beaver sleeps until a rule could apply, a beaver near a trigger re-checks every half hour of game time, and a check costs at most eight path queries. The daily log line reports the totals so the cost stays visible.</p>
+      <p style="margin-top:18px;color:var(--muted)">Running a large colony? A well-fed beaver sleeps until a rule could apply, a beaver near a trigger re-checks every half hour of game time, and a check costs at most eight path queries for each need (the <code>CandidateLimit</code> setting). The daily log line reports the totals so the cost stays visible.</p>
     </div>
   </section>
 
@@ -185,7 +185,7 @@
       <table>
         <tbody>
           <tr><th scope="row">Game version</th><td>Timberborn <strong>1.1.2.4</strong>. Built and checked against 1.1.2.4; the hooks were written from that version's code and disable themselves if a later version moves them.</td></tr>
-          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so peers running the same version with an <strong>identical settings file</strong> make identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages. If the mod switches itself off after an error on one computer only, a dialog there says so and asks the host to save and host that save again (since 0.3.1).</td></tr>
+          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so when every player installs the same version of the mod, runs the same game version and uses an <strong>identical settings file</strong>, every player makes identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages. If the mod switches itself off after an error on one computer only, a dialog there says so and asks the host to save and host that save again (since 0.3.1).</td></tr>
           <tr><th scope="row">Other mods</th><td>Requires <strong>Harmony</strong> from the Steam Workshop. A mod that also edits the Hunger or Thirst blueprints will merge with this one by load order; a mod that replaces the game's need-picking behavior for beavers would overlap.</td></tr>
           <tr><th scope="row">Saves</th><td>Untouched. You can remove the mod at any time.</td></tr>
           <tr><th scope="row">Language</th><td>No user interface text, except one dialog in English if the mod switches itself off after an error. Log lines are in English.</td></tr>
@@ -209,8 +209,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial Timberborn mod.</p>
-      <p>Timberborn is made by Mechanistry. This is a fan project and is not affiliated with or endorsed by them.</p>
+      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
+      <p>Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>
@@ -219,6 +219,7 @@
       <li><a href="https://github.com/timbermods/HungryPathing">Source</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/releases">Releases</a></li>
       <li><a href="https://github.com/timbermods/HungryPathing/issues">Report a problem</a></li>
+      <li><a href="https://timbermods.github.io/">More mods from Timbermods</a></li>
     </ul>
   </div>
 </footer>
