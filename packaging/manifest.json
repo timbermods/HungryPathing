@@ -1,6 +1,6 @@
 {
   "Name": "Hungry Pathing",
-  "Version": "0.3.0",
+  "Version": "0.3.1",
   "Id": "kyler.hungrypathing",
   "MinimumGameVersion": "1.1.2.4",
   "Description": "Beta. Working beavers plan food and water around their shift instead of waiting for the hunger penalty: they top off before a shift they cannot finish, leave far jobs early enough to reach a storage before the penalty, and while working they eat at the closest stocked storage instead of walking across the map for a fancier meal. Everything is decided from simulation state only, nothing is written to saves, and in multiplayer every player must run the same version with the same settings file.",
