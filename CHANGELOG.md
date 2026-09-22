@@ -1,9 +1,10 @@
 # Changelog
 
-## 0.3.1 (beta, preview), 2026-09-22
+## 0.3.1 (beta), 2026-09-22
 
-Does not change decisions, though co-op players should still update together. Not yet observed in a live game; the
-notice's text and timing have offline checks, the dialog itself needs the game.
+The release to install, replacing 0.2.1 as GitHub's Latest. On top of 0.3.0 it does not change decisions, but coming
+from 0.2.1 it brings 0.3.0's changes, which do: all co-op players must update together. Neither 0.3 release has been
+observed in a live game yet; the notice's text and timing have offline checks, the dialog itself needs the game.
 
 - A switch-off after an error is now said in the game, not only in Player.log. The mod is built so that an error
   throws on every player at the same tick, since the code reads only the simulation, but it cannot promise that. An
