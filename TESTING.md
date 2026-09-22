@@ -66,6 +66,35 @@ warehouses and water in 29 tanks, the median adult works 84 tiles from the neare
 and 280 of 355 adults are more than 60 tiles from food. Not yet seen: a construction-heavy day for the builder job
 check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
 
+### The long run on 0.1.0
+
+The session that produced the saves above went on: 33 in-game days, 302 to 334, all as a BeaverBuddies host with
+a guest, without an error. Averages per day over those 33 days: 49 just-in-time trips, 133 pre-fuel trips, 15
+penalty-state redirects, 1,250 evaluations and 8,300 path queries (6.7 per evaluation). Builder job checks: 0,
+because the colony did no building in that stretch.
+
+### 0.2.0 in the same colony
+
+0.2.0 was installed and a save from day 315 loaded, again as a co-op host with a matching mod list. All five hooks
+installed, buffer 3h, no exceptions or warnings. The same days had already been played on 0.1.0, which gives a
+like-for-like view of what the review fixes changed:
+
+| Day | 0.1.0 just-in-time / pre-fuel / redirects | 0.1.0 path queries | 0.2.0 just-in-time / pre-fuel / redirects | 0.2.0 path queries |
+|---|---|---|---|---|
+| 316 | 77 / 129 / 10 | 10,072 | 77 / 135 / 9 | 7,016 |
+| 317 | 104 / 162 / 10 | 13,488 | 89 / 138 / 20 | 7,839 |
+| 318 | 77 / 139 / 11 | 12,544 | 82 / 150 / 9 | 7,816 |
+
+Path queries per evaluation fell from 6.7 to 3.0: a pre-fuel-only check now stops measuring at the first storage
+that is already too far by straight line. Evaluations roughly doubled because a beaver never sleeps more than
+three hours between checks, but those extra evaluations measure nothing and cost a few comparisons each, so the
+net effect is 30 to 40 percent fewer path queries per day. Trip counts differ a little from the 0.1.0 replay, as
+expected from the changed tolerance and backoff logic; the two versions are not meant to make identical decisions.
+
+Still unexercised after 36 days: the builder job check, because this colony does not build. The 9 to 20
+penalty-state redirects a day are beavers that reach zero inside a long work task, which the planner does not
+interrupt by design; they now walk to the closest storage.
+
 ## Reproducing the analysis
 
 A `.timber` save is a zip; extract `world.json` from it. The scripts in `tools\analysis` read that file with

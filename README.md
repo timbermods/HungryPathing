@@ -86,10 +86,10 @@ simulation. Nothing is saved. A save made with the mod loads without it and the 
 
 ## What it did in a real colony
 
-Eight in-game days in a 355-adult, single-district Folktails colony, part of them as a BeaverBuddies host with a
-guest connected. No exceptions, all five hooks installed, the buffer read 3h. Three of those days were played twice
-from the same save and produced identical daily counters and identical co-op consistency hashes both times, which
-is the determinism the multiplayer section promises.
+36 in-game days in a 355-adult, single-district Folktails colony, nearly all of them as a BeaverBuddies host with
+a guest connected: 33 on 0.1.0 and the first days of 0.2.0. No exceptions, all five hooks installed, the buffer
+read 3h. Three of the early days were played twice from the same save and produced identical daily counters and
+identical co-op consistency hashes both times, which is the determinism the multiplayer section promises.
 
 Measured an hour before the end of the shift, from the saves themselves:
 
@@ -102,11 +102,12 @@ Measured an hour before the end of the shift, from the saves themselves:
 | Trips started in the last 4 hours of the shift | 49 | 21 |
 | Beavers mid-trip walking past a closer stocked storage | 2 of 18 | 0 of 11 |
 
-The rules fired about 40 to 50 just-in-time trips, 120 to 140 pre-fuel trips and 12 to 15 penalty-state redirects
-a day, at roughly 8,000 path queries a day. The walks that remain are distance to any stocked storage at all: in
-that colony the median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers
-and the method. Not yet seen: a construction-heavy day for the builder job check. If anything in the mod throws,
-it logs the stack trace once and switches itself off for the session.
+Over the 33-day run the rules fired on average 49 just-in-time trips, 133 pre-fuel trips and 15 penalty-state
+redirects a day. Path queries were about 8,300 a day on 0.1.0 and 7,500 on 0.2.0, which measures fewer walks that
+could not change the answer. The walks that remain are distance to any stocked storage at all: in that colony the
+median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers and the method.
+Not yet seen: a construction-heavy day for the builder job check, because that colony does not build. If anything
+in the mod throws, it logs the stack trace once and switches itself off for the session.
 
 ## Checking that it works
 
