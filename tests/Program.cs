@@ -81,6 +81,50 @@ internal static class Program
         Check(lead30 >= 0 && lead30 <= 2 && lead300 == lead30,
             $"eating earlier does not eat more (lead after 30 days {lead30}, after 300 days {lead300})");
 
+        // Storages that failed to launch a trip, remembered per beaver. Keys are compared by reference, like the
+        // game's components.
+        object storageA = new object(), storageB = new object(), storageC = new object();
+        LaunchBackoff<object> backoff = new LaunchBackoff<object>(16);
+        backoff.Add(storageA, 0f, 1.0f);
+        backoff.Add(storageB, 0f, 1.0f);
+        Check(backoff.IsBackedOff(storageA, 0.5f) && backoff.IsBackedOff(storageB, 0.5f),
+            "two storages that failed in one pass are both left alone");
+        Check(!backoff.IsBackedOff(storageC, 0.5f), "a storage that never failed is not left alone");
+        Check(!backoff.IsBackedOff(storageA, 1.0f) && !backoff.IsBackedOff(storageB, 1.0f),
+            "both are considered again on the deadline");
+        LaunchBackoff<object> repeat = new LaunchBackoff<object>(16);
+        repeat.Add(storageA, 0f, 1.0f);
+        repeat.Add(storageA, 0.5f, 1.5f);
+        Check(repeat.Count == 1 && repeat.IsBackedOff(storageA, 1.2f), "a repeat failure keeps one entry, later deadline");
+        repeat.Add(storageA, 0.6f, 1.1f);
+        Check(repeat.Count == 1 && repeat.IsBackedOff(storageA, 1.2f), "a repeat failure never shortens the deadline");
+        LaunchBackoff<object> full = new LaunchBackoff<object>(2);
+        full.Add(storageA, 0f, 1.0f);
+        full.Add(storageB, 0.1f, 1.1f);
+        full.Add(storageC, 0.2f, 1.2f);
+        Check(full.Count == 2 && !full.IsBackedOff(storageA, 0.5f) && full.IsBackedOff(storageB, 0.5f) &&
+              full.IsBackedOff(storageC, 0.5f), "a full list forgets the oldest failure first");
+        LaunchBackoff<object> roomy = new LaunchBackoff<object>(2);
+        roomy.Add(storageA, 0f, 2.0f);
+        roomy.Add(storageB, 0.1f, 1.0f);
+        roomy.Add(storageC, 1.05f, 2.05f);
+        Check(roomy.Count == 2 && roomy.IsBackedOff(storageA, 1.05f) && roomy.IsBackedOff(storageC, 1.05f),
+            "an expired failure makes room before a live one is forgotten");
+        LaunchBackoff<object> refreshed = new LaunchBackoff<object>(2);
+        refreshed.Add(storageA, 0f, 1.0f);
+        refreshed.Add(storageB, 0.1f, 1.1f);
+        refreshed.Add(storageA, 0.2f, 1.2f);
+        refreshed.Add(storageC, 0.3f, 1.3f);
+        Check(refreshed.IsBackedOff(storageA, 0.5f) && !refreshed.IsBackedOff(storageB, 0.5f) &&
+              refreshed.IsBackedOff(storageC, 0.5f), "a repeat failure counts as the newest");
+        LaunchBackoff<object> expiring = new LaunchBackoff<object>(16);
+        expiring.Add(storageA, 0f, 1.0f);
+        expiring.Add(storageB, 0.5f, 1.5f);
+        expiring.Prune(1.0f);
+        Check(expiring.Count == 1 && expiring.IsBackedOff(storageB, 1.0f), "pruning drops only what has expired");
+        expiring.Add(storageC, 2.0f, 3.0f);
+        Check(expiring.Count == 1 && expiring.IsBackedOff(storageC, 2.0f), "a new failure prunes what has expired");
+
         if (_failures == 0)
         {
             Console.WriteLine("All planner checks passed.");

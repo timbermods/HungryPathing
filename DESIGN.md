@@ -98,7 +98,8 @@ Needs already in their critical state are skipped: the game's critical behavior 
 does, in the same order. For a need, the planner:
 
 1. takes every group that includes the need, scores it with the game's `Appraiser` (zero drops it, which is the
-   "full unit must fit" rule), and collects each storage's `ActionPosition` once at its best group score;
+   "full unit must fit" rule), and collects each storage's `ActionPosition` once at its best group score (a
+   dictionary finds a storage already collected from another group; it is only looked up, never iterated);
 2. sorts by straight-line distance, breaking ties by insertion order;
 3. asks `Walker.CalculateTravelTimeInHours` for the nearest `CandidateLimit` storages;
 4. picks with `FuelPlanner.PickCandidate`: least walking, except a higher score wins within
@@ -145,9 +146,14 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   Path queries are capped per decision, and a pre-fuel-only check stops measuring at the first storage whose
   straight-line time already exceeds `PreFuelNearFoodHours`, since the straight line is a lower bound on the walk.
   A storage that turns out empty or unreachable when the trip is launched is dropped from that decision's
-  candidates, the next best measured one is tried at once, and the failed one is left alone for twice `RetryHours`.
-  This matters because the walker's travel-time query never reports "unreachable": it substitutes the straight-line
-  time, so an unreachable storage can look like the best candidate until the launch fails.
+  candidates, the next best measured one is tried at once, and every storage that failed is left alone for twice
+  `RetryHours`. This matters because the walker's travel-time query never reports "unreachable": it substitutes the
+  straight-line time, so an unreachable storage can look like the best candidate until the launch fails. Each beaver
+  keeps its failed storages in a short list in the order they failed, 16 at most with the oldest forgotten first,
+  and only ever asks it whether it holds a storage. When every storage measured for a penalty-state redirect fails,
+  the game's own critical behavior answers for that beaver for `RetryHours` before the planner measures again, so a
+  beaver the game keeps asking does not measure the next nearest storages at every ask. The daily line counts the
+  failed launches.
 - **No saved state.** Both components hold caches only. `BehaviorManager` saves the *running* behavior, and a trip
   the mod starts is recorded as the vanilla `InventoryNeedBehavior`, not as the planner, so a save made mid-trip
   loads without the mod.

@@ -46,6 +46,10 @@ namespace HungryPathing
         // noticed the same shift. Evaluations that measure nothing cost a few comparisons.
         private const float MaxSleepHours = 3f;
 
+        // Storages one beaver remembers as having failed to start a trip. A whole failed decision at the default
+        // CandidateLimit fits twice; past that the oldest failure is forgotten, which costs one repeat attempt.
+        private const int BackoffCapacity = 16;
+
         // Straight-line order, then insertion order: List.Sort is unstable, so the tie-break keeps it deterministic.
         private static readonly Comparison<Scored> ByHeuristic = (a, b) =>
         {
@@ -69,6 +73,8 @@ namespace HungryPathing
         private bool _ready;
 
         private readonly List<Scored> _scored = new List<Scored>();
+        // Where each storage sits in _scored while it is being filled. Only looked up, never iterated.
+        private readonly Dictionary<NeedBehavior, int> _scoredIndex = new Dictionary<NeedBehavior, int>();
         private readonly List<Candidate> _candidates = new List<Candidate>();
         private readonly List<NeedBehavior> _candidateBehaviors = new List<NeedBehavior>();
         private readonly List<string> _needOrder = new List<string>();
@@ -80,8 +86,8 @@ namespace HungryPathing
         private string _forcedNeedId;
         private float _forcedUntilHours;
         private float _nextBuilderCheckHours = float.NegativeInfinity;
-        private NeedBehavior _backoffBehavior;
-        private float _backoffUntilHours;
+        private float _nextCriticalCheckHours = float.NegativeInfinity;
+        private readonly LaunchBackoff<NeedBehavior> _backoff = new LaunchBackoff<NeedBehavior>(BackoffCapacity);
 
         // Set by the patch that puts this behavior into the root behavior list.
         internal bool Registered;
@@ -275,6 +281,10 @@ namespace HungryPathing
                 return false;
             }
             float now = Now();
+            if (now < _nextCriticalCheckHours)
+            {
+                return false;
+            }
             if (!TryFindBest(index, chosen, settings, null, now, float.MaxValue, out Pick pick))
             {
                 return false;
@@ -288,6 +298,10 @@ namespace HungryPathing
                 RemoveCandidate(pick.Index);
                 if (!PickFromCandidates(settings, out pick))
                 {
+                    // Every storage measured for this beaver failed to start a trip. Each one is backed off, and the
+                    // game's own critical behavior answers for RetryHours, so a beaver the game keeps asking does not
+                    // measure the next nearest storages again at every ask.
+                    _nextCriticalCheckHours = now + settings.RetryHours;
                     return false;
                 }
             }
@@ -408,9 +422,8 @@ namespace HungryPathing
             if (inner.ShouldReleaseNow || (inner.Executor == null && !inner.ShouldReturnToBehavior))
             {
                 // Nothing to take there after all (stock reserved meanwhile, or no way in). Leave that storage alone
-                // for a while; the caller tries the next one.
-                _backoffBehavior = pick.Behavior;
-                _backoffUntilHours = now + 2f * Plugin.Settings.RetryHours;
+                // for a while, alongside any others that failed recently; the caller tries the next one.
+                _backoff.Add(pick.Behavior, now, now + 2f * Plugin.Settings.RetryHours);
                 Stats.FailedLaunches++;
                 decision = default;
                 return false;
@@ -436,6 +449,7 @@ namespace HungryPathing
         {
             pick = default;
             _scored.Clear();
+            _scoredIndex.Clear();
             _candidates.Clear();
             _candidateBehaviors.Clear();
             _siteToFoodHours = float.MaxValue;
@@ -446,6 +460,7 @@ namespace HungryPathing
                 return false;
             }
             Vector3 here = Transform.position;
+            _backoff.Prune(now);
             IReadOnlyList<HungryPathingDistrictIndex.Group> groups = index.GroupsFor(needId);
             int order = 0;
             for (int g = 0; g < groups.Count; g++)
@@ -463,7 +478,7 @@ namespace HungryPathing
                 for (int b = 0; b < group.Behaviors.Count; b++)
                 {
                     NeedBehavior behavior = group.Behaviors[b];
-                    if (behavior == _backoffBehavior && FuelPlanner.StillBackedOff(now, _backoffUntilHours))
+                    if (_backoff.IsBackedOff(behavior, now))
                     {
                         continue;
                     }
@@ -472,8 +487,7 @@ namespace HungryPathing
                     {
                         continue;
                     }
-                    int existing = IndexOfScored(behavior);
-                    if (existing >= 0)
+                    if (_scoredIndex.TryGetValue(behavior, out int existing))
                     {
                         // One storage with several foods: it counts once, at its best value.
                         if (value > _scored[existing].Value)
@@ -484,6 +498,7 @@ namespace HungryPathing
                         }
                         continue;
                     }
+                    _scoredIndex.Add(behavior, _scored.Count);
                     _scored.Add(new Scored
                     {
                         Behavior = behavior,
@@ -546,18 +561,6 @@ namespace HungryPathing
         {
             _candidates.RemoveAt(index);
             _candidateBehaviors.RemoveAt(index);
-        }
-
-        private int IndexOfScored(NeedBehavior behavior)
-        {
-            for (int i = 0; i < _scored.Count; i++)
-            {
-                if (_scored[i].Behavior == behavior)
-                {
-                    return i;
-                }
-            }
-            return -1;
         }
 
         private float HeuristicHours(Vector3 from, Vector3 to, float speed)
