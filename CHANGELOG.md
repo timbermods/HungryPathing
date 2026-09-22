@@ -13,3 +13,6 @@ First release. Game 1.1.2.4.
 - Closest storage while working, for the mod's own trips and for the game's penalty-state trips during working
   hours; a higher-scoring food wins only within a quarter hour of extra walking.
 - Settings file, one daily summary line, optional per-trip diagnostics, planner checks that run without the game.
+- Circuit breaker: the first exception in the mod's own code is logged with its stack trace and the mod switches
+  itself off for the session.
+- Not yet observed in a live colony; see docs/testing.md.

@@ -96,11 +96,24 @@ namespace HungryPathing
 
         public override Decision Decide(BehaviorAgent agent)
         {
-            Config settings = Plugin.Settings;
-            if (!settings.Enabled)
+            if (!Plugin.Settings.Enabled)
             {
                 return Decision.ReleaseNow();
             }
+            try
+            {
+                return DecideUnguarded(agent);
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip(nameof(HungryPathingRootBehavior) + ".Decide", exception);
+                return Decision.ReleaseNow();
+            }
+        }
+
+        private Decision DecideUnguarded(BehaviorAgent agent)
+        {
+            Config settings = Plugin.Settings;
             Stats.ReportIfNewDay(_dayNightCycle.DayNumber);
             if (!InWorkContext() || !_citizen.HasAssignedDistrict)
             {
@@ -195,7 +208,26 @@ namespace HungryPathing
         {
             decision = default;
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.RedirectCriticalTrips || !InWorkContext() || !_citizen.HasAssignedDistrict)
+            if (!settings.Enabled || !settings.RedirectCriticalTrips)
+            {
+                return false;
+            }
+            try
+            {
+                return TryRedirectCriticalUnguarded(agent, settings, out decision);
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip(nameof(HungryPathingRootBehavior) + ".TryRedirectCritical", exception);
+                decision = default;
+                return false;
+            }
+        }
+
+        private bool TryRedirectCriticalUnguarded(BehaviorAgent agent, Config settings, out Decision decision)
+        {
+            decision = default;
+            if (!InWorkContext() || !_citizen.HasAssignedDistrict)
             {
                 return false;
             }
@@ -236,7 +268,24 @@ namespace HungryPathing
         internal bool BuilderShouldTopOffFirst(ConstructionSite site)
         {
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.BuilderJobCheck || !InWorkContext() || !_citizen.HasAssignedDistrict)
+            if (!settings.Enabled || !settings.BuilderJobCheck)
+            {
+                return false;
+            }
+            try
+            {
+                return BuilderShouldTopOffFirstUnguarded(site, settings);
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip(nameof(HungryPathingRootBehavior) + ".BuilderShouldTopOffFirst", exception);
+                return false;
+            }
+        }
+
+        private bool BuilderShouldTopOffFirstUnguarded(ConstructionSite site, Config settings)
+        {
+            if (!InWorkContext() || !_citizen.HasAssignedDistrict)
             {
                 return false;
             }

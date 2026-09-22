@@ -143,6 +143,9 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
   now satisfied does not trigger again until the arithmetic says so.
 - **Food economy.** The game's own "full unit must fit" gate stays in force, so consumption per day is unchanged.
   The planner checks include a 300-day simulation of this.
+- **Failure containment.** Every entry point the game can reach (the root behavior, the two answers the hooks ask
+  for, and the hook bodies themselves) catches exceptions. The first one is logged with its stack trace and the
+  mod disables itself for the session; the game's own code never sees an exception from this mod.
 
 ## What was considered and left out
 

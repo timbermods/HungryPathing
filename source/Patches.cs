@@ -69,69 +69,105 @@ namespace HungryPathing
         // consulted at every point where the beaver would otherwise pick up work.
         private static void AddRootBehaviorPrefix(BehaviorManager __instance, RootBehavior rootBehavior)
         {
-            if (!(rootBehavior is WorkerRootBehavior))
+            try
             {
-                return;
+                if (!(rootBehavior is WorkerRootBehavior))
+                {
+                    return;
+                }
+                if (!rootBehavior.TryGetComponent(out HungryPathingRootBehavior hungry) || hungry.Registered)
+                {
+                    return;
+                }
+                hungry.Registered = true;
+                __instance.AddRootBehavior(hungry);
             }
-            if (!rootBehavior.TryGetComponent(out HungryPathingRootBehavior hungry) || hungry.Registered)
+            catch (Exception exception)
             {
-                return;
+                Safety.Trip("AddRootBehavior hook", exception);
             }
-            hungry.Registered = true;
-            __instance.AddRootBehavior(hungry);
         }
 
         private static void AddNeedBehaviorPostfix(DistrictNeedBehaviorService __instance,
             IReadOnlyList<InstantEffectSpec> effects, NeedBehavior needBehavior)
         {
-            if (__instance.TryGetComponent(out HungryPathingDistrictIndex index))
+            try
             {
-                index.Add(effects, needBehavior);
+                if (__instance.TryGetComponent(out HungryPathingDistrictIndex index))
+                {
+                    index.Add(effects, needBehavior);
+                }
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip("AddNeedBehavior hook", exception);
             }
         }
 
         private static void RemoveNeedBehaviorPostfix(DistrictNeedBehaviorService __instance,
             IReadOnlyList<InstantEffectSpec> effects, NeedBehavior needBehavior)
         {
-            if (__instance.TryGetComponent(out HungryPathingDistrictIndex index))
+            try
             {
-                index.Remove(effects, needBehavior);
+                if (__instance.TryGetComponent(out HungryPathingDistrictIndex index))
+                {
+                    index.Remove(effects, needBehavior);
+                }
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip("RemoveNeedBehavior hook", exception);
             }
         }
 
         private static bool CriticalDecidePrefix(CriticalNeederRootBehavior __instance, BehaviorAgent agent,
             ref Decision __result)
         {
-            if (!__instance.TryGetComponent(out HungryPathingRootBehavior hungry))
+            try
             {
+                if (!__instance.TryGetComponent(out HungryPathingRootBehavior hungry))
+                {
+                    return true;
+                }
+                if (!hungry.TryRedirectCritical(agent, out Decision decision))
+                {
+                    return true;
+                }
+                __result = decision;
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Safety.Trip("CriticalNeederRootBehavior.Decide hook", exception);
                 return true;
             }
-            if (!hungry.TryRedirectCritical(agent, out Decision decision))
-            {
-                return true;
-            }
-            __result = decision;
-            return false;
         }
 
         // Only the decision that starts the walk to a freshly reserved site. Letting the site go is the game's own
         // "could not get there" path: unreserve, release, decide again next tick.
         private static void BuildDecidePostfix(BuildBehavior __instance, ref Decision __result)
         {
-            if (__result.ShouldReleaseNow || !__result.ShouldReturnToBehavior ||
-                !(__result.Executor is WalkToAccessibleExecutor))
+            try
             {
-                return;
+                if (__result.ShouldReleaseNow || !__result.ShouldReturnToBehavior ||
+                    !(__result.Executor is WalkToAccessibleExecutor))
+                {
+                    return;
+                }
+                if (!__instance.TryGetComponent(out HungryPathingRootBehavior hungry) ||
+                    !__instance.TryGetComponent(out Builder builder) || !builder.HasReservedConstructionSite)
+                {
+                    return;
+                }
+                if (hungry.BuilderShouldTopOffFirst(builder.ReservedConstructionSite))
+                {
+                    builder.Unreserve();
+                    __result = Decision.ReleaseNextTick();
+                }
             }
-            if (!__instance.TryGetComponent(out HungryPathingRootBehavior hungry) ||
-                !__instance.TryGetComponent(out Builder builder) || !builder.HasReservedConstructionSite)
+            catch (Exception exception)
             {
-                return;
-            }
-            if (hungry.BuilderShouldTopOffFirst(builder.ReservedConstructionSite))
-            {
-                builder.Unreserve();
-                __result = Decision.ReleaseNextTick();
+                Safety.Trip("BuildBehavior.Decide hook", exception);
             }
         }
     }

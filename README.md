@@ -81,6 +81,16 @@ line reports evaluations and path queries so the cost is visible.
 The mod adds two components (one per adult beaver, one per district center) that keep only caches rebuilt from the
 simulation. Nothing is saved. A save made with the mod loads without it and the other way round.
 
+## Status of this alpha
+
+What has been verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in
+the game's assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [docs/design.md](docs/design.md)),
+and the planner arithmetic passes its checks. What has not: a live colony run. The first automated launch on the
+development machine exited before any mod loaded, for reasons unrelated to this mod, so the first person to load a
+colony with it should watch the log lines below. If anything in the mod throws, it logs the stack trace once and
+switches itself off for the session, so the worst case is a colony that behaves as in the base game plus one
+warning to report.
+
 ## Checking that it works
 
 Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) shows, in order:
@@ -95,7 +105,8 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 ```
 
 If the `Needs in this game` line shows a buffer of 0h, the blueprint patches did not load. `Diagnostics = true`
-logs one line per trip the mod starts. `tools\run-save.ps1` launches the game straight into a save.
+logs one line per trip the mod starts. `tools\run-save.ps1` asks Steam to launch the game straight into a save;
+Steam shows a prompt to confirm the extra arguments.
 
 ## Building
 
