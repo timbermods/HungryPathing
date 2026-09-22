@@ -49,7 +49,8 @@ unchanged, so the variety-seeking that makes evenings pleasant is not lost.
    through the game's own "could not get there" path and tops off first.
 4. **Closest storage while working.** For every trip the mod starts, and for the game's own penalty-state trips
    during working hours, the storage is chosen by walking time for the need at hand. A higher-scoring food still
-   wins when it costs at most a quarter hour more walking.
+   wins when it costs at most a quarter hour more walking; pre-fuel and the builder's top-off choose only among the
+   storages within half an hour's walk.
 
 A unit of food restores a fixed amount and the game already refuses to eat when a full unit would not fit, so
 eating earlier does not eat more. Total consumption per day is unchanged; only its timing moves.
@@ -72,6 +73,11 @@ line never feed back into a decision. If the mod switches itself off after an er
 the same moment, and it is back on for everyone after the next load, which all players make together when they
 join or rehost. Two players running the same version with identical settings files make identical decisions. At
 startup the log prints one `Simulation settings:` line; if two players' lines differ, their games will drift apart.
+
+Decisions also read the cheapest path cost per tile from the buildings the game loaded, placed or not, so they
+depend on the faction and on any mods that add buildings. The first time a beaver measures a walk in a game, the log
+prints one `Cheapest travel here:` line; every player's should match, and if they differ, the players do not have
+the same buildings loaded.
 
 ### BeaverBuddies MultiColony
 

@@ -17,6 +17,8 @@ namespace HungryPathing
             containerDefinition.Bind<HungryPathingRootBehavior>().AsTransient();
             containerDefinition.Bind<HungryPathingDistrictIndex>().AsTransient();
             containerDefinition.MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
+            // One per game, so the path costs are read again from the templates at every load.
+            containerDefinition.Bind<TravelCostBound>().AsSingleton();
         }
 
         private static TemplateModule ProvideTemplateModule()

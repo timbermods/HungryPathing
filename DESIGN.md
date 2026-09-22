@@ -100,9 +100,11 @@ does, in the same order. For a need, the planner:
 1. takes every group that includes the need, scores it with the game's `Appraiser` (zero drops it, which is the
    "full unit must fit" rule), and collects each storage's `ActionPosition` once at its best group score;
 2. sorts by straight-line distance, breaking ties by insertion order;
-3. asks `Walker.CalculateTravelTimeInHours` for the nearest `CandidateLimit` storages;
+3. asks `Walker.CalculateTravelTimeInHours` for the nearest `CandidateLimit` storages, or fewer when only near
+   ones matter (see Performance);
 4. picks with `FuelPlanner.PickCandidate`: least walking, except a higher score wins within
-   `VarietyToleranceHours`.
+   `VarietyToleranceHours`. Pre-fuel, the builder job check and the builder's trip that follows pick only among
+   the storages within `PreFuelNearFoodHours`, so a better food a little past that limit cannot hide a near one.
 
 The return leg is the walk back to where the beaver stands, which during a shift is the job.
 
@@ -112,16 +114,21 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
 
 - **Just in time**: inside `hoursLeft <= buffer + JustInTimeLeadHours`, measure the walk to the best storage and
   go when `hoursLeft - walk <= buffer`. Outside the window the beaver sleeps until it could enter it.
-- **Pre-fuel**: when `hoursLeft < hoursToShiftEnd + buffer` and the best storage is within `PreFuelNearFoodHours`,
-  go now. Both sides fall one hour per hour, so the first test only changes when the beaver eats or a new shift
-  starts; it is re-evaluated at each day change and after every trip.
+- **Pre-fuel**: when `hoursLeft < hoursToShiftEnd + buffer` and a storage is within `PreFuelNearFoodHours`, go now
+  to the best storage within that limit. The storage just in time would pick may be a better food farther away;
+  pre-fuel does not wait for it, since a top-off only asks for food nearby. Both sides fall one hour per hour, so the
+  first test only changes when the beaver eats or a new shift starts; it is re-evaluated at each day change and after
+  every trip.
 - **Builder job check**: a postfix on `BuildBehavior.Decide` catches the decision that starts the walk to a freshly
   reserved site. With `travelToSite` from the walker, `siteToFood` the straight-line estimate from the site to the
-  nearest scoring storage, and `foodNow` the real walk to the best storage from here: if `foodNow` is near, the
-  site is farther than the food, and `hoursLeft - buffer < travelToSite + BuilderJobWorkHours + siteToFood`, the
-  builder calls `Builder.Unreserve()` and returns `Decision.ReleaseNextTick()`, which is the game's own path for a
-  site it cannot reach. The planner is asked next tick with the need forced and starts the trip. The site goes back
-  to the pool.
+  nearest scoring storage, and `foodNow` the real walk to the best storage within `PreFuelNearFoodHours` of here: if
+  there is one, the site is farther than the food, and
+  `hoursLeft - buffer < travelToSite + BuilderJobWorkHours + siteToFood`, the builder calls `Builder.Unreserve()` and
+  returns `Decision.ReleaseNextTick()`, which is the game's own path for a site it cannot reach. The planner is asked
+  next tick with the need forced and starts the trip to the best storage within `PreFuelNearFoodHours`, the choice
+  the check has just made, rather than a better food past that limit and perhaps farther away than the site it let
+  go; only if none of the near storages can start a trip does it take the best of the others. The site goes back to
+  the pool.
 - **Critical redirect**: a prefix on `CriticalNeederRootBehavior.Decide`. In the work context, if Hunger or Thirst
   is critical, the planner picks the storage its own way for the more important of the two and answers instead of
   the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the
@@ -148,8 +155,17 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   the same game and mod versions.
 - **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
   and returns immediately. Appraisal runs before any path query and removes storages the beaver could not eat at.
-  Path queries are capped per decision, and a pre-fuel-only check stops measuring at the first storage whose
-  straight-line time already exceeds `PreFuelNearFoodHours`, since the straight line is a lower bound on the walk.
+  Path queries are capped per decision, and a pre-fuel-only check or a builder job check stops measuring at the
+  first storage that cannot be within `PreFuelNearFoodHours`. The straight line alone is no lower bound on the walk:
+  the walker's time is the path's cost, and tubeways cost 0.25 per tile, zipline cables 0.4 per tile of cable and
+  stair and slope climbs 0.4 per level, against 1 per tile on the ground. `TravelCostBound` reads the cheapest cost
+  per tile from the path costs of the building templates the game loaded (0.25 with tubeways, 0.4 with stairs or
+  ziplines, 1 otherwise), once per game, and the straight-line time is scaled by it before it is compared with the
+  limit. Free single steps are left out: a gate costs nothing for one tile and boarding or leaving a zipline nothing
+  for about three, so a walk through them can come in a few tiles under the scaled line (about 0.05h for one zipline
+  ride) and a storage that close to the limit may go unmeasured, the same way on every player. The loaded templates,
+  placed or not, are therefore an input to decisions: players with the same game version, faction and mods read the
+  same factor, and Player.log names it in a `Cheapest travel here:` line.
   A storage that turns out empty or unreachable when the trip is launched is dropped from that decision's
   candidates, the next best measured one is tried at once, and the failed one is left alone for twice `RetryHours`.
   This matters because the walker's travel-time query never reports "unreachable": it substitutes the straight-line
@@ -187,3 +203,7 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   reservations; unwinding them is not a vanilla path the way `Builder.Unreserve()` is. The shift-based pre-fuel
   and just-in-time rules cover haulers without knowing the destination.
 - Touching pathfinding. Nothing in the navigation assemblies is patched.
+- A travel bound per storage. Storages are taken nearest first by straight line, and the cost factor above is one
+  number per game, so it does not change that order: a storage that tubeways or ziplines make the quickest can lie
+  outside the nearest `CandidateLimit` and go unmeasured. A bound per storage would need to know which storages a
+  network serves. Raising `CandidateLimit` is the setting-level answer, at the cost of more path queries.
