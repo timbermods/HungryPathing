@@ -36,8 +36,34 @@ Day 304: just-in-time 50, pre-fuel 135, builder job 0 (of 0 job checks), critica
 ```
 
 Identical to the counter in the second run, alongside identical BeaverBuddies consistency hashes for days 303 to
-305. Not yet seen: a construction-heavy day for the builder job check, and a before-and-after comparison of eating
-trips at the same time of day. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+305. Days 305 to 308 followed the same pattern: just-in-time 38 to 48, pre-fuel 117 to 137, penalty-state
+redirects 12 to 15 a day.
+
+### Before and after, same point in the shift
+
+A save at 15.1 hours into day 309 with the mod, against the day-319 baseline at 15.8 hours without it. Both are
+about an hour before the shift ends; the analysis reads each beaver's need points and its last ten behavior
+changes from the save.
+
+| | Without the mod (day 319) | With the mod (day 309) |
+|---|---|---|
+| Adults | 357 | 355 |
+| In the hunger penalty | 11 | 0 |
+| In the thirst penalty | 4 | 0 |
+| Within 3 hours of the hunger penalty | 79 | 0 |
+| Within 3 hours of the thirst penalty | 38 | 0 |
+| Mean hunger bar | 0.30 | 0.38 |
+| Eating right now | 22 | 11 |
+| Working-hour eating trips in the logs | 171 | 153 |
+| Median walk per trip | 0.96 h | 0.72 h |
+| Trips over an hour | 43% | 39% |
+| Trips started in the last four hours of the shift | 49 | 21 |
+
+Of the beavers mid-trip in the mod save, all 11 were walking to the nearest stocked storage of the right kind
+(none passed a closer one by more than 20 tiles); in the baseline 2 of 18 were, both after Maple Pastry. The
+remaining long walks are distance to any stocked storage at all, not choice: this colony keeps food in about 22
+storages and water in about 29, and beavers work far from them. Not yet seen: a construction-heavy day for the
+builder job check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
 
 What to look for in Player.log:
 
