@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using BeaverBuddies.Colonies;
 using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic and the circuit breaker. They compile that source directly and need no game files:
+// Checks on the planner arithmetic, the circuit breaker and the MultiColony bridge. They compile that source directly
+// and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -119,6 +121,42 @@ internal static class Program
         Plugin.HooksInstalled = false;
         Safety.NewGame();
         Check(!Safety.Active, "safety: a load does not bring back hooks that failed to install");
+
+        // MultiColonyBridge.cs as shipped. Whether MultiColony is there is fixed for the process, but an exception from
+        // it lasts one game, like the breaker: a player who hit one in an earlier game must not keep the game's shift
+        // end in the next while a co-op partner with a fresh process asks MultiColony.
+        int infos = Log.Infos.Count;
+        int warnings = Log.Warnings.Count;
+        StubBeaver beaver = new StubBeaver();
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos, "multicolony: the first load has nothing to re-arm");
+        ColonyWorkingHours.Current = new ColonyWorkingHours();
+        Check(MultiColonyBridge.TryEndHours(beaver, out float endHours) && Near(endHours, 20f),
+            "multicolony: the shift end comes from the beaver's colony");
+        string probed = MultiColonyBridge.Description;
+        Check(probed.StartsWith("present; "), "multicolony: the probe finds MultiColony's working hours");
+        ColonyWorkingHours.ColonySlot = null;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: a beaver of no colony keeps the game's shift end");
+        ColonyWorkingHours.ColonySlot = 1;
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: an exception falls back to the game's shift end");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: the game's shift end for the rest of the game");
+        Check(Log.Warnings.Count == warnings + 1 &&
+              Log.Warnings[warnings] == "MultiColony: present, but asking it failed (test); " +
+                                        "using the game's shift end for the rest of this game",
+            "multicolony: one warning per game, saying how long it lasts");
+        MultiColonyBridge.NewGame();
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "multicolony: asked again after the next load");
+        Check(Log.Infos.Count == infos + 1 &&
+              Log.Infos[infos] == "MultiColony: failure from the previous game cleared; asking it again in this game.",
+            "multicolony: the load that re-arms it says so");
+        Check(MultiColonyBridge.Description == probed, "multicolony: the next game's log line gives the probe result again");
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos + 1, "multicolony: a load with nothing to re-arm says nothing");
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _) && Log.Warnings.Count == warnings + 2,
+            "multicolony: a later game can fail and warn again");
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.

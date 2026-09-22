@@ -15,6 +15,7 @@ namespace HungryPathing
         {
             Stats.Reset();
             Safety.NewGame();
+            MultiColonyBridge.NewGame();
             containerDefinition.Bind<HungryPathingRootBehavior>().AsTransient();
             containerDefinition.Bind<HungryPathingDistrictIndex>().AsTransient();
             containerDefinition.MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
