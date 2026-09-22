@@ -7,6 +7,9 @@ across the map for a fancier meal.
 Game version 1.1.2.4. Requires the [Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=3284904751)
 mod. Nothing is written to save files, so the mod can be added to or removed from any colony.
 
+Website with install guide, troubleshooting and FAQ: [timbermods.github.io/HungryPathing](https://timbermods.github.io/HungryPathing/).
+Part of [Timbermods](https://timbermods.github.io/).
+
 ## What the base game does
 
 Every beaver need is a bar that drains at a fixed rate. Hunger drains 0.8 per day, thirst 0.7, from a full bar of
@@ -26,7 +29,7 @@ Two things decide when a working beaver goes to eat and where:
 
 In a 357-beaver save at the end of a 16-hour shift, 90 adults were within three hours of the hunger penalty and 11
 were already in it. Of the last 200 eating trips in the beavers' behavior logs, 193 started during working hours
-and the median trip took about an in-game hour of walking. See [docs/design.md](docs/design.md) for the numbers
+and the median trip took about an in-game hour of walking. See [DESIGN.md](DESIGN.md) for the numbers
 and the code paths behind them.
 
 ## What this mod changes
@@ -59,7 +62,7 @@ then enable the mod in the game's mod manager. Harmony must be installed and ena
 ## Settings
 
 `version-1.1\HungryPathing.cfg` next to the manifest. Every value changes what beavers decide; the defaults are the
-ones described above. [docs/configuration.md](docs/configuration.md) explains each key.
+ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
 
 ## Multiplayer
 
@@ -84,7 +87,7 @@ simulation. Nothing is saved. A save made with the mod loads without it and the 
 ## Status of this alpha
 
 What has been verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in
-the game's assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [docs/design.md](docs/design.md)),
+the game's assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [DESIGN.md](DESIGN.md)),
 and the planner arithmetic passes its checks. What has not: a live colony run, because none has been done yet. The
 first person to load a colony with it should watch the log lines below. If anything in the mod throws, it logs the
 stack trace once and switches itself off for the session, so the worst case is a colony that behaves as in the
@@ -111,7 +114,7 @@ Steam shows a prompt to confirm the extra arguments.
 
 `.\build.ps1` builds against the game folder, lays the mod out under `dist\` and zips it. `-Install` copies it into
 `Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner on its own and need no
-game files. [docs/testing.md](docs/testing.md) covers the in-game checks.
+game files. [TESTING.md](TESTING.md) covers the in-game checks.
 
 ## Known limits
 

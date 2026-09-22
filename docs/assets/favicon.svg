@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Hungry Pathing">
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="#2b1f1a" stroke="#6b4a3a" stroke-width="2"/>
+  <rect x="7" y="8" width="18" height="5" rx="2.5" fill="#f3ecd6" fill-opacity=".18" stroke="#f3ecd6" stroke-opacity=".5" stroke-width="1.2"/>
+  <rect x="7" y="8" width="8" height="5" rx="2.5" fill="#e8735c"/>
+  <path d="M8 24c3.5-8 7-8 10.5 0" fill="none" stroke="#e8735c" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="23.5" cy="23.5" r="3" fill="#f3ecd6"/>
+</svg>

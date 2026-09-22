@@ -15,4 +15,4 @@ First release. Game 1.1.2.4.
 - Settings file, one daily summary line, optional per-trip diagnostics, planner checks that run without the game.
 - Circuit breaker: the first exception in the mod's own code is logged with its stack trace and the mod switches
   itself off for the session.
-- Not yet observed in a live colony; see docs/testing.md.
+- Not yet observed in a live colony; see TESTING.md.

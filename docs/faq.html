@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ - Hungry Pathing</title>
+<meta name="description" content="Questions and answers about the Hungry Pathing Timberborn mod: what it changes, why the base game walks so far, food consumption, co-op, saves and settings.">
+<link rel="canonical" href="https://timbermods.github.io/HungryPathing/faq.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d1716">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="7" fill="#2b1f1a" stroke="#6b4a3a" stroke-width="2"/><rect x="7" y="8" width="18" height="5" rx="2.5" fill="#f3ecd6" fill-opacity=".18" stroke="#f3ecd6" stroke-opacity=".5" stroke-width="1.2"/><rect x="7" y="8" width="8" height="5" rx="2.5" fill="#e8735c"/><path d="M8 24c3.5-8 7-8 10.5 0" fill="none" stroke="#e8735c" stroke-width="2.6" stroke-linecap="round"/><circle cx="23.5" cy="23.5" r="3" fill="#f3ecd6"/></svg>
+      <span>Hungry Pathing</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="install.html">Install</a></li>
+        <li><a href="troubleshooting.html">Troubleshooting</a></li>
+        <li><a href="faq.html" aria-current="page">FAQ</a></li>
+        <li><a class="btn btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-head">
+    <div class="container">
+      <h1>Frequently asked questions</h1>
+      <p>What the mod changes, why the base game behaves the way it does, and what to expect.</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:34px;padding-bottom:60px">
+    <div class="prose" style="max-width:52em">
+      <div class="q-tools">
+        <button type="button" class="btn btn-secondary btn-small" data-expand>Expand all</button>
+        <button type="button" class="btn btn-secondary btn-small" data-collapse>Collapse all</button>
+      </div>
+
+      <div class="faq-group">
+        <h2>The basics</h2>
+        <details class="q" id="what">
+          <summary>What does Hungry Pathing do?</summary>
+          <div class="a"><p>During working hours it gives employed beavers a three-hour buffer on hunger and thirst, has them leave far jobs early enough to reach food before the penalty, tops them off before a shift they could not finish when food is near, and sends them to the closest stocked storage for the need at hand. Off duty the game's own behavior runs unchanged.</p></div>
+        </details>
+        <details class="q" id="why-far">
+          <summary>Why do beavers walk so far to eat in the base game?</summary>
+          <div class="a"><p>Two reasons. A working beaver only leaves the job once the need is already at zero. And when it does, the game scores each <em>food group</em> by how many need points it would restore and only then picks the closest storage of the winning group. Sixteen of the seventeen foods carry a second "variety" need that is almost never full, so plain berries next to the site lose to bread at the district center nearly every time. Which food wins changes as variety needs fill up, so the long walks look random.</p></div>
+        </details>
+        <details class="q" id="consumption">
+          <summary>Do beavers eat more with this mod?</summary>
+          <div class="a"><p>No. A unit of food restores a fixed 0.3 hunger and the game refuses to eat when a full unit would not fit, so nothing is wasted by eating earlier. Consumption per day equals the decay rate either way; only the timing moves. The mod's own checks simulate this over 300 days.</p></div>
+        </details>
+        <details class="q" id="water">
+          <summary>Does it handle water too?</summary>
+          <div class="a"><p>Yes. Thirst is treated exactly like hunger, with its own buffer, and water is the only good that satisfies it, so those trips already go to the nearest water in the base game. The mod's gain for thirst is leaving early enough to avoid the movement penalty and topping off before a shift.</p></div>
+        </details>
+        <details class="q" id="evening">
+          <summary>What happens in the evening and on days off?</summary>
+          <div class="a"><p>Nothing new. The planner only runs for employed beavers during working hours. Evenings still use the game's own picking, which is where beavers chase variety and wellbeing buildings.</p></div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h2>The buffer and the settings</h2>
+        <details class="q" id="buffer">
+          <summary>What is the three-hour buffer, and where does the number come from?</summary>
+          <div class="a"><p>Every need blueprint has an <code>HoursWarningThreshold</code> field. The base game sets it to 3.5 and 4.5 hours for bots' Energy and Biofuel and reads it for them, but ships every beaver need at zero and never reads it for beavers. The mod sets Hunger and Thirst to 3 hours through two partial blueprints and honors the value. Three hours at 0.8 hunger a day is 0.1 of the bar: the beaver starts walking with that in hand and arrives with it.</p></div>
+        </details>
+        <details class="q" id="change-buffer">
+          <summary>Can I change the buffer?</summary>
+          <div class="a"><p>Yes, two ways. <code>WarningHours</code> in <code>HungryPathing.cfg</code> overrides it for every tracked need, or another data mod can set the blueprint field to a different value. Larger buffers mean beavers eat with more of the bar left, which is more walking during the shift with no penalty benefit unless storages are very far apart.</p></div>
+        </details>
+        <details class="q" id="one-rule">
+          <summary>Can I try one rule at a time?</summary>
+          <div class="a"><p>Yes. <code>JustInTime</code>, <code>PreFuel</code>, <code>BuilderJobCheck</code>, <code>WorkTimeClosestFood</code> and <code>RedirectCriticalTrips</code> each switch one rule. The daily log line says how often each fired, so you can see what a rule does for your colony. See <a href="https://github.com/timbermods/HungryPathing/blob/main/CONFIGURATION.md">CONFIGURATION.md</a> for all keys.</p></div>
+        </details>
+        <details class="q" id="other-needs">
+          <summary>Can I add other needs to the list?</summary>
+          <div class="a"><p>The <code>Needs</code> key takes any need that is satisfied by a consumable good in a storage. Hunger and Thirst are the ones that matter for work; the variety needs are better left to the evening.</p></div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h2>Compatibility</h2>
+        <details class="q" id="coop">
+          <summary>Does it work in co-op with BeaverBuddies?</summary>
+          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player runs the same version with an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. That said, this alpha has not been watched in a live colony yet, so try a single-player copy first.</p></div>
+        </details>
+        <details class="q" id="saves">
+          <summary>Is it safe to add to or remove from an existing colony?</summary>
+          <div class="a"><p>Yes. The mod stores nothing in saves; both of its components keep only caches rebuilt from the simulation. Even a save made while a beaver is on a trip the mod started records that trip as the game's own storage behavior.</p></div>
+        </details>
+        <details class="q" id="other-mods">
+          <summary>Does it conflict with other mods?</summary>
+          <div class="a"><p>It requires Harmony. A mod that also edits the Hunger or Thirst blueprint merges with this one in load order, and the buffer can always be forced with <code>WarningHours</code>. A mod that replaces the game's need-picking behavior for beavers would overlap with this one. Mods that change storages, goods or districts are fine: the planner reads the same registrations the game does.</p></div>
+        </details>
+        <details class="q" id="factions">
+          <summary>Folktails and Iron Teeth?</summary>
+          <div class="a"><p>Both. Hunger and Thirst are shared beaver needs. Bots are untouched: they have their own picker and already use the warning field.</p></div>
+        </details>
+        <details class="q" id="pathfinding">
+          <summary>Does it change pathfinding?</summary>
+          <div class="a"><p>No. Nothing in the navigation code is touched. The mod asks the game's own walker how long a walk would take and uses the answer to decide when to go and where.</p></div>
+        </details>
+      </div>
+
+      <div class="faq-group">
+        <h2>Status</h2>
+        <details class="q" id="alpha">
+          <summary>Why is it called an alpha?</summary>
+          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks, but no one has watched it run in a live colony yet. If anything in it throws, it logs the stack trace once and switches itself off for the session, so the worst case is a colony that behaves as in the base game plus a warning to report.</p></div>
+        </details>
+        <details class="q" id="help">
+          <summary>How can I help?</summary>
+          <div class="a"><p>Run it on a copy of a colony for two in-game days with <code>Diagnostics = true</code> and post every <code>[HungryPathing]</code> line from the log on the <a href="https://github.com/timbermods/HungryPathing/issues">issue tracker</a>, together with anything that looked wrong. A save from before and after helps too.</p></div>
+        </details>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container foot">
+    <div>
+      <p><strong>Hungry Pathing</strong>, an unofficial Timberborn mod.</p>
+      <p>Timberborn is made by Mechanistry. This is a fan project and is not affiliated with or endorsed by them.</p>
+    </div>
+    <ul aria-label="Links">
+      <li><a href="install.html">Install</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+      <li><a href="https://github.com/timbermods/HungryPathing">Source</a></li>
+      <li><a href="https://github.com/timbermods/HungryPathing/releases">Releases</a></li>
+      <li><a href="https://github.com/timbermods/HungryPathing/issues">Report a problem</a></li>
+    </ul>
+  </div>
+</footer>
+<script src="assets/site.js" defer></script>
+<script>
+(function () {
+  var all = function () { return document.querySelectorAll("details.q"); };
+  function openFromHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var el = id && document.getElementById(id);
+    if (el && el.tagName === "DETAILS") { el.open = true; el.scrollIntoView(); }
+  }
+  document.querySelector("[data-expand]").addEventListener("click", function () { all().forEach(function (d) { d.open = true; }); });
+  document.querySelector("[data-collapse]").addEventListener("click", function () { all().forEach(function (d) { d.open = false; }); });
+  window.addEventListener("hashchange", openFromHash);
+  openFromHash();
+})();
+</script>
+</body>
+</html>
