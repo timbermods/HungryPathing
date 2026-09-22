@@ -110,6 +110,13 @@ intended: the session continued on the game's own behavior with one warning. 0.2
 walk the builder has just started instead. The rule's own decisions, whether a hungry builder actually lets a far
 site go and tops off first, are still to be observed on a construction day with 0.2.1.
 
+### MultiColony working hours (0.2.2)
+
+An audit found that the pre-fuel rule read the game's single shift end while MultiColony keeps one per colony.
+0.2.2 asks MultiColony for the beaver's colony. The sessions above all ran MultiColony, but no colony had set its
+own hours, so both code paths give the same answer there; a game where one colony chose a different working day
+is still to be observed. The `MultiColony:` log line after `Needs in this game` says whether the bridge is active.
+
 ## Reproducing the analysis
 
 A `.timber` save is a zip; extract `world.json` from it. The scripts in `tools\analysis` read that file with

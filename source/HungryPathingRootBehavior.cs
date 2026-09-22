@@ -160,7 +160,7 @@ namespace HungryPathing
             }
             Stats.Evaluations++;
             LogThresholdsOnce(settings);
-            float hoursToShiftEnd = Mathf.Max(0f, _workingHoursManager.EndHours - _dayNightCycle.HoursPassedToday);
+            float hoursToShiftEnd = Mathf.Max(0f, ShiftEndHours() - _dayNightCycle.HoursPassedToday);
             float delay = float.MaxValue;
             OrderNeedsByUrgency(settings);
             for (int i = 0; i < _needOrder.Count; i++)
@@ -599,6 +599,13 @@ namespace HungryPathing
             return _worker.Employed && _workerWorkingHours.AreWorkingHours && !_workRefuser.RefusesWork;
         }
 
+        // When this beaver's working day ends, in hours of the day. The game keeps one value for everyone;
+        // BeaverBuddies MultiColony keeps one per colony and is asked first when it is present.
+        private float ShiftEndHours()
+        {
+            return MultiColonyBridge.TryEndHours(this, out float endHours) ? endHours : _workingHoursManager.EndHours;
+        }
+
         private float Now()
         {
             return _dayNightCycle.DayNumber * 24f + _dayNightCycle.HoursPassedToday;
@@ -645,6 +652,7 @@ namespace HungryPathing
                 return;
             }
             Stats.ThresholdsLogged = true;
+            MultiColonyBridge.EnsureProbed();
             List<string> parts = new List<string>();
             for (int i = 0; i < settings.Needs.Length; i++)
             {
@@ -659,6 +667,7 @@ namespace HungryPathing
                           $"so a full bar lasts {24f / Mathf.Max(0.0001f, Mathf.Abs(spec.DailyDelta)) * spec.MaximumValue:0.#}h");
             }
             Log.Info("Needs in this game: " + string.Join("; ", parts) + ".");
+            Log.Info("MultiColony: " + MultiColonyBridge.Description + ".");
         }
     }
 }

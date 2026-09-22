@@ -72,6 +72,14 @@ line never feed back into a decision. Two players running the same version with 
 identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
 games will drift apart.
 
+### BeaverBuddies MultiColony
+
+MultiColony gives each colony its own working hours. The mod already goes through the per-beaver working-hours test
+MultiColony patches, and its storage index is per district, so beavers never eat from the other colony's storages.
+Since 0.2.2 the "hours left in the shift" used by the pre-fuel rule also comes from the beaver's own colony when
+MultiColony is present, asked through reflection with no dependency; without it, or if MultiColony's API changes,
+the game's single value is used and the log says so.
+
 ## Performance
 
 A beaver far from any trigger sleeps until it could reach one, and a beaver inside the window re-checks every half

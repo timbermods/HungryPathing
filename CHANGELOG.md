@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 (beta, preview), 2026-09-22
+
+- BeaverBuddies MultiColony: a colony with its own working hours now gets the right "hours left in the shift".
+  MultiColony patches the per-beaver working-hours test but not the game's `WorkingHoursManager.EndHours`, which
+  the pre-fuel rule reads, so beavers of a colony with a 20-hour day were planned against the game's 16. The mod
+  now asks MultiColony's `ColonyWorkingHours` for the beaver's own colony through reflection when it is present,
+  and uses the game's value otherwise. A log line says which. Not yet observed in a game where a colony has set
+  its own hours; found by an audit, not by a beaver.
+
 ## 0.2.1 (beta), 2026-09-22
 
 - Fixed: the first day with construction queued tripped the circuit breaker in the builder job check. A

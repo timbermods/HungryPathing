@@ -156,6 +156,12 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   now satisfied does not trigger again until the arithmetic says so.
 - **Food economy.** The game's own "full unit must fit" gate stays in force, so consumption per day is unchanged.
   The planner checks include a 300-day simulation of this.
+- **Other mods that change working hours.** `InWorkContext` uses `WorkerWorkingHours.AreWorkingHours`, which is
+  the per-beaver test other mods patch. The shift end is one global value in the game, `WorkingHoursManager.EndHours`,
+  and BeaverBuddies MultiColony keeps one per colony without patching that property. `MultiColonyBridge` finds
+  MultiColony's `ColonyWorkingHours` by name at runtime, resolves the beaver's colony with its `ColonyOf` and asks
+  `EndHours(slot)`; any mismatch in that API or any exception disables the bridge with one warning and the game's
+  value is used. The bridge reads MultiColony's own synchronized state, so peers running both mods stay identical.
 - **Failure containment.** Every entry point the game can reach (the root behavior, the two answers the hooks ask
   for, and the hook bodies themselves) catches exceptions. The first one is logged with its stack trace and the
   mod disables itself for the session; the game's own code never sees an exception from this mod.
