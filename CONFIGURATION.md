@@ -13,11 +13,11 @@ there to compare.
 | `JustInTime` | `true` | Leave for the closest stocked storage early enough to arrive with the buffer in hand. |
 | `JustInTimeLeadHours` | `4` | How many hours before the buffer would be reached the walk starts being measured. Larger values measure earlier and cost more path queries. |
 | `PreFuel` | `true` | Top off when food is near and the beaver would not last the rest of the shift plus the buffer. |
-| `PreFuelNearFoodHours` | `0.5` | "Near" for pre-fuel: walking time to the storage, in hours. |
+| `PreFuelNearFoodHours` | `0.5` | "Near" for pre-fuel and the builder job check: walking time to the storage, in hours. Both choose only among storages this near, so a better food a little farther away does not stop a top-off, and a builder that lets a site go tops off at one of them. |
 | `BuilderJobCheck` | `true` | A builder that has just reserved a site it would not last at lets it go and tops off first. |
 | `BuilderJobWorkHours` | `1.0` | Hours of building assumed at the site when judging that. |
 | `WorkTimeClosestFood` | `true` | Rank storages by walking time while working. `false` ranks by need points first, as the game does. |
-| `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. |
+| `VarietyToleranceHours` | `0.25` | With closest-first ranking, a higher-scoring food still wins when it costs at most this much more walking. For pre-fuel and the builder job check it applies among the storages within `PreFuelNearFoodHours` only. |
 | `RedirectCriticalTrips` | `true` | Apply the same ranking to the game's own penalty-state trips during working hours. |
 | `CandidateLimit` | `8` | At most this many storages, nearest by straight line, get a real path query per decision. |
 | `RetryHours` | `0.5` | A beaver inside a trigger window that decided nothing waits this long before looking again. A storage that failed to start a trip is left alone for twice this long, and after a penalty-state redirect in which every measured storage failed, the game's own behavior answers for this long. |
@@ -33,8 +33,15 @@ there to compare.
 - Pre-fuel at the start of a 16-hour shift triggers for a beaver below about 0.63 hunger or 0.55 thirst (16 hours
   plus the buffer, at the decay rates). Evening eating in the base game usually leaves beavers above that in the
   morning, so the rule mostly catches the ones the evening missed.
-- `CandidateLimit` bounds cost, not correctness: the straight-line pre-sort almost always puts the real closest
-  storage in the first few.
+- `CandidateLimit` bounds cost. On foot the straight-line pre-sort almost always puts the real closest storage in
+  the first few. Tubeways and zipline cables can make a farther storage the quickest to reach, and the pre-sort does
+  not know which storages they serve, so in a colony that relies on them the quickest storage can be outside the
+  nearest `CandidateLimit` and never measured. A higher limit finds it at the cost of more path queries per decision;
+  the daily report counts them.
+- Pre-fuel and builder job checks only measure storages that could be within `PreFuelNearFoodHours`. Where the game
+  has tubeways (Iron Teeth) that reaches four times as far in a straight line, and with stairs or ziplines two and a
+  half times as far, since those can make a storage near that looks far. Player.log names the factor once per game
+  in a `Cheapest travel here:` line.
 - To try one rule at a time, keep the others `false`; the daily report says how often each fired.
 
 ## Overriding the buffer with data only

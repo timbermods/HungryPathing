@@ -49,7 +49,8 @@ unchanged, so the variety-seeking that makes evenings pleasant is not lost.
    through the game's own "could not get there" path and tops off first.
 4. **Closest storage while working.** For every trip the mod starts, and for the game's own penalty-state trips
    during working hours, the storage is chosen by walking time for the need at hand. A higher-scoring food still
-   wins when it costs at most a quarter hour more walking.
+   wins when it costs at most a quarter hour more walking; pre-fuel and the builder's top-off choose only among the
+   storages within half an hour's walk.
 
 A unit of food restores a fixed amount and the game already refuses to eat when a full unit would not fit, so
 eating earlier does not eat more. Total consumption per day is unchanged; only its timing moves.
@@ -68,9 +69,15 @@ ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
 
 Every rule reads only the simulation and the game's own path queries; nothing depends on the clock, the frame rate
 or random numbers, and storages are ranked in a fixed order with fixed tie-breaks. The counters in the daily log
-line never feed back into a decision. Two players running the same version with identical settings files make
-identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
-games will drift apart.
+line never feed back into a decision. If the mod switches itself off after an error, it does so on every player at
+the same moment, and it is back on for everyone after the next load, which all players make together when they
+join or rehost. Two players running the same version with identical settings files make identical decisions. At
+startup the log prints one `Simulation settings:` line; if two players' lines differ, their games will drift apart.
+
+Decisions also read the cheapest path cost per tile from the buildings the game loaded, placed or not, so they
+depend on the faction and on any mods that add buildings. The first time a beaver measures a walk in a game, the log
+prints one `Cheapest travel here:` line; every player's should match, and if they differ, the players do not have
+the same buildings loaded.
 
 ### BeaverBuddies MultiColony
 
@@ -119,14 +126,14 @@ median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has
 The first day with construction queued found a second site-lookup bug in the builder job check; the circuit
 breaker caught it, the session carried on with the game's own behavior, and 0.2.1 fixes it. What the builder rule
 decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once
-and switches itself off for the session.
+and switches itself off for the rest of that game; loading a game turns it back on.
 
 ## Checking that it works
 
 Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) shows, in order:
 
 ```
-[HungryPathing] 0.1.0 loading.
+[HungryPathing] <version> loading.
 [HungryPathing] Simulation settings: ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. ...
@@ -134,15 +141,17 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 [HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.
 ```
 
-If the `Needs in this game` line shows a buffer of 0h, the blueprint patches did not load. `Diagnostics = true`
-logs one line per trip the mod starts. `tools\run-save.ps1` asks Steam to launch the game straight into a save;
-Steam shows a prompt to confirm the extra arguments.
+`<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a
+measured day ([TESTING.md](TESTING.md) has measured ones). If the `Needs in this game` line shows a buffer of 0h,
+the blueprint patches did not load. `Diagnostics = true` logs one line per trip the mod starts.
+`tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
+arguments.
 
 ## Building
 
 `.\build.ps1` builds against the game folder, lays the mod out under `dist\` and zips it. `-Install` copies it into
-`Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner on its own and need no
-game files. [TESTING.md](TESTING.md) covers the in-game checks.
+`Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner and the failure switches
+on their own and need no game files. [TESTING.md](TESTING.md) covers the in-game checks.
 
 ## Known limits
 
