@@ -70,17 +70,6 @@ internal static class Program
         Check(Near(FuelPlanner.DelayUntilLeaving(6f, 1f, 3f, 0.5f), 0.5f), "wake-up is bounded by the retry interval");
         Check(Near(FuelPlanner.DelayUntilLeaving(3.5f, 1f, 3f, 0.5f), 0.1f), "wake-up never waits past the leaving time");
 
-        Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
-        Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
-        Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
-
-        // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
-        // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.
-        int lead30 = UnitsEatenOver(30, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(30, 0.8f, 0.3f, 0.0f);
-        int lead300 = UnitsEatenOver(300, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(300, 0.8f, 0.3f, 0.0f);
-        Check(lead30 >= 0 && lead30 <= 2 && lead300 == lead30,
-            $"eating earlier does not eat more (lead after 30 days {lead30}, after 300 days {lead300})");
-
         // Storages that failed to launch a trip, remembered per beaver. Keys are compared by reference, like the
         // game's components.
         object storageA = new object(), storageB = new object(), storageC = new object();
@@ -148,6 +137,17 @@ internal static class Program
         held.PassEnded(1.0f, 3, false, 0.5f);
         Check(held.IsHeld(1.0f) && held.IsHeld(1.49f), "a redirect pass where every storage failed holds back the next");
         Check(!held.IsHeld(1.5f), "held-back redirects measure again on the deadline");
+
+        Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
+        Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
+        Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
+
+        // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
+        // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.
+        int lead30 = UnitsEatenOver(30, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(30, 0.8f, 0.3f, 0.0f);
+        int lead300 = UnitsEatenOver(300, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(300, 0.8f, 0.3f, 0.0f);
+        Check(lead30 >= 0 && lead30 <= 2 && lead300 == lead30,
+            $"eating earlier does not eat more (lead after 30 days {lead30}, after 300 days {lead300})");
 
         if (_failures == 0)
         {
