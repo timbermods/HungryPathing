@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using BeaverBuddies.Colonies;
+using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic, plus rules for the Harmony hooks read from their source (HarmonyRules.cs). They
-// compile the planner source directly and need no game files:
+// Checks on the planner arithmetic, the circuit breaker and the MultiColony bridge, plus rules for the Harmony
+// hooks read from their source (HarmonyRules.cs). They compile that source directly and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -62,6 +64,142 @@ internal static class Program
         List<Candidate> allBroken = new List<Candidate> { new Candidate(float.NaN, 9f) };
         Check(FuelPlanner.PickCandidate(allBroken, 0.25f, true) == -1, "only unmeasured candidates means no pick");
 
+
+        // Pre-fuel and the builder check only ask whether food is near, so they pick among the storages within the
+        // near limit. Without the limit, a better food a little past it wins within the variety tolerance and the
+        // rule declines although a near storage exists.
+        List<Candidate> nearAndBetter = new List<Candidate> { new Candidate(0.4f, 3f), new Candidate(0.6f, 9f) };
+        int nearPick = FuelPlanner.PickCandidate(nearAndBetter, 0.25f, true, 0.5f);
+        Check(FuelPlanner.PickCandidate(nearAndBetter, 0.25f, true) == 1, "without a limit the better food still wins");
+        Check(nearPick == 0, "the near limit leaves out a better food just past it");
+        Check(FuelPlanner.ShouldPreFuel(18f, 16f, 3f, nearAndBetter[nearPick].TravelHours, 0.5f),
+            "pre-fuel fires when a better food lies just past the near limit");
+        Check(FuelPlanner.BuilderShouldTopOff(6f, 3f, 2f, 1f, 1f, nearAndBetter[nearPick].TravelHours, 0.5f),
+            "the builder check fires when a better food lies just past the near limit");
+        List<Candidate> allFar = new List<Candidate> { new Candidate(0.6f, 9f), new Candidate(0.8f, 1f) };
+        Check(FuelPlanner.PickCandidate(allFar, 0.25f, true, 0.5f) == -1, "nothing within the limit means no pick");
+        Check(FuelPlanner.PickCandidate(new List<Candidate> { new Candidate(0.5f, 3f) }, 0.25f, true, 0.5f) == 0,
+            "a storage exactly at the limit is within it");
+        Check(FuelPlanner.PickCandidate(mixed, 0.25f, true, 1.0f) == 2 &&
+              Near(reversed[FuelPlanner.PickCandidate(reversed, 0.25f, true, 1.0f)].Value, 9f),
+            "a limit that leaves everything in changes nothing, in either order");
+        Check(FuelPlanner.PickCandidate(broken, 0.25f, true, 1.0f) == 2, "unmeasured candidates stay out under a limit");
+        List<Candidate> window = new List<Candidate> { new Candidate(0.3f, 1f), new Candidate(0.45f, 5f), new Candidate(0.55f, 9f) };
+        Check(FuelPlanner.PickCandidate(window, 0.25f, true, 0.5f) == 1, "the tolerance window stops at the limit");
+        Check(FuelPlanner.PickCandidate(window, 0.25f, false, 0.5f) == 1, "value-first stops at the limit too");
+        Check(FuelPlanner.PickCandidate(ties, 0.25f, true, 0.5f) == 0, "ties under a limit fall to the lowest index");
+
+        // The decision itself: which storage and why, as the root behavior asks it for each need.
+        TripReason reason;
+        TripRules preFuelOnly = new TripRules(false, false, true, 18f, 3f, 0.5f);
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, 0.5f, preFuelOnly, out reason) == 0 &&
+              reason == TripReason.PreFuel, "trip: a pre-fuel-only check tops off at the near storage");
+        TripRules bothWindows = new TripRules(false, true, true, 6f, 3f, 0.5f);
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
+              reason == TripReason.PreFuel, "trip: inside both windows, pre-fuel goes to the near storage now");
+        TripRules justInTimeOnly = new TripRules(false, true, false, 6f, 3f, 0.5f);
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, justInTimeOnly, out reason) == 1 &&
+              reason == TripReason.None, "trip: just in time alone waits for the better food");
+        TripRules timeToLeave = new TripRules(false, true, true, 3.5f, 3f, 0.5f);
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, timeToLeave, out reason) == 1 &&
+              reason == TripReason.JustInTime, "trip: once it is time to leave, just in time takes the better food");
+        Check(FuelPlanner.PickTrip(new List<Candidate> { new Candidate(0.5f, 3f) }, 0.25f, true, 0.5f, preFuelOnly,
+                  out reason) == 0 && reason == TripReason.PreFuel,
+            "trip: a storage exactly at the near limit is a pre-fuel trip");
+        Check(FuelPlanner.ReasonFor(0.5f, preFuelOnly) == TripReason.PreFuel &&
+              FuelPlanner.ReasonFor(0.51f, preFuelOnly) == TripReason.None, "trip: the pre-fuel reason ends at the near limit");
+        TripRules forced = new TripRules(true, false, true, 6f, 3f, 0.5f);
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip goes to the near storage");
+        Check(FuelPlanner.PickTrip(allFar, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: with nothing near, the builder's follow-up trip takes any storage");
+        Check(FuelPlanner.PickTrip(allFar, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
+              reason == TripReason.None, "trip: nothing near and not yet time to leave means no trip");
+        Check(FuelPlanner.PickTrip(allFar, 0.25f, true, 0.5f, preFuelOnly, out reason) == -1 &&
+              reason == TripReason.None, "trip: a pre-fuel-only check with nothing near picks nothing");
+        List<Candidate> prize = new List<Candidate> { new Candidate(1.5f, 20f), new Candidate(0.4f, 3f), new Candidate(0.45f, 4f) };
+        Check(FuelPlanner.PickTrip(prize, 0.25f, false, float.MaxValue, bothWindows, out reason) == 2 &&
+              reason == TripReason.PreFuel, "trip: value-first pre-fuel takes the best food among the near ones");
+        // A near storage that cannot start a trip is dropped and the pick runs again: the near limit still holds.
+        List<Candidate> twoNear = new List<Candidate> { new Candidate(0.4f, 3f), new Candidate(0.45f, 2f), new Candidate(0.6f, 9f) };
+        Check(FuelPlanner.PickTrip(twoNear, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
+              reason == TripReason.PreFuel, "trip: the better of two near storages first");
+        twoNear.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(twoNear, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
+              reason == TripReason.PreFuel, "trip: after it fails, the other near storage, not the far one");
+        twoNear.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(twoNear, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
+              reason == TripReason.None, "trip: with no near storage left, no trip");
+        Check(FuelPlanner.PickTrip(new List<Candidate>(), 0.25f, true, float.MaxValue, bothWindows, out reason) == -1 &&
+              reason == TripReason.None, "trip: nothing measured means no pick");
+        // The builder's follow-up trip keeps the near limit when its first storage cannot start a trip, and takes
+        // any storage only once no near one is left.
+        List<Candidate> forcedRetry = new List<Candidate> { new Candidate(0.4f, 3f), new Candidate(0.45f, 2f), new Candidate(0.6f, 9f) };
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, better of two near storages first");
+        forcedRetry.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, then the other near storage");
+        forcedRetry.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, then the far one");
+
+        // The builder job check itself picks among the near storages, and the trip that follows goes where it chose,
+        // which is nearer than the site it let go.
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 6f, 3f, 2f, 1f, 1f, 0.5f) == 0,
+            "builder pick: the near storage although a better food lies just past the limit");
+        int topOff = FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 5f, 3f, 0.55f, 1f, 1f, 0.5f);
+        int followUp = FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, forced, out reason);
+        Check(topOff == 0 && followUp == topOff && nearAndBetter[followUp].TravelHours < 0.55f,
+            "builder pick: the follow-up trip goes to the storage that let a 0.55h site go, not past it");
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 8f, 3f, 2f, 1f, 1f, 0.5f) == -1,
+            "builder pick: enough buffer for the job means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 5f, 3f, 0.3f, 1f, 1f, 0.5f) == -1,
+            "builder pick: a site nearer than the food means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(allFar, 0.25f, true, 6f, 3f, 2f, 1f, 1f, 0.5f) == -1,
+            "builder pick: nothing near means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(prize, 0.25f, false, 6f, 3f, 2f, 1f, 1f, 0.5f) == 2,
+            "builder pick: value-first takes the best food among the near ones");
+
+        // Measuring stops at the first storage that cannot be near by straight line. On foot a walk costs at least
+        // its straight line, but a tubeway tile costs 0.25, so there the straight line alone is no lower bound.
+        Check(FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, 1f), "bound: on foot, 0.6h in a straight line is not near");
+        Check(!FuelPlanner.StraightLineRulesOut(0.5f, 0.5f, 1f), "bound: on foot, a storage at the limit is measured");
+        Check(!FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, 0.25f),
+            "bound: 0.6h in a straight line is still measured where a tubeway could make it 0.15h");
+        Check(FuelPlanner.StraightLineRulesOut(2.1f, 0.5f, 0.25f), "bound: past four times the limit even tubeways are too slow");
+        Check(!FuelPlanner.StraightLineRulesOut(1000f, float.MaxValue, 0.25f), "bound: an unlimited check measures everything");
+        bool sameAsBefore = true;
+        for (int step = 0; step <= 40; step++)
+        {
+            float straight = step * 0.025f;
+            sameAsBefore &= FuelPlanner.StraightLineRulesOut(straight, 0.5f, 1f) == (straight > 0.5f);
+        }
+        Check(sameAsBefore, "bound: on foot it is exactly the rule it replaces");
+
+        // The factor is the cheapest edge per tile of straight line among what the game loaded. Numbers from the
+        // 1.1.2.4 blueprints: paths 1, stair and slope climbs 0.4 per level, zipline cables 0.4, tubeways 0.25.
+        float ground = FuelPlanner.GroundCostPerUnit;
+        Check(Near(FuelPlanner.CheapestCostPerUnit(ground, 1f, 1f), 1f), "cost: paths alone leave it at 1");
+        float folktails = FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(ground, 1f, 1f), 0.4f, 1f);
+        Check(Near(folktails, 0.4f), "cost: stairs or zipline cables make it 0.4");
+        float ironTeeth = FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(folktails, 0.25f, 1f), 1f, 1f);
+        Check(Near(ironTeeth, 0.25f), "cost: tubeways make it 0.25");
+        float ironTeethReversed = FuelPlanner.CheapestCostPerUnit(
+            FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(ground, 0.25f, 1f), 1f, 1f), 0.4f, 1f);
+        Check(ironTeethReversed == ironTeeth, "cost: the order the buildings come in does not matter");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, 0f, 1f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0f, 3.162f) == folktails,
+            "cost: free single steps (gates, onto a zipline) are left out");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, 99999f, 1f) == folktails, "cost: a blocked edge changes nothing");
+        Check(Near(FuelPlanner.CheapestCostPerUnit(ground, 1f, 2f), 0.5f), "cost: a long edge counts per tile");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, float.NaN, 1f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0.1f, 0f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0.1f, float.PositiveInfinity) == folktails,
+            "cost: unreadable edges are left out");
+        Check(!FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, ironTeeth) && FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, ground),
+            "bound: with tubeways loaded the 0.6h storage is measured, on foot it is not");
+
         Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, false, 0.5f, 3f), 3f), "sleep is capped at the maximum");
         Check(Near(FuelPlanner.NextCheckDelay(9f, 3f, 4f, false, 0.5f, 3f), 2f), "sleep until the window could open");
         Check(Near(FuelPlanner.NextCheckDelay(6f, 3f, 4f, false, 0.5f, 3f), 0.5f), "retry inside the window");
@@ -74,6 +212,105 @@ internal static class Program
         Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
         Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
         Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
+
+        // The circuit breaker lasts one game. Every player trips it at the same tick and clears it at the same load,
+        // so a trip in one game must not leave that machine running the base game in the next.
+        Breaker breaker = new Breaker();
+        Check(breaker.IsActive(true), "breaker: active before anything threw");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false is never active");
+        Check(!breaker.NewGame(), "breaker: an untripped breaker has nothing to clear");
+        Check(breaker.Trip(), "breaker: the first trip of a game reports itself");
+        Check(!breaker.Trip(), "breaker: a second trip in the same game is silent");
+        Check(!breaker.IsActive(true), "breaker: inactive for the rest of the game after a trip");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after a trip");
+        Check(breaker.NewGame(), "breaker: the next load clears the trip and says so");
+        Check(breaker.IsActive(true), "breaker: active again after the next load");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after the next load");
+        Check(!breaker.NewGame(), "breaker: a second load has nothing left to clear");
+        Check(breaker.Trip() && !breaker.IsActive(true), "breaker: trips again in the new game");
+
+        // Safety.cs as shipped. A trip must leave the settings alone, since they outlive the game; missing hooks
+        // are the one process-wide switch-off.
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = true;
+        Check(Safety.Active, "safety: active with Enabled=true and every hook installed");
+        Safety.Trip("the first check", new InvalidOperationException("test"));
+        Safety.Trip("the second check", new InvalidOperationException("test"));
+        Check(!Safety.Active, "safety: a trip switches the mod off");
+        Check(Plugin.Settings.Enabled, "safety: a trip leaves Enabled in the settings alone");
+        Check(Log.Warnings.Count == 1 &&
+              Log.Warnings[0].StartsWith("Switched off for the rest of this game after an error in the first check."),
+            "safety: one warning per game, naming the first failure");
+        Safety.NewGame();
+        Check(Safety.Active, "safety: active again after the next load");
+        Check(Log.Infos.Count == 1 &&
+              Log.Infos[0] == "Breaker from the previous game cleared; active again for this game.",
+            "safety: the load that clears a trip says so");
+        Safety.NewGame();
+        Check(Log.Infos.Count == 1, "safety: a load with nothing to clear says nothing");
+        Safety.Trip("a check in the next game", new InvalidOperationException("test"));
+        Check(!Safety.Active && Log.Warnings.Count == 2, "safety: a later game trips and warns again");
+        Safety.NewGame();
+        Plugin.Settings.Enabled = false;
+        Check(!Safety.Active, "safety: Enabled=false keeps it off");
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = false;
+        Safety.NewGame();
+        Check(!Safety.Active, "safety: a load does not bring back hooks that failed to install");
+
+        // MultiColonyBridge.cs as shipped. Whether MultiColony is there is fixed for the process, but an exception from
+        // it lasts one game, like the breaker: a player who hit one in an earlier game must not keep the game's shift
+        // end in the next while a co-op partner with a fresh process asks MultiColony.
+        int infos = Log.Infos.Count;
+        int warnings = Log.Warnings.Count;
+        StubBeaver beaver = new StubBeaver();
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos, "multicolony: the first load has nothing to re-arm");
+        ColonyWorkingHours.Current = new ColonyWorkingHours();
+        Check(MultiColonyBridge.TryEndHours(beaver, out float endHours) && Near(endHours, 20f),
+            "multicolony: the shift end comes from the beaver's colony");
+        string probed = MultiColonyBridge.Description;
+        Check(probed.StartsWith("present; "), "multicolony: the probe finds MultiColony's working hours");
+        ColonyWorkingHours.ColonySlot = null;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: a beaver of no colony keeps the game's shift end");
+        ColonyWorkingHours.ColonySlot = 1;
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: an exception falls back to the game's shift end");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: the game's shift end for the rest of the game");
+        Check(Log.Warnings.Count == warnings + 1 &&
+              Log.Warnings[warnings] == "MultiColony: present, but asking it failed (test); " +
+                                        "using the game's shift end for the rest of this game",
+            "multicolony: one warning per game, saying how long it lasts");
+        MultiColonyBridge.NewGame();
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "multicolony: asked again after the next load");
+        Check(Log.Infos.Count == infos + 1 &&
+              Log.Infos[infos] == "MultiColony: failure from the previous game cleared; asking it again in this game.",
+            "multicolony: the load that re-arms it says so");
+        Check(MultiColonyBridge.Description == probed, "multicolony: the next game's log line gives the probe result again");
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos + 1, "multicolony: a load with nothing to re-arm says nothing");
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _) && Log.Warnings.Count == warnings + 2,
+            "multicolony: a later game can fail and warn again");
+
+        // GameLoad.Reset is the reset the configurator runs at every load, join and rehost. Both bugs were a load that
+        // left a switch-off in place, so one call must re-arm the breaker and the MultiColony bridge together.
+        Plugin.HooksInstalled = true;
+        Safety.Trip("a check before the load", new InvalidOperationException("test"));
+        Stats.Evaluations = 5;
+        Check(!Safety.Active && !MultiColonyBridge.TryEndHours(beaver, out _),
+            "load: the breaker and the MultiColony bridge are both off before the load");
+        infos = Log.Infos.Count;
+        GameLoad.Reset();
+        Check(Safety.Active, "load: the configurator's reset re-arms the breaker");
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "load: the configurator's reset re-arms the MultiColony bridge");
+        Check(Log.Infos.Count == infos + 2 &&
+              Log.Infos[infos] == "Breaker from the previous game cleared; active again for this game." &&
+              Log.Infos[infos + 1] == "MultiColony: failure from the previous game cleared; asking it again in this game." &&
+              Stats.Evaluations == 0,
+            "load: the reset says what it re-armed and starts the day's counters over");
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.

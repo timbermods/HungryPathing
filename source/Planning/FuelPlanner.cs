@@ -31,8 +31,34 @@ namespace HungryPathing.Planning
         public bool Usable => !float.IsNaN(TravelHours) && !float.IsInfinity(TravelHours) && !float.IsNaN(Value);
     }
 
+    // Which rules apply to one need in one decision, and the numbers they compare. Forced is the builder who has
+    // just let a site go to top off this need; JustInTime and PreFuel are true inside those rules' windows.
+    public readonly struct TripRules
+    {
+        public readonly bool Forced;
+        public readonly bool JustInTime;
+        public readonly bool PreFuel;
+        public readonly float HoursLeft;
+        public readonly float WarningHours;
+        public readonly float NearFoodHours;
+
+        public TripRules(bool forced, bool justInTime, bool preFuel, float hoursLeft, float warningHours,
+            float nearFoodHours)
+        {
+            Forced = forced;
+            JustInTime = justInTime;
+            PreFuel = preFuel;
+            HoursLeft = hoursLeft;
+            WarningHours = warningHours;
+            NearFoodHours = nearFoodHours;
+        }
+    }
+
     public static class FuelPlanner
     {
+        // Ground and ordinary paths cost one per tile walked, and a walk is never shorter than its straight line.
+        public const float GroundCostPerUnit = 1f;
+
         // A need that never decays never runs out.
         public static float HoursUntilZero(float points, float hourlyDecay)
         {
@@ -80,18 +106,35 @@ namespace HungryPathing.Planning
             return hoursLeft - warningHours < travelToSite + workHours + siteToFoodHours;
         }
 
-        // Index of the storage to use, or -1. closestFirst: the least walking wins, except that any candidate
+        // The builder job check: the storage to top off at before walking to the site, or -1 to go on to the site.
+        // Only storages within nearFoodHours take part, so a better food just past the limit cannot hide a near
+        // one; the forced trip that follows picks among the same storages (PickTrip).
+        public static int PickBuilderTopOff(IReadOnlyList<Candidate> candidates, float varietyToleranceHours,
+            bool closestFirst, float hoursLeft, float warningHours, float travelToSite, float workHours,
+            float siteToFoodHours, float nearFoodHours)
+        {
+            int best = PickCandidate(candidates, varietyToleranceHours, closestFirst, nearFoodHours);
+            if (best < 0 || !BuilderShouldTopOff(hoursLeft, warningHours, travelToSite, workHours, siteToFoodHours,
+                    candidates[best].TravelHours, nearFoodHours))
+            {
+                return -1;
+            }
+            return best;
+        }
+
+        // Index of the storage to use, or -1. Only candidates within maxTravelHours take part, exactly as if the
+        // others had not been measured. closestFirst: the least walking wins, except that any candidate
         // within varietyToleranceHours of the closest one may win on value. The window is measured from the
         // closest candidate, never from a running best, so the answer does not depend on list order. Otherwise
         // value wins and walking breaks ties, which is how the base game orders things. Remaining ties fall to
         // the lowest index, so the result is the same on every machine given the same list.
         public static int PickCandidate(IReadOnlyList<Candidate> candidates, float varietyToleranceHours,
-            bool closestFirst)
+            bool closestFirst, float maxTravelHours = float.PositiveInfinity)
         {
             float minTravel = float.PositiveInfinity;
             for (int i = 0; i < candidates.Count; i++)
             {
-                if (candidates[i].Usable && candidates[i].TravelHours < minTravel)
+                if (InReach(candidates[i], maxTravelHours) && candidates[i].TravelHours < minTravel)
                 {
                     minTravel = candidates[i].TravelHours;
                 }
@@ -104,7 +147,7 @@ namespace HungryPathing.Planning
             for (int i = 0; i < candidates.Count; i++)
             {
                 Candidate candidate = candidates[i];
-                if (!candidate.Usable)
+                if (!InReach(candidate, maxTravelHours))
                 {
                     continue;
                 }
@@ -120,6 +163,70 @@ namespace HungryPathing.Planning
             return best;
         }
 
+        // Why to start a trip now to a storage travelHours away, or None. The builder who let a site go always goes.
+        public static TripReason ReasonFor(float travelHours, in TripRules rules)
+        {
+            if (rules.Forced)
+            {
+                return TripReason.BuilderJob;
+            }
+            if (rules.JustInTime && ShouldLeaveNow(rules.HoursLeft, travelHours, rules.WarningHours))
+            {
+                return TripReason.JustInTime;
+            }
+            if (rules.PreFuel && travelHours <= rules.NearFoodHours)
+            {
+                return TripReason.PreFuel;
+            }
+            return TripReason.None;
+        }
+
+        // The storage for one decision and the reason to go there now. It is PickCandidate's choice within
+        // maxTravelHours, except when that choice gives no reason to go and pre-fuel applies: then the choice among
+        // the storages within NearFoodHours is taken instead, since pre-fuel only asks for food nearby. Otherwise a
+        // better food just past the near limit, which wins on value, would stop pre-fuel although a near storage
+        // exists. The builder who let a site go (Forced) takes the choice among the storages within NearFoodHours
+        // too, since one of those is why it let the site go (PickBuilderTopOff), and any storage only once none of
+        // them is left. Returns -1 when nothing is in reach; an index with TripReason.None is where the beaver would
+        // go once it is time, which the just-in-time wake-up is measured against.
+        public static int PickTrip(IReadOnlyList<Candidate> candidates, float varietyToleranceHours, bool closestFirst,
+            float maxTravelHours, in TripRules rules, out TripReason reason)
+        {
+            reason = TripReason.None;
+            if (rules.Forced)
+            {
+                int topOff = PickCandidate(candidates, varietyToleranceHours, closestFirst,
+                    Math.Min(maxTravelHours, rules.NearFoodHours));
+                if (topOff >= 0)
+                {
+                    reason = TripReason.BuilderJob;
+                    return topOff;
+                }
+            }
+            int best = PickCandidate(candidates, varietyToleranceHours, closestFirst, maxTravelHours);
+            if (best < 0)
+            {
+                return -1;
+            }
+            reason = ReasonFor(candidates[best].TravelHours, rules);
+            if (reason == TripReason.None && rules.PreFuel)
+            {
+                int near = PickCandidate(candidates, varietyToleranceHours, closestFirst,
+                    Math.Min(maxTravelHours, rules.NearFoodHours));
+                if (near >= 0)
+                {
+                    reason = ReasonFor(candidates[near].TravelHours, rules);
+                    return near;
+                }
+            }
+            return best;
+        }
+
+        private static bool InReach(Candidate candidate, float maxTravelHours)
+        {
+            return candidate.Usable && candidate.TravelHours <= maxTravelHours;
+        }
+
         private static bool Better(Candidate candidate, Candidate best)
         {
             if (candidate.Value != best.Value)
@@ -127,6 +234,32 @@ namespace HungryPathing.Planning
                 return candidate.Value > best.Value;
             }
             return candidate.TravelHours < best.TravelHours;
+        }
+
+        // True when a storage straightLineHours away in a straight line cannot be within limitHours of walking, so
+        // neither can any storage farther by straight line, and none of them needs a path query. The walker's time
+        // is the path's cost over its speed, and a path costs at least minCostPerUnit per unit of straight-line
+        // distance (see CheapestCostPerUnit). The straight line alone is only a bound on foot: a tubeway tile costs
+        // 0.25, so there a storage 0.6h away in a straight line can be 0.15h away.
+        public static bool StraightLineRulesOut(float straightLineHours, float limitHours, float minCostPerUnit)
+        {
+            return straightLineHours * minCostPerUnit > limitHours;
+        }
+
+        // Folds one kind of navigation edge into the cheapest cost per unit of straight-line distance, starting
+        // from GroundCostPerUnit. An edge costing edgeCost over edgeLength tiles can bring it down. Edges that cost
+        // nothing (a gate, one tile; the step from a zipline station onto the cable, about three) are left out: each
+        // is one short step a walk takes a few times at most, and counting them would make every storage worth
+        // measuring. So the bound is not exact: a walk through them can cost a few tiles less than the scaled
+        // straight line, about 0.05h for one zipline ride at base speed, and a storage that close to the limit may
+        // be left unmeasured.
+        public static float CheapestCostPerUnit(float cheapestSoFar, float edgeCost, float edgeLength)
+        {
+            if (!(edgeCost > 0f) || !(edgeLength > 0f) || float.IsInfinity(edgeLength))
+            {
+                return cheapestSoFar;
+            }
+            return Math.Min(cheapestSoFar, edgeCost / edgeLength);
         }
 
         // How long a beaver that decided nothing can skip evaluating. Inside a window it checks again after

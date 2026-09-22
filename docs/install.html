@@ -69,9 +69,9 @@
         </li>
         <li>
           <h3>Download the zip</h3>
-          <p>Get the newest release from GitHub. Choose the file named like <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not the one called <em>Source code</em>.</p>
-          <div class="btn-row"><a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download the latest zip</a></div>
-          <p class="file-name" data-zip-line hidden>File: <code data-zip-name></code></p>
+          <p>Get the latest release from GitHub. Choose the file named like <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not the one called <em>Source code</em>.</p>
+          <div class="btn-row"><a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download the latest zip</a></div>
+          <p class="file-name">File: <code data-release="asset-name"></code></p>
         </li>
         <li>
           <h3>Extract it into your Mods folder</h3>
@@ -98,15 +98,15 @@
 
       <h2 id="verify">Check that it works</h2>
       <p>Load a colony, let it run for a moment, then open the game log (see <a href="troubleshooting.html#log">where to find it</a>) and search for <code>[HungryPathing]</code>. You should see, in order:</p>
-<pre><code>[HungryPathing] 0.1.0 loading.
+<pre><code>[HungryPathing] &lt;version&gt; loading.
 [HungryPathing] Simulation settings: Enabled=True Needs=Hunger,Thirst WarningHours=0 ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. One summary line per in-game day follows while a game runs.
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: buffer 3h, ...</code></pre>
-      <p>The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
+      <p><code>&lt;version&gt;</code> is the version you installed. The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
       <div class="callout note">
         <strong class="t">Beta</strong>
-        <p>This mod has run in one 355-beaver colony for 36 in-game days, nearly all as a BeaverBuddies host, without errors. That is still one colony. Try it on a copy of your save first, and if you see a <code>Switched off for this session</code> warning, please <a href="troubleshooting.html#report">report it</a> with the lines that follow.</p>
+        <p>This mod has run in one 355-beaver colony for 36 in-game days, nearly all as a BeaverBuddies host, without errors. That is still one colony. Try it on a copy of your save first, and if you see a <code>Switched off</code> warning, please <a href="troubleshooting.html#report">report it</a> with the lines that follow.</p>
       </div>
       <p>If something doesn't look right, head to <a href="troubleshooting.html">Troubleshooting</a>.</p>
 
@@ -128,12 +128,12 @@
         <strong class="t">Same version, same settings file, every player</strong>
         <p>Every player must run the identical version of the mod with an identical <code>HungryPathing.cfg</code>. At startup the log prints one <code>Simulation settings:</code> line; if two players' lines differ, their games will drift apart. The <code>DailyReport</code> and <code>Diagnostics</code> keys are the only ones that may differ.</p>
       </div>
-      <p>For a first co-op session with this alpha, load a single-player copy of the save first and read the log.</p>
+      <p>For a first co-op session with this beta, load a single-player copy of the save first and read the log.</p>
 
       <h2 id="update">Updating</h2>
       <ol>
         <li>Close Timberborn.</li>
-        <li>Download the newest zip from the <a href="https://github.com/timbermods/HungryPathing/releases">releases page</a>.</li>
+        <li>Download the zip from the <a href="https://github.com/timbermods/HungryPathing/releases/latest">latest release</a>, the same one the download button above gives. In co-op, every player updates to the same version.</li>
         <li>Extract it into the same <code>Mods</code> folder and choose <strong>Replace</strong> when asked about existing files. If you edited <code>HungryPathing.cfg</code>, keep a copy: the zip ships the defaults.</li>
         <li>Start the game and confirm <strong>Hungry Pathing</strong> is still enabled in the mod manager.</li>
       </ol>
@@ -161,6 +161,6 @@
     </ul>
   </div>
 </footer>
-<script src="assets/site.js" defer></script>
+<script src="assets/release.js" defer data-repo="timbermods/HungryPathing" data-asset="^HungryPathing-[\d.]+\.zip$"></script>
 </body>
 </html>
