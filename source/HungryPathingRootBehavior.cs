@@ -498,8 +498,8 @@ namespace HungryPathing
             {
                 if (FuelPlanner.StraightLineRulesOut(_scored[i].HeuristicHours, measureUpToHours, minCostPerUnit))
                 {
-                    // Scaled by the cheapest cost per tile, the straight line is a lower bound on the walk, so
-                    // nothing after this can be near enough.
+                    // Scaled by the cheapest cost per tile, the straight line is a lower bound on the walk, short of
+                    // free single steps (FuelPlanner.CheapestCostPerUnit), so nothing after this can be near enough.
                     break;
                 }
                 float travel = _walker.CalculateTravelTimeInHours(here, _scored[i].Position);

@@ -154,8 +154,12 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   the walker's time is the path's cost, and tubeways cost 0.25 per tile, zipline cables 0.4 per tile of cable and
   stair and slope climbs 0.4 per level, against 1 per tile on the ground. `TravelCostBound` reads the cheapest cost
   per tile from the path costs of the building templates the game loaded (0.25 with tubeways, 0.4 with stairs or
-  ziplines, 1 otherwise; free single steps such as gates are left out), once per game and the same on every player,
-  and the straight-line time is scaled by it before it is compared with the limit.
+  ziplines, 1 otherwise), once per game, and the straight-line time is scaled by it before it is compared with the
+  limit. Free single steps are left out: a gate costs nothing for one tile and boarding or leaving a zipline nothing
+  for about three, so a walk through them can come in a few tiles under the scaled line (about 0.05h for one zipline
+  ride) and a storage that close to the limit may go unmeasured, the same way on every player. The loaded templates,
+  placed or not, are therefore an input to decisions: players with the same game version, faction and mods read the
+  same factor, and Player.log names it in a `Cheapest travel here:` line.
   A storage that turns out empty or unreachable when the trip is launched is dropped from that decision's
   candidates, the next best measured one is tried at once, and the failed one is left alone for twice `RetryHours`.
   This matters because the walker's travel-time query never reports "unreachable": it substitutes the straight-line

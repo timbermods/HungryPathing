@@ -10,12 +10,14 @@ using UnityEngine;
 namespace HungryPathing
 {
     // The least a walk can cost per tile of straight line in this game, which makes straight-line time a lower bound
-    // on the walker's travel time once it is scaled by it (FuelPlanner.StraightLineRulesOut). Ground and paths cost
-    // one per tile, but buildings add cheaper edges to the navigation mesh: tubeways 0.25 per tile, stair and slope
-    // climbs 0.4 per level, zipline cables 0.4 per tile of cable. The value is read from the building templates this
-    // game loaded, once per game, the first time a planner asks: 0.25 where tubeways can be built, 0.4 with stairs or
-    // ziplines, 1 with none of them. Every player in a co-op game loads the same faction, game version and mods, so
-    // every player reads the same number; nothing here depends on the map, the UI, the machine or when it is read.
+    // on the walker's travel time once it is scaled by it (FuelPlanner.StraightLineRulesOut), short of the free
+    // single steps FuelPlanner.CheapestCostPerUnit leaves out. Ground and paths cost one per tile, but buildings add
+    // cheaper edges to the navigation mesh: tubeways 0.25 per tile, stair and slope climbs 0.4 per level, zipline
+    // cables 0.4 per tile of cable. The value is read from the building templates this game loaded, placed or not,
+    // once per game, the first time a planner asks: 0.25 where tubeways can be built, 0.4 with stairs or ziplines, 1
+    // with none of them. Players with the same game version, faction and mods read the same number; nothing here
+    // depends on the map, the UI, the machine or when it is read. A player with an extra building mod can read a
+    // different one, which Player.log's "Cheapest travel here" line shows.
     public class TravelCostBound
     {
         // The cheapest edge in the base game, a tubeway tile, in case the templates cannot be read.

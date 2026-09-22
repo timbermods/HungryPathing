@@ -248,8 +248,11 @@ namespace HungryPathing.Planning
 
         // Folds one kind of navigation edge into the cheapest cost per unit of straight-line distance, starting
         // from GroundCostPerUnit. An edge costing edgeCost over edgeLength tiles can bring it down. Edges that cost
-        // nothing (a gate, the step from a zipline station onto the cable) are left out: each is one short step a
-        // walk takes a few times at most, and counting them would make every storage worth measuring.
+        // nothing (a gate, one tile; the step from a zipline station onto the cable, about three) are left out: each
+        // is one short step a walk takes a few times at most, and counting them would make every storage worth
+        // measuring. So the bound is not exact: a walk through them can cost a few tiles less than the scaled
+        // straight line, about 0.05h for one zipline ride at base speed, and a storage that close to the limit may
+        // be left unmeasured.
         public static float CheapestCostPerUnit(float cheapestSoFar, float edgeCost, float edgeLength)
         {
             if (!(edgeCost > 0f) || !(edgeLength > 0f) || float.IsInfinity(edgeLength))

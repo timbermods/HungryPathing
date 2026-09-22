@@ -73,6 +73,11 @@ line never feed back into a decision. Two players running the same version with 
 identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
 games will drift apart.
 
+Decisions also read the cheapest path cost per tile from the buildings the game loaded, placed or not, so they
+depend on the faction and on any mods that add buildings. The first time a beaver measures a walk in a game, the log
+prints one `Cheapest travel here:` line; every player's should match, and if they differ, the players do not have
+the same buildings loaded.
+
 ### BeaverBuddies MultiColony
 
 MultiColony gives each colony its own working hours. The mod already goes through the per-beaver working-hours test
