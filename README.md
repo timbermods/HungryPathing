@@ -86,12 +86,14 @@ simulation. Nothing is saved. A save made with the mod loads without it and the 
 
 ## Status of this alpha
 
-What has been verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in
-the game's assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [DESIGN.md](DESIGN.md)),
-and the planner arithmetic passes its checks. What has not: a live colony run, because none has been done yet. The
-first person to load a colony with it should watch the log lines below. If anything in the mod throws, it logs the
-stack trace once and switches itself off for the session, so the worst case is a colony that behaves as in the
-base game plus one warning to report.
+Verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in the game's
+assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [DESIGN.md](DESIGN.md)), and the planner
+arithmetic passes its checks. First live run: three in-game days in a 330-adult single-district colony, played
+twice from the same save, the second time as a BeaverBuddies host with a guest connected. No exceptions, all five
+hooks installed, the buffer read 3h, and both runs produced identical daily counters and identical co-op
+consistency hashes, which is the determinism the multiplayer section promises. Still an alpha: one colony, three
+days, and the builder job check has not yet seen a construction-heavy day. If anything in the mod throws, it logs
+the stack trace once and switches itself off for the session.
 
 ## Checking that it works
 

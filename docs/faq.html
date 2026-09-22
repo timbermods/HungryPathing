@@ -93,7 +93,7 @@
         <h2>Compatibility</h2>
         <details class="q" id="coop">
           <summary>Does it work in co-op with BeaverBuddies?</summary>
-          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player runs the same version with an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. That said, this alpha has not been watched in a live colony yet, so try a single-player copy first.</p></div>
+          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player runs the same version with an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p></div>
         </details>
         <details class="q" id="saves">
           <summary>Is it safe to add to or remove from an existing colony?</summary>
@@ -117,7 +117,7 @@
         <h2>Status</h2>
         <details class="q" id="alpha">
           <summary>Why is it called an alpha?</summary>
-          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks, but no one has watched it run in a live colony yet. If anything in it throws, it logs the stack trace once and switches itself off for the session, so the worst case is a colony that behaves as in the base game plus a warning to report.</p></div>
+          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. Its first live run was one 330-beaver colony for three in-game days, played twice from the same save, once as a BeaverBuddies host with a guest: no errors, and the same daily counters and co-op consistency hashes both times. One colony and three days is not much, and the builder rule has not yet seen a construction-heavy day, so it stays an alpha. If anything in it throws, it logs the stack trace once and switches itself off for the session.</p></div>
         </details>
         <details class="q" id="help">
           <summary>How can I help?</summary>

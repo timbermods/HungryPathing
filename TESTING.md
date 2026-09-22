@@ -25,8 +25,19 @@ installed settings file first to see individual trips. The script goes through `
 `Timberborn.exe` started on its own hands over to Steam and loses its arguments; Steam then shows a prompt to
 confirm the arguments before the game starts.
 
-Status for 0.1.0: no live colony run has been done yet, so the first live observation is still to come. The
-circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+Status for 0.1.0: first live run done on 2026-09-21 in a 330-adult, single-district Folktails colony, days 302 to
+304, played twice from the same autosave: once alone, once as a BeaverBuddies host with a guest whose mod list
+matched. No exceptions. The daily lines from both runs:
+
+```
+Day 302: just-in-time 52, pre-fuel 93,  builder job 0 (of 0 job checks), critical redirected 12. 1341 evaluations, 9128 path queries.
+Day 303: just-in-time 52, pre-fuel 144, builder job 0 (of 1 job checks), critical redirected 15. 1247 evaluations, 8040 path queries.
+Day 304: just-in-time 50, pre-fuel 135, builder job 0 (of 0 job checks), critical redirected 12. 1153 evaluations, 7520 path queries.
+```
+
+Identical to the counter in the second run, alongside identical BeaverBuddies consistency hashes for days 303 to
+305. Not yet seen: a construction-heavy day for the builder job check, and a before-and-after comparison of eating
+trips at the same time of day. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
 
 What to look for in Player.log:
 
