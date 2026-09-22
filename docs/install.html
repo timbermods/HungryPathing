@@ -69,9 +69,9 @@
         </li>
         <li>
           <h3>Download the zip</h3>
-          <p>Get the newest release from GitHub. Choose the file named like <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not the one called <em>Source code</em>.</p>
-          <div class="btn-row"><a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download the latest zip</a></div>
-          <p class="file-name" data-zip-line hidden>File: <code data-zip-name></code></p>
+          <p>Get the latest release from GitHub. Choose the file named like <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not the one called <em>Source code</em>.</p>
+          <div class="btn-row"><a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download the latest zip</a></div>
+          <p class="file-name">File: <code data-release="asset-name"></code></p>
         </li>
         <li>
           <h3>Extract it into your Mods folder</h3>
@@ -161,6 +161,6 @@
     </ul>
   </div>
 </footer>
-<script src="assets/site.js" defer></script>
+<script src="assets/release.js" defer data-repo="timbermods/HungryPathing" data-asset="^HungryPathing-[\d.]+\.zip$"></script>
 </body>
 </html>

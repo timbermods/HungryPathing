@@ -39,11 +39,11 @@
   <div class="hero">
     <div class="container hero-grid">
       <div>
-        <span class="eyebrow">Timberborn mod <span class="ver" data-latest-version hidden></span></span>
+        <span class="eyebrow">Timberborn mod <span class="ver"><span data-release="tag"></span><span data-release-show="prerelease" hidden> preview</span></span></span>
         <h1>Beavers that eat before the shift, not after the penalty.</h1>
         <p class="lede">Working beavers top off before a shift they cannot finish, leave far jobs early enough to reach food before the hunger penalty, and eat at the closest stocked storage instead of crossing the map for a fancier meal.</p>
         <div class="btn-row">
-          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download latest release</a>
+          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
           <a class="btn btn-secondary" href="install.html">Install guide</a>
         </div>
         <ul class="chips" aria-label="At a glance">
@@ -199,7 +199,7 @@
       <h2>Ready to try it?</h2>
       <p>Beta: one colony of 355 beavers has run it for 36 in-game days, nearly all in co-op, with no errors, and the numbers above are from its saves. Try it on a copy of your save first.</p>
       <div class="btn-row">
-        <a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download latest release</a>
+        <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
         <a class="btn btn-secondary" href="install.html">Read the install guide</a>
       </div>
     </div>
@@ -222,6 +222,6 @@
     </ul>
   </div>
 </footer>
-<script src="assets/site.js" defer></script>
+<script src="assets/release.js" defer data-repo="timbermods/HungryPathing" data-asset="^HungryPathing-[\d.]+\.zip$"></script>
 </body>
 </html>
