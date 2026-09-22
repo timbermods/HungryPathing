@@ -411,6 +411,7 @@ namespace HungryPathing
                 // for a while; the caller tries the next one.
                 _backoffBehavior = pick.Behavior;
                 _backoffUntilHours = now + 2f * Plugin.Settings.RetryHours;
+                Stats.FailedLaunches++;
                 decision = default;
                 return false;
             }
