@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HungryPathing.Planning;
 using Timberborn.BaseComponentSystem;
 using Timberborn.BehaviorSystem;
+using Timberborn.Common;
 using Timberborn.ConstructionSites;
 using Timberborn.GameDistricts;
 using Timberborn.Navigation;
@@ -37,8 +38,12 @@ namespace HungryPathing
             public NeedBehavior Behavior;
             public float TravelHours;
             public float Value;
-            public float SiteToFoodHours;
+            public int Index;
         }
+
+        // A beaver with hours to spare sleeps this long at most between evaluations, so a changed working day is
+        // noticed the same shift. Evaluations that measure nothing cost a few comparisons.
+        private const float MaxSleepHours = 3f;
 
         // Straight-line order, then insertion order: List.Sort is unstable, so the tie-break keeps it deterministic.
         private static readonly Comparison<Scored> ByHeuristic = (a, b) =>
@@ -46,6 +51,8 @@ namespace HungryPathing
             int byHours = a.HeuristicHours.CompareTo(b.HeuristicHours);
             return byHours != 0 ? byHours : a.Order.CompareTo(b.Order);
         };
+
+        private static bool _missingComponentLogged;
 
         private readonly IDayNightCycle _dayNightCycle;
         private readonly WorkingHoursManager _workingHoursManager;
@@ -58,12 +65,14 @@ namespace HungryPathing
         private Appraiser _appraiser;
         private Walker _walker;
         private WalkerSpeedManager _walkerSpeedManager;
+        private bool _ready;
 
         private readonly List<Scored> _scored = new List<Scored>();
         private readonly List<Candidate> _candidates = new List<Candidate>();
         private readonly List<NeedBehavior> _candidateBehaviors = new List<NeedBehavior>();
         private readonly List<string> _needOrder = new List<string>();
         private readonly List<float> _needHoursLeft = new List<float>();
+        private float _siteToFoodHours;
 
         private float _nextCheckHours = float.NegativeInfinity;
         private int _lastDay = int.MinValue;
@@ -92,11 +101,20 @@ namespace HungryPathing
             _appraiser = GetComponent<Appraiser>();
             _walker = GetComponent<Walker>();
             _walkerSpeedManager = GetComponent<WalkerSpeedManager>();
+            _ready = _worker && _workerWorkingHours && _workRefuser && _citizen && _needManager && _appraiser &&
+                     _walker && _walkerSpeedManager;
+            if (!_ready && !_missingComponentLogged)
+            {
+                // A modded beaver template without one of these parts: the planner stays off for it, and only it.
+                _missingComponentLogged = true;
+                Log.Warning(Name + " lacks a component the planner needs (worker, needs, walker or district); " +
+                            "beavers like it keep the game's own behavior.");
+            }
         }
 
         public override Decision Decide(BehaviorAgent agent)
         {
-            if (!Plugin.Settings.Enabled)
+            if (!Plugin.Settings.Enabled || !_ready)
             {
                 return Decision.ReleaseNow();
             }
@@ -126,8 +144,11 @@ namespace HungryPathing
                 _lastDay = _dayNightCycle.DayNumber;
                 _nextCheckHours = float.NegativeInfinity;
             }
-            bool forced = _forcedNeedId != null && now <= _forcedUntilHours;
-            if (!forced && now < _nextCheckHours)
+            // A builder that just let a site go gets exactly this one decision with its need forced. If another
+            // behavior took the decision instead, the ordinary rules apply from here on.
+            string forcedNeedId = now < _forcedUntilHours ? _forcedNeedId : null;
+            _forcedNeedId = null;
+            if (forcedNeedId == null && now < _nextCheckHours)
             {
                 return Decision.ReleaseNow();
             }
@@ -152,50 +173,46 @@ namespace HungryPathing
                 NeedSpec spec = _needManager.GetNeedSpec(needId);
                 float hoursLeft = _needHoursLeft[i];
                 float warning = WarningHours(settings, spec);
-                bool isForced = forced && _forcedNeedId == needId;
+                bool isForced = forcedNeedId == needId;
                 bool justInTime = settings.JustInTime &&
                                   FuelPlanner.InJustInTimeWindow(hoursLeft, warning, settings.JustInTimeLeadHours);
                 bool preFuel = settings.PreFuel && FuelPlanner.WouldNotLastShift(hoursLeft, hoursToShiftEnd, warning);
-                delay = Mathf.Min(delay,
-                    FuelPlanner.NextCheckDelay(hoursLeft, warning, settings.JustInTimeLeadHours, preFuel, settings.RetryHours));
+                delay = Mathf.Min(delay, FuelPlanner.NextCheckDelay(hoursLeft, warning, settings.JustInTimeLeadHours,
+                    preFuel, settings.RetryHours, MaxSleepHours));
                 if (!isForced && !justInTime && !preFuel)
                 {
                     continue;
                 }
-                if (!TryFindBest(index, needId, settings, null, now, out Pick pick))
+                // Pre-fuel only wants storages within PreFuelNearFoodHours; measuring farther ones cannot change
+                // its answer, so they are not measured.
+                float measureUpTo = isForced || justInTime ? float.MaxValue : settings.PreFuelNearFoodHours;
+                if (!TryFindBest(index, needId, settings, null, now, measureUpTo, out Pick pick))
                 {
                     continue;
                 }
-                TripReason reason = TripReason.None;
-                if (isForced)
+                while (true)
                 {
-                    reason = TripReason.BuilderJob;
-                }
-                else if (justInTime && FuelPlanner.ShouldLeaveNow(hoursLeft, pick.TravelHours, warning))
-                {
-                    reason = TripReason.JustInTime;
-                }
-                else if (preFuel && pick.TravelHours <= settings.PreFuelNearFoodHours)
-                {
-                    reason = TripReason.PreFuel;
-                }
-                if (reason == TripReason.None)
-                {
-                    if (justInTime)
+                    TripReason reason = ReasonFor(pick, isForced, justInTime, preFuel, hoursLeft, warning, settings);
+                    if (reason == TripReason.None)
                     {
-                        delay = Mathf.Min(delay,
-                            FuelPlanner.DelayUntilLeaving(hoursLeft, pick.TravelHours, warning, settings.RetryHours));
+                        if (justInTime)
+                        {
+                            delay = Mathf.Min(delay,
+                                FuelPlanner.DelayUntilLeaving(hoursLeft, pick.TravelHours, warning, settings.RetryHours));
+                        }
+                        break;
                     }
-                    continue;
+                    if (TryStart(agent, pick, reason, needId, hoursLeft, now, out Decision decision))
+                    {
+                        return decision;
+                    }
+                    // That storage could not start a trip: try the next best one measured in this same decision.
+                    RemoveCandidate(pick.Index);
+                    if (!PickFromCandidates(settings, out pick))
+                    {
+                        break;
+                    }
                 }
-                if (TryStart(agent, pick, reason, needId, hoursLeft, now, out Decision decision))
-                {
-                    return decision;
-                }
-            }
-            if (forced)
-            {
-                _forcedNeedId = null;
             }
             _nextCheckHours = now + (delay == float.MaxValue ? settings.RetryHours : delay);
             return Decision.ReleaseNow();
@@ -208,7 +225,7 @@ namespace HungryPathing
         {
             decision = default;
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.RedirectCriticalTrips)
+            if (!settings.Enabled || !settings.RedirectCriticalTrips || !_ready)
             {
                 return false;
             }
@@ -240,7 +257,8 @@ namespace HungryPathing
             for (int i = 0; i < settings.Needs.Length; i++)
             {
                 string needId = settings.Needs[i];
-                if (!_needManager.HasNeed(needId) || !_needManager.NeedIsInCriticalState(needId))
+                if (!_needManager.HasNeed(needId) || !_needManager.NeedIsEnabled(needId) ||
+                    !_needManager.NeedIsInCriticalState(needId))
                 {
                     continue;
                 }
@@ -256,11 +274,22 @@ namespace HungryPathing
                 return false;
             }
             float now = Now();
-            if (!TryFindBest(index, chosen, settings, null, now, out Pick pick))
+            if (!TryFindBest(index, chosen, settings, null, now, float.MaxValue, out Pick pick))
             {
                 return false;
             }
-            return TryStart(agent, pick, TripReason.CriticalRedirect, chosen, 0f, now, out decision);
+            while (true)
+            {
+                if (TryStart(agent, pick, TripReason.CriticalRedirect, chosen, 0f, now, out decision))
+                {
+                    return true;
+                }
+                RemoveCandidate(pick.Index);
+                if (!PickFromCandidates(settings, out pick))
+                {
+                    return false;
+                }
+            }
         }
 
         // Called from the postfix on BuildBehavior.Decide the moment a builder starts walking to a reserved site.
@@ -268,7 +297,7 @@ namespace HungryPathing
         internal bool BuilderShouldTopOffFirst(ConstructionSite site)
         {
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.BuilderJobCheck)
+            if (!settings.Enabled || !settings.BuilderJobCheck || !_ready)
             {
                 return false;
             }
@@ -321,22 +350,27 @@ namespace HungryPathing
                     }
                     travelToSite = _walker.CalculateTravelTimeInHours(Transform.position, sitePosition);
                     Stats.PathQueries++;
+                    if (!float.IsFinite(travelToSite))
+                    {
+                        return false;
+                    }
                 }
                 if (hoursLeft - warning >= travelToSite + settings.BuilderJobWorkHours)
                 {
                     continue;
                 }
-                if (!TryFindBest(index, needId, settings, sitePosition, now, out Pick pick))
+                // Only storages near the builder right now matter; farther ones are not measured.
+                if (!TryFindBest(index, needId, settings, sitePosition, now, settings.PreFuelNearFoodHours, out Pick pick))
                 {
                     continue;
                 }
                 if (!FuelPlanner.BuilderShouldTopOff(hoursLeft, warning, travelToSite, settings.BuilderJobWorkHours,
-                        pick.SiteToFoodHours, pick.TravelHours, settings.PreFuelNearFoodHours))
+                        _siteToFoodHours, pick.TravelHours, settings.PreFuelNearFoodHours))
                 {
                     continue;
                 }
                 _forcedNeedId = needId;
-                _forcedUntilHours = now + 1f;
+                _forcedUntilHours = now + 3f * _dayNightCycle.FixedDeltaTimeInHours;
                 _nextCheckHours = now;
                 if (settings.Diagnostics)
                 {
@@ -348,6 +382,24 @@ namespace HungryPathing
             return false;
         }
 
+        private static TripReason ReasonFor(Pick pick, bool isForced, bool justInTime, bool preFuel, float hoursLeft,
+            float warning, Config settings)
+        {
+            if (isForced)
+            {
+                return TripReason.BuilderJob;
+            }
+            if (justInTime && FuelPlanner.ShouldLeaveNow(hoursLeft, pick.TravelHours, warning))
+            {
+                return TripReason.JustInTime;
+            }
+            if (preFuel && pick.TravelHours <= settings.PreFuelNearFoodHours)
+            {
+                return TripReason.PreFuel;
+            }
+            return TripReason.None;
+        }
+
         private bool TryStart(BehaviorAgent agent, Pick pick, TripReason reason, string needId, float hoursLeft, float now,
             out Decision decision)
         {
@@ -355,13 +407,12 @@ namespace HungryPathing
             if (inner.ShouldReleaseNow || (inner.Executor == null && !inner.ShouldReturnToBehavior))
             {
                 // Nothing to take there after all (stock reserved meanwhile, or no way in). Leave that storage alone
-                // for a while and let the game carry on.
+                // for a while; the caller tries the next one.
                 _backoffBehavior = pick.Behavior;
-                _backoffUntilHours = now + Plugin.Settings.RetryHours;
+                _backoffUntilHours = now + 2f * Plugin.Settings.RetryHours;
                 decision = default;
                 return false;
             }
-            _forcedNeedId = null;
             _nextCheckHours = now;
             Stats.Count(reason);
             if (Plugin.Settings.Diagnostics)
@@ -374,19 +425,25 @@ namespace HungryPathing
         }
 
         // Ranks the district's stocked storages for one need: straight-line distance first for everything, then
-        // real walking time for the nearest CandidateLimit, then the planner's pick. Storages the beaver cannot
-        // take a full unit from score zero with the game's own appraiser and drop out before any path query.
+        // real walking time for the nearest CandidateLimit within measureUpToHours by straight line, then the
+        // planner's pick. Storages the beaver cannot take a full unit from score zero with the game's own appraiser
+        // and drop out before any path query. The measured candidates stay available for a re-pick if the chosen
+        // one cannot start a trip.
         private bool TryFindBest(HungryPathingDistrictIndex index, string needId, Config settings, Vector3? site,
-            float now, out Pick pick)
+            float now, float measureUpToHours, out Pick pick)
         {
             pick = default;
             _scored.Clear();
-            Vector3 here = Transform.position;
+            _candidates.Clear();
+            _candidateBehaviors.Clear();
+            _siteToFoodHours = float.MaxValue;
             float speed = _walkerSpeedManager.GetWalkerBaseSpeed();
-            if (speed <= 0f)
+            if (!(speed > 0f))
             {
-                speed = 1f;
+                // Not known yet on the very first tick after a load; nothing is measured against a guess.
+                return false;
             }
+            Vector3 here = Transform.position;
             IReadOnlyList<HungryPathingDistrictIndex.Group> groups = index.GroupsFor(needId);
             int order = 0;
             for (int g = 0; g < groups.Count; g++)
@@ -404,7 +461,7 @@ namespace HungryPathing
                 for (int b = 0; b < group.Behaviors.Count; b++)
                 {
                     NeedBehavior behavior = group.Behaviors[b];
-                    if (behavior == _backoffBehavior && now <= _backoffUntilHours)
+                    if (behavior == _backoffBehavior && FuelPlanner.StillBackedOff(now, _backoffUntilHours))
                     {
                         continue;
                     }
@@ -441,24 +498,36 @@ namespace HungryPathing
                 return false;
             }
             _scored.Sort(ByHeuristic);
-            float siteToFood = float.MaxValue;
             for (int i = 0; i < _scored.Count; i++)
             {
-                siteToFood = Mathf.Min(siteToFood, _scored[i].FromSiteHours);
+                _siteToFoodHours = Mathf.Min(_siteToFoodHours, _scored[i].FromSiteHours);
             }
             int limit = Mathf.Min(settings.CandidateLimit, _scored.Count);
-            _candidates.Clear();
-            _candidateBehaviors.Clear();
             for (int i = 0; i < limit; i++)
             {
+                if (_scored[i].HeuristicHours > measureUpToHours)
+                {
+                    // The straight line is a lower bound on the walk, so nothing after this can be near enough.
+                    break;
+                }
                 float travel = _walker.CalculateTravelTimeInHours(here, _scored[i].Position);
                 Stats.PathQueries++;
+                if (!float.IsFinite(travel))
+                {
+                    continue;
+                }
                 _candidates.Add(new Candidate(travel, _scored[i].Value));
                 _candidateBehaviors.Add(_scored[i].Behavior);
             }
+            return PickFromCandidates(settings, out pick);
+        }
+
+        private bool PickFromCandidates(Config settings, out Pick pick)
+        {
             int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours, settings.WorkTimeClosestFood);
             if (best < 0)
             {
+                pick = default;
                 return false;
             }
             pick = new Pick
@@ -466,9 +535,15 @@ namespace HungryPathing
                 Behavior = _candidateBehaviors[best],
                 TravelHours = _candidates[best].TravelHours,
                 Value = _candidates[best].Value,
-                SiteToFoodHours = siteToFood
+                Index = best
             };
             return true;
+        }
+
+        private void RemoveCandidate(int index)
+        {
+            _candidates.RemoveAt(index);
+            _candidateBehaviors.RemoveAt(index);
         }
 
         private int IndexOfScored(NeedBehavior behavior)
@@ -488,7 +563,8 @@ namespace HungryPathing
             return _dayNightCycle.SecondsToHours(Vector3.Distance(from, to) / speed);
         }
 
-        // Tracked needs the beaver actually has, least hours left first, with those hours cached alongside.
+        // Tracked needs the beaver actually has and that are switched on, least hours left first, with those hours
+        // cached alongside.
         private void OrderNeedsByUrgency(Config settings)
         {
             _needOrder.Clear();
@@ -496,7 +572,7 @@ namespace HungryPathing
             for (int i = 0; i < settings.Needs.Length; i++)
             {
                 string needId = settings.Needs[i];
-                if (!_needManager.HasNeed(needId))
+                if (!_needManager.HasNeed(needId) || !_needManager.NeedIsEnabled(needId))
                 {
                     continue;
                 }
@@ -527,14 +603,28 @@ namespace HungryPathing
             return _dayNightCycle.DayNumber * 24f + _dayNightCycle.HoursPassedToday;
         }
 
-        private static Vector3 SitePosition(ConstructionSite site)
+        // A construction site has one access point per open neighbour, so the game's single-access accessor would
+        // throw; the nearest access to the builder stands in for the walk's destination.
+        private Vector3 SitePosition(ConstructionSite site)
         {
-            if (site.TryGetComponent(out Accessible accessible))
+            if (site.TryGetComponent(out Accessible accessible) && accessible.Enabled)
             {
-                Vector3? access = accessible.UnblockedSingleAccess;
-                if (access.HasValue)
+                ReadOnlyList<Vector3> accesses = accessible.Accesses;
+                if (accesses.Count > 0)
                 {
-                    return access.Value;
+                    Vector3 here = Transform.position;
+                    Vector3 best = accesses[0];
+                    float bestDistance = Vector3.Distance(here, best);
+                    for (int i = 1; i < accesses.Count; i++)
+                    {
+                        float distance = Vector3.Distance(here, accesses[i]);
+                        if (distance < bestDistance)
+                        {
+                            best = accesses[i];
+                            bestDistance = distance;
+                        }
+                    }
+                    return best;
                 }
             }
             return site.Transform.position;

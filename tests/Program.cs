@@ -32,6 +32,7 @@ internal static class Program
         Check(FuelPlanner.BuilderShouldTopOff(6f, 3f, 2f, 1f, 1f, 0.3f, 0.5f), "builder: 3h of buffer, 4h job");
         Check(!FuelPlanner.BuilderShouldTopOff(8f, 3f, 2f, 1f, 1f, 0.3f, 0.5f), "builder: 5h of buffer, 4h job");
         Check(!FuelPlanner.BuilderShouldTopOff(6f, 3f, 0.2f, 1f, 1f, 0.3f, 0.5f), "builder: site closer than food");
+        Check(!FuelPlanner.BuilderShouldTopOff(6f, 3f, 0.3f, 1f, 1f, 0.3f, 0.5f), "builder: site as close as food");
         Check(!FuelPlanner.BuilderShouldTopOff(6f, 3f, 2f, 1f, 1f, 0.6f, 0.5f), "builder: food not near");
 
         List<Candidate> mixed = new List<Candidate> { new Candidate(1.0f, 5f), new Candidate(0.5f, 3f), new Candidate(0.6f, 9f) };
@@ -47,17 +48,34 @@ internal static class Program
         List<Candidate> reversed = new List<Candidate> { mixed[2], mixed[1], mixed[0] };
         Check(Near(reversed[FuelPlanner.PickCandidate(reversed, 0.25f, true)].Value, 9f),
             "the same storage wins whatever order the list came in");
+        // The tolerance window is measured from the closest candidate, so a chain of small steps cannot walk the
+        // choice out to a far storage.
+        List<Candidate> chain = new List<Candidate> { new Candidate(0.5f, 1f), new Candidate(0.7f, 5f), new Candidate(0.9f, 10f) };
+        List<Candidate> chainReversed = new List<Candidate> { chain[2], chain[1], chain[0] };
+        Check(Near(chain[FuelPlanner.PickCandidate(chain, 0.25f, true)].Value, 5f), "a chain stops at the tolerance window");
+        Check(Near(chainReversed[FuelPlanner.PickCandidate(chainReversed, 0.25f, true)].Value, 5f),
+            "a chain stops at the same storage in reverse order");
+        List<Candidate> broken = new List<Candidate> { new Candidate(float.NaN, 9f), new Candidate(float.PositiveInfinity, 9f), new Candidate(0.8f, 1f) };
+        Check(FuelPlanner.PickCandidate(broken, 0.25f, true) == 2, "unmeasured candidates are never chosen");
+        Check(FuelPlanner.PickCandidate(broken, 0.25f, false) == 2, "unmeasured candidates are never chosen value-first");
+        List<Candidate> allBroken = new List<Candidate> { new Candidate(float.NaN, 9f) };
+        Check(FuelPlanner.PickCandidate(allBroken, 0.25f, true) == -1, "only unmeasured candidates means no pick");
 
-        Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, false, 0.5f), 13f), "sleep until the window could open");
-        Check(Near(FuelPlanner.NextCheckDelay(6f, 3f, 4f, false, 0.5f), 0.5f), "retry inside the window");
-        Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, true, 0.5f), 0.5f), "retry while pre-fuel is possible");
+        Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, false, 0.5f, 3f), 3f), "sleep is capped at the maximum");
+        Check(Near(FuelPlanner.NextCheckDelay(9f, 3f, 4f, false, 0.5f, 3f), 2f), "sleep until the window could open");
+        Check(Near(FuelPlanner.NextCheckDelay(6f, 3f, 4f, false, 0.5f, 3f), 0.5f), "retry inside the window");
+        Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, true, 0.5f, 3f), 0.5f), "retry while pre-fuel is possible");
+        Check(Near(FuelPlanner.NextCheckDelay(float.PositiveInfinity, 3f, 4f, false, 0.5f, 3f), 3f),
+            "a need that never runs out still gets checked within the cap");
         Check(Near(FuelPlanner.DelayUntilLeaving(6f, 1f, 3f, 0.5f), 0.5f), "wake-up is bounded by the retry interval");
         Check(Near(FuelPlanner.DelayUntilLeaving(3.5f, 1f, 3f, 0.5f), 0.1f), "wake-up never waits past the leaving time");
 
+        Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
+        Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
+        Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
+
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
-        // per day. Two beavers that both decay 0.8/day eat 24 points = 80 units over 30 days whether they eat at
-        // 0.6 or at 0.0; only where the last meal falls can differ, by at most two units.
-        // The early eater is ahead by the units it ate before the late one started, and that lead never grows.
+        // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.
         int lead30 = UnitsEatenOver(30, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(30, 0.8f, 0.3f, 0.0f);
         int lead300 = UnitsEatenOver(300, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(300, 0.8f, 0.3f, 0.0f);
         Check(lead30 >= 0 && lead30 <= 2 && lead300 == lead30,

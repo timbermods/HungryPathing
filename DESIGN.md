@@ -124,17 +124,27 @@ With `hoursLeft = points / (|DailyDelta| / 24)` and `buffer = HoursWarningThresh
   to the pool.
 - **Critical redirect**: a prefix on `CriticalNeederRootBehavior.Decide`. In the work context, if Hunger or Thirst
   is critical, the planner picks the storage its own way for the more important of the two and answers instead of
-  the game; anything else falls through to vanilla.
+  the game; anything else falls through to vanilla. One cosmetic side effect: the vanilla picker also refreshes the
+  saved set of "needs being critically satisfied" that drives floating status icons for `Action`-type critical
+  needs, and a redirected trip skips that refresh. Hunger and Thirst are `State`-type needs with no such icon, so
+  the only visible effect would be a stale icon from an earlier action-type trip during a redirected walk.
+
+The builder check reads the site's position from the nearest of its access points. A site has one access per open
+neighbour column, so the game's single-access accessor, which storages use, would throw on it.
 
 ### Guardrails
 
 - **Determinism.** Inputs are need points, spec values, positions, the working-hours manager, the day-night cycle
   and the game's path queries. Lists are iterated in insertion order and sorts have total tie-breaks. No clock, no
   randomness, no frame timing. Counters are the only mutable static state and never feed a decision.
-- **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time and returns immediately.
-  Appraisal runs before any path query and removes storages the beaver could not eat at. Path queries are capped
-  per decision. A storage that turns out empty or unreachable when the trip is launched is skipped for
-  `RetryHours`.
+- **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
+  and returns immediately. Appraisal runs before any path query and removes storages the beaver could not eat at.
+  Path queries are capped per decision, and a pre-fuel-only check stops measuring at the first storage whose
+  straight-line time already exceeds `PreFuelNearFoodHours`, since the straight line is a lower bound on the walk.
+  A storage that turns out empty or unreachable when the trip is launched is dropped from that decision's
+  candidates, the next best measured one is tried at once, and the failed one is left alone for twice `RetryHours`.
+  This matters because the walker's travel-time query never reports "unreachable": it substitutes the straight-line
+  time, so an unreachable storage can look like the best candidate until the launch fails.
 - **No saved state.** Both components hold caches only. `BehaviorManager` saves the *running* behavior, and a trip
   the mod starts is recorded as the vanilla `InventoryNeedBehavior`, not as the planner, so a save made mid-trip
   loads without the mod.

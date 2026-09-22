@@ -11,6 +11,11 @@ $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 $modName = "HungryPathing"
 
+# The manifest names the release and the assembly stamps the log line; they must agree.
+$manifestVersion = (Get-Content "$root\packaging\manifest.json" -Raw | ConvertFrom-Json).Version
+$csprojVersion = ([regex]::Match((Get-Content "$root\source\$modName.csproj" -Raw), '<Version>([^<]+)</Version>')).Groups[1].Value
+if ($manifestVersion -ne $csprojVersion) { throw "manifest.json says $manifestVersion but the csproj says $csprojVersion." }
+
 dotnet build "$root\source\$modName.csproj" -c Release -p:GameDir="$GameDir" --nologo -v q
 if ($LASTEXITCODE -ne 0) { throw "Build failed." }
 

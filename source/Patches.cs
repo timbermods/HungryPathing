@@ -162,6 +162,12 @@ namespace HungryPathing
                 if (hungry.BuilderShouldTopOffFirst(builder.ReservedConstructionSite))
                 {
                     builder.Unreserve();
+                    // The walk toward the site was already launched; without this the beaver would keep walking to a
+                    // site it no longer holds if no trip starts next tick. A new walk clears the flag again.
+                    if (__instance.TryGetComponent(out Walker walker))
+                    {
+                        walker.StopNextTick();
+                    }
                     __result = Decision.ReleaseNextTick();
                 }
             }

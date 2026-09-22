@@ -26,6 +26,9 @@ namespace HungryPathing.Planning
             TravelHours = travelHours;
             Value = value;
         }
+
+        // A candidate whose walk could not be measured (no speed yet, or an overflow) is never chosen.
+        public bool Usable => !float.IsNaN(TravelHours) && !float.IsInfinity(TravelHours) && !float.IsNaN(Value);
     }
 
     public static class FuelPlanner
@@ -77,17 +80,39 @@ namespace HungryPathing.Planning
             return hoursLeft - warningHours < travelToSite + workHours + siteToFoodHours;
         }
 
-        // Index of the storage to use, or -1. closestFirst: least walking wins, and a higher-value candidate
-        // only wins when it costs at most varietyToleranceHours more. Otherwise value wins and walking breaks
-        // ties, which is how the base game orders things. Ties fall to the lowest index, so the result is the
-        // same on every machine given the same list.
+        // Index of the storage to use, or -1. closestFirst: the least walking wins, except that any candidate
+        // within varietyToleranceHours of the closest one may win on value. The window is measured from the
+        // closest candidate, never from a running best, so the answer does not depend on list order. Otherwise
+        // value wins and walking breaks ties, which is how the base game orders things. Remaining ties fall to
+        // the lowest index, so the result is the same on every machine given the same list.
         public static int PickCandidate(IReadOnlyList<Candidate> candidates, float varietyToleranceHours,
             bool closestFirst)
         {
+            float minTravel = float.PositiveInfinity;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                if (candidates[i].Usable && candidates[i].TravelHours < minTravel)
+                {
+                    minTravel = candidates[i].TravelHours;
+                }
+            }
+            if (float.IsPositiveInfinity(minTravel))
+            {
+                return -1;
+            }
             int best = -1;
             for (int i = 0; i < candidates.Count; i++)
             {
-                if (best < 0 || Better(candidates[i], candidates[best], varietyToleranceHours, closestFirst))
+                Candidate candidate = candidates[i];
+                if (!candidate.Usable)
+                {
+                    continue;
+                }
+                if (closestFirst && candidate.TravelHours > minTravel + varietyToleranceHours)
+                {
+                    continue;
+                }
+                if (best < 0 || Better(candidate, candidates[best]))
                 {
                     best = i;
                 }
@@ -95,25 +120,8 @@ namespace HungryPathing.Planning
             return best;
         }
 
-        private static bool Better(Candidate candidate, Candidate best, float tolerance, bool closestFirst)
+        private static bool Better(Candidate candidate, Candidate best)
         {
-            if (closestFirst)
-            {
-                if (candidate.TravelHours + tolerance < best.TravelHours)
-                {
-                    return true;
-                }
-                if (best.TravelHours + tolerance < candidate.TravelHours)
-                {
-                    return false;
-                }
-                // Within tolerance of each other: more value wins, then less walking.
-                if (candidate.Value != best.Value)
-                {
-                    return candidate.Value > best.Value;
-                }
-                return candidate.TravelHours < best.TravelHours;
-            }
             if (candidate.Value != best.Value)
             {
                 return candidate.Value > best.Value;
@@ -122,15 +130,16 @@ namespace HungryPathing.Planning
         }
 
         // How long a beaver that decided nothing can skip evaluating. Inside a window it checks again after
-        // retryHours; well above the window it sleeps until it could enter one, since nothing else changes.
+        // retryHours; well above the window it sleeps until it could enter one, since nothing else changes, but
+        // never longer than maxSleepHours so a changed working day or an infinite need is noticed within hours.
         public static float NextCheckDelay(float hoursLeft, float warningHours, float leadHours, bool preFuelEligible,
-            float retryHours)
+            float retryHours, float maxSleepHours)
         {
             if (preFuelEligible || InJustInTimeWindow(hoursLeft, warningHours, leadHours))
             {
                 return retryHours;
             }
-            return Math.Max(retryHours, hoursLeft - (warningHours + leadHours));
+            return Math.Max(retryHours, Math.Min(maxSleepHours, hoursLeft - (warningHours + leadHours)));
         }
 
         // Inside the window with a storage in reach but not yet time to go: wake up when it will be, bounded so
@@ -139,6 +148,13 @@ namespace HungryPathing.Planning
         {
             float untilLeaving = hoursLeft - travelHours - warningHours;
             return Math.Max(0.1f, Math.Min(retryHours, untilLeaving));
+        }
+
+        // A storage that failed to launch a trip stays out of the running until this returns false. Exclusive, so
+        // a check that lands exactly on the deadline already considers it again.
+        public static bool StillBackedOff(float now, float untilHours)
+        {
+            return now < untilHours;
         }
     }
 }
