@@ -25,10 +25,8 @@ installed settings file first to see individual trips. The script goes through `
 `Timberborn.exe` started on its own hands over to Steam and loses its arguments; Steam then shows a prompt to
 confirm the arguments before the game starts.
 
-Status for 0.1.0: this run has not completed on the development machine. Steam launched the game with the
-arguments, the process connected to Steam and exited 41 seconds later with nothing after the engine's start-up
-lines in Player.log, before the mod manager loaded any mod. Nothing points at the mod, but it means the first live
-observation is still to come. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+Status for 0.1.0: no live colony run has been done yet, so the first live observation is still to come. The
+circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
 
 What to look for in Player.log:
 

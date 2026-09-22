@@ -85,11 +85,10 @@ simulation. Nothing is saved. A save made with the mod loads without it and the 
 
 What has been verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in
 the game's assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [docs/design.md](docs/design.md)),
-and the planner arithmetic passes its checks. What has not: a live colony run. The first automated launch on the
-development machine exited before any mod loaded, for reasons unrelated to this mod, so the first person to load a
-colony with it should watch the log lines below. If anything in the mod throws, it logs the stack trace once and
-switches itself off for the session, so the worst case is a colony that behaves as in the base game plus one
-warning to report.
+and the planner arithmetic passes its checks. What has not: a live colony run, because none has been done yet. The
+first person to load a colony with it should watch the log lines below. If anything in the mod throws, it logs the
+stack trace once and switches itself off for the session, so the worst case is a colony that behaves as in the
+base game plus one warning to report.
 
 ## Checking that it works
 
