@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>HungryPathing.Tests</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The planner has no game dependencies, so the checks compile it directly and run without the game. -->
+    <Compile Include="../source/Planning/*.cs" Link="Planning/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
