@@ -123,6 +123,45 @@ internal static class Program
         Check(FuelPlanner.PickTrip(new List<Candidate>(), 0.25f, true, float.MaxValue, bothWindows, out reason) == -1 &&
               reason == TripReason.None, "trip: nothing measured means no pick");
 
+        // Measuring stops at the first storage that cannot be near by straight line. On foot a walk costs at least
+        // its straight line, but a tubeway tile costs 0.25, so there the straight line alone is no lower bound.
+        Check(FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, 1f), "bound: on foot, 0.6h in a straight line is not near");
+        Check(!FuelPlanner.StraightLineRulesOut(0.5f, 0.5f, 1f), "bound: on foot, a storage at the limit is measured");
+        Check(!FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, 0.25f),
+            "bound: 0.6h in a straight line is still measured where a tubeway could make it 0.15h");
+        Check(FuelPlanner.StraightLineRulesOut(2.1f, 0.5f, 0.25f), "bound: past four times the limit even tubeways are too slow");
+        Check(!FuelPlanner.StraightLineRulesOut(1000f, float.MaxValue, 0.25f), "bound: an unlimited check measures everything");
+        bool sameAsBefore = true;
+        for (int step = 0; step <= 40; step++)
+        {
+            float straight = step * 0.025f;
+            sameAsBefore &= FuelPlanner.StraightLineRulesOut(straight, 0.5f, 1f) == (straight > 0.5f);
+        }
+        Check(sameAsBefore, "bound: on foot it is exactly the rule it replaces");
+
+        // The factor is the cheapest edge per tile of straight line among what the game loaded. Numbers from the
+        // 1.1.2.4 blueprints: paths 1, stair and slope climbs 0.4 per level, zipline cables 0.4, tubeways 0.25.
+        float ground = FuelPlanner.GroundCostPerUnit;
+        Check(Near(FuelPlanner.CheapestCostPerUnit(ground, 1f, 1f), 1f), "cost: paths alone leave it at 1");
+        float folktails = FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(ground, 1f, 1f), 0.4f, 1f);
+        Check(Near(folktails, 0.4f), "cost: stairs or zipline cables make it 0.4");
+        float ironTeeth = FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(folktails, 0.25f, 1f), 1f, 1f);
+        Check(Near(ironTeeth, 0.25f), "cost: tubeways make it 0.25");
+        float ironTeethReversed = FuelPlanner.CheapestCostPerUnit(
+            FuelPlanner.CheapestCostPerUnit(FuelPlanner.CheapestCostPerUnit(ground, 0.25f, 1f), 1f, 1f), 0.4f, 1f);
+        Check(ironTeethReversed == ironTeeth, "cost: the order the buildings come in does not matter");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, 0f, 1f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0f, 3.162f) == folktails,
+            "cost: free single steps (gates, onto a zipline) are left out");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, 99999f, 1f) == folktails, "cost: a blocked edge changes nothing");
+        Check(Near(FuelPlanner.CheapestCostPerUnit(ground, 1f, 2f), 0.5f), "cost: a long edge counts per tile");
+        Check(FuelPlanner.CheapestCostPerUnit(folktails, float.NaN, 1f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0.1f, 0f) == folktails &&
+              FuelPlanner.CheapestCostPerUnit(folktails, 0.1f, float.PositiveInfinity) == folktails,
+            "cost: unreadable edges are left out");
+        Check(!FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, ironTeeth) && FuelPlanner.StraightLineRulesOut(0.6f, 0.5f, ground),
+            "bound: with tubeways loaded the 0.6h storage is measured, on foot it is not");
+
         Check(Near(FuelPlanner.NextCheckDelay(20f, 3f, 4f, false, 0.5f, 3f), 3f), "sleep is capped at the maximum");
         Check(Near(FuelPlanner.NextCheckDelay(9f, 3f, 4f, false, 0.5f, 3f), 2f), "sleep until the window could open");
         Check(Near(FuelPlanner.NextCheckDelay(6f, 3f, 4f, false, 0.5f, 3f), 0.5f), "retry inside the window");

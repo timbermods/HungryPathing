@@ -33,8 +33,15 @@ there to compare.
 - Pre-fuel at the start of a 16-hour shift triggers for a beaver below about 0.63 hunger or 0.55 thirst (16 hours
   plus the buffer, at the decay rates). Evening eating in the base game usually leaves beavers above that in the
   morning, so the rule mostly catches the ones the evening missed.
-- `CandidateLimit` bounds cost, not correctness: the straight-line pre-sort almost always puts the real closest
-  storage in the first few.
+- `CandidateLimit` bounds cost. On foot the straight-line pre-sort almost always puts the real closest storage in
+  the first few. Tubeways and zipline cables can make a farther storage the quickest to reach, and the pre-sort does
+  not know which storages they serve, so in a colony that relies on them the quickest storage can be outside the
+  nearest `CandidateLimit` and never measured. A higher limit finds it at the cost of more path queries per decision;
+  the daily report counts them.
+- Pre-fuel and builder job checks only measure storages that could be within `PreFuelNearFoodHours`. Where the game
+  has tubeways (Iron Teeth) that reaches four times as far in a straight line, and with stairs or ziplines two and a
+  half times as far, since those can make a storage near that looks far. Player.log names the factor once per game
+  in a `Cheapest travel here:` line.
 - To try one rule at a time, keep the others `false`; the daily report says how often each fired.
 
 ## Overriding the buffer with data only

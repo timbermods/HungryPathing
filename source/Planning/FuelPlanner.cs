@@ -56,6 +56,9 @@ namespace HungryPathing.Planning
 
     public static class FuelPlanner
     {
+        // Ground and ordinary paths cost one per tile walked, and a walk is never shorter than its straight line.
+        public const float GroundCostPerUnit = 1f;
+
         // A need that never decays never runs out.
         public static float HoursUntilZero(float points, float hourlyDecay)
         {
@@ -203,6 +206,29 @@ namespace HungryPathing.Planning
                 return candidate.Value > best.Value;
             }
             return candidate.TravelHours < best.TravelHours;
+        }
+
+        // True when a storage straightLineHours away in a straight line cannot be within limitHours of walking, so
+        // neither can any storage farther by straight line, and none of them needs a path query. The walker's time
+        // is the path's cost over its speed, and a path costs at least minCostPerUnit per unit of straight-line
+        // distance (see CheapestCostPerUnit). The straight line alone is only a bound on foot: a tubeway tile costs
+        // 0.25, so there a storage 0.6h away in a straight line can be 0.15h away.
+        public static bool StraightLineRulesOut(float straightLineHours, float limitHours, float minCostPerUnit)
+        {
+            return straightLineHours * minCostPerUnit > limitHours;
+        }
+
+        // Folds one kind of navigation edge into the cheapest cost per unit of straight-line distance, starting
+        // from GroundCostPerUnit. An edge costing edgeCost over edgeLength tiles can bring it down. Edges that cost
+        // nothing (a gate, the step from a zipline station onto the cable) are left out: each is one short step a
+        // walk takes a few times at most, and counting them would make every storage worth measuring.
+        public static float CheapestCostPerUnit(float cheapestSoFar, float edgeCost, float edgeLength)
+        {
+            if (!(edgeCost > 0f) || !(edgeLength > 0f) || float.IsInfinity(edgeLength))
+            {
+                return cheapestSoFar;
+            }
+            return Math.Min(cheapestSoFar, edgeCost / edgeLength);
         }
 
         // How long a beaver that decided nothing can skip evaluating. Inside a window it checks again after

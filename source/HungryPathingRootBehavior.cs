@@ -49,6 +49,7 @@ namespace HungryPathing
 
         private readonly IDayNightCycle _dayNightCycle;
         private readonly WorkingHoursManager _workingHoursManager;
+        private readonly TravelCostBound _travelCostBound;
 
         private Worker _worker;
         private WorkerWorkingHours _workerWorkingHours;
@@ -78,10 +79,12 @@ namespace HungryPathing
         // Set by the patch that puts this behavior into the root behavior list.
         internal bool Registered;
 
-        public HungryPathingRootBehavior(IDayNightCycle dayNightCycle, WorkingHoursManager workingHoursManager)
+        public HungryPathingRootBehavior(IDayNightCycle dayNightCycle, WorkingHoursManager workingHoursManager,
+            TravelCostBound travelCostBound)
         {
             _dayNightCycle = dayNightCycle;
             _workingHoursManager = workingHoursManager;
+            _travelCostBound = travelCostBound;
         }
 
         public void Awake()
@@ -411,10 +414,13 @@ namespace HungryPathing
         }
 
         // Ranks the district's stocked storages for one need: straight-line distance first for everything, then
-        // real walking time for the nearest CandidateLimit within measureUpToHours by straight line. Storages the
-        // beaver cannot take a full unit from score zero with the game's own appraiser and drop out before any path
-        // query. The caller picks from the measured candidates with FuelPlanner, and they stay available for a
-        // re-pick if the chosen one cannot start a trip. False when nothing could be measured.
+        // real walking time for the nearest CandidateLimit that could be within measureUpToHours of walking.
+        // Storages the beaver cannot take a full unit from score zero with the game's own appraiser and drop out
+        // before any path query. The caller picks from the measured candidates with FuelPlanner, and they stay
+        // available for a re-pick if the chosen one cannot start a trip. False when nothing could be measured.
+        // The straight line is scaled by one factor for the whole game, which does not change this order: a storage
+        // that tubeways or ziplines make quick to reach but that is not among the nearest CandidateLimit in a
+        // straight line is still not measured.
         private bool MeasureCandidates(HungryPathingDistrictIndex index, string needId, Config settings, Vector3? site,
             float now, float measureUpToHours)
         {
@@ -488,11 +494,13 @@ namespace HungryPathing
                 _siteToFoodHours = Mathf.Min(_siteToFoodHours, _scored[i].FromSiteHours);
             }
             int limit = Mathf.Min(settings.CandidateLimit, _scored.Count);
+            float minCostPerUnit = _travelCostBound.MinCostPerUnit;
             for (int i = 0; i < limit; i++)
             {
-                if (_scored[i].HeuristicHours > measureUpToHours)
+                if (FuelPlanner.StraightLineRulesOut(_scored[i].HeuristicHours, measureUpToHours, minCostPerUnit))
                 {
-                    // The straight line is a lower bound on the walk, so nothing after this can be near enough.
+                    // Scaled by the cheapest cost per tile, the straight line is a lower bound on the walk, so
+                    // nothing after this can be near enough.
                     break;
                 }
                 float travel = _walker.CalculateTravelTimeInHours(here, _scored[i].Position);
