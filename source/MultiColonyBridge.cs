@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using HungryPathing.Planning;
 using Timberborn.BaseComponentSystem;
 
 namespace HungryPathing
@@ -13,22 +14,46 @@ namespace HungryPathing
     {
         private const string TypeName = "BeaverBuddies.Colonies.ColonyWorkingHours";
 
+        // What the probe found. It depends only on the loaded assemblies, which do not change while the game runs,
+        // so it is kept for the whole process.
         private static bool _probed;
         private static bool _available;
+        private static string _probeResult = "not probed";
         private static PropertyInfo _instance;
         private static MethodInfo _endHours;
         private static MethodInfo _colonyOf;
         private static readonly object[] _oneComponent = new object[1];
         private static readonly object[] _oneSlot = new object[1];
 
-        public static string Description { get; private set; } = "not probed";
+        // An exception while asking switches the bridge off for the rest of that game only. Which shift end a beaver
+        // plans against is simulation state: a player who carried the switch-off into the next game (a rehost reloads
+        // in the same process) would use the game's shift end while a co-op partner with a fresh process asks
+        // MultiColony.
+        private static readonly Breaker Failure = new Breaker();
+        private static string _failureDescription;
+
+        public static string Description => Failure.Tripped ? _failureDescription : _probeResult;
 
         public static bool Available
         {
             get
             {
                 Probe();
-                return _available;
+                return Failure.IsActive(_available);
+            }
+        }
+
+        // Only GameLoad.Reset calls this, from the configurator, which runs on every player whenever a game is
+        // loaded, joined or rehosted, before any beaver decides. It asks MultiColony again after an exception in the
+        // previous game, keeps the probe result and lets go of the previous game's last beaver. Never call it
+        // mid-game.
+        public static void NewGame()
+        {
+            _oneComponent[0] = null;
+            _oneSlot[0] = null;
+            if (Failure.NewGame())
+            {
+                Log.Info("MultiColony: failure from the previous game cleared; asking it again in this game.");
             }
         }
 
@@ -66,10 +91,12 @@ namespace HungryPathing
             }
             catch (Exception exception)
             {
-                _available = false;
-                Description = "present, but asking it failed (" + exception.GetBaseException().Message +
-                              "); using the game's shift end from here on";
-                Log.Warning("MultiColony: " + Description);
+                if (Failure.Trip())
+                {
+                    _failureDescription = "present, but asking it failed (" + exception.GetBaseException().Message +
+                                          "); using the game's shift end for the rest of this game";
+                    Log.Warning("MultiColony: " + _failureDescription);
+                }
                 return false;
             }
         }
@@ -94,7 +121,7 @@ namespace HungryPathing
                 }
                 if (type == null)
                 {
-                    Description = "not present; the game's shift end applies to every beaver";
+                    _probeResult = "not present; the game's shift end applies to every beaver";
                     return;
                 }
                 _instance = type.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
@@ -105,16 +132,16 @@ namespace HungryPathing
                 if (_instance == null || _endHours == null || _colonyOf == null ||
                     _endHours.ReturnType != typeof(float) || _colonyOf.ReturnType != typeof(int?))
                 {
-                    Description = "present, but its working-hours API is not the one this build knows; " +
-                                  "using the game's shift end for every beaver";
+                    _probeResult = "present, but its working-hours API is not the one this build knows; " +
+                                   "using the game's shift end for every beaver";
                     return;
                 }
                 _available = true;
-                Description = "present; each beaver's shift end comes from its own colony's working hours";
+                _probeResult = "present; each beaver's shift end comes from its own colony's working hours";
             }
             catch (Exception exception)
             {
-                Description = "probe failed (" + exception.GetBaseException().Message + "); using the game's shift end";
+                _probeResult = "probe failed (" + exception.GetBaseException().Message + "); using the game's shift end";
             }
         }
     }

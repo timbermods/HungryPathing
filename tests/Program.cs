@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using BeaverBuddies.Colonies;
+using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic. They compile the planner source directly and need no game files:
+// Checks on the planner arithmetic, the circuit breaker and the MultiColony bridge. They compile that source directly
+// and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -73,6 +76,105 @@ internal static class Program
         Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
         Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
         Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
+
+        // The circuit breaker lasts one game. Every player trips it at the same tick and clears it at the same load,
+        // so a trip in one game must not leave that machine running the base game in the next.
+        Breaker breaker = new Breaker();
+        Check(breaker.IsActive(true), "breaker: active before anything threw");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false is never active");
+        Check(!breaker.NewGame(), "breaker: an untripped breaker has nothing to clear");
+        Check(breaker.Trip(), "breaker: the first trip of a game reports itself");
+        Check(!breaker.Trip(), "breaker: a second trip in the same game is silent");
+        Check(!breaker.IsActive(true), "breaker: inactive for the rest of the game after a trip");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after a trip");
+        Check(breaker.NewGame(), "breaker: the next load clears the trip and says so");
+        Check(breaker.IsActive(true), "breaker: active again after the next load");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after the next load");
+        Check(!breaker.NewGame(), "breaker: a second load has nothing left to clear");
+        Check(breaker.Trip() && !breaker.IsActive(true), "breaker: trips again in the new game");
+
+        // Safety.cs as shipped. A trip must leave the settings alone, since they outlive the game; missing hooks
+        // are the one process-wide switch-off.
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = true;
+        Check(Safety.Active, "safety: active with Enabled=true and every hook installed");
+        Safety.Trip("the first check", new InvalidOperationException("test"));
+        Safety.Trip("the second check", new InvalidOperationException("test"));
+        Check(!Safety.Active, "safety: a trip switches the mod off");
+        Check(Plugin.Settings.Enabled, "safety: a trip leaves Enabled in the settings alone");
+        Check(Log.Warnings.Count == 1 &&
+              Log.Warnings[0].StartsWith("Switched off for the rest of this game after an error in the first check."),
+            "safety: one warning per game, naming the first failure");
+        Safety.NewGame();
+        Check(Safety.Active, "safety: active again after the next load");
+        Check(Log.Infos.Count == 1 &&
+              Log.Infos[0] == "Breaker from the previous game cleared; active again for this game.",
+            "safety: the load that clears a trip says so");
+        Safety.NewGame();
+        Check(Log.Infos.Count == 1, "safety: a load with nothing to clear says nothing");
+        Safety.Trip("a check in the next game", new InvalidOperationException("test"));
+        Check(!Safety.Active && Log.Warnings.Count == 2, "safety: a later game trips and warns again");
+        Safety.NewGame();
+        Plugin.Settings.Enabled = false;
+        Check(!Safety.Active, "safety: Enabled=false keeps it off");
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = false;
+        Safety.NewGame();
+        Check(!Safety.Active, "safety: a load does not bring back hooks that failed to install");
+
+        // MultiColonyBridge.cs as shipped. Whether MultiColony is there is fixed for the process, but an exception from
+        // it lasts one game, like the breaker: a player who hit one in an earlier game must not keep the game's shift
+        // end in the next while a co-op partner with a fresh process asks MultiColony.
+        int infos = Log.Infos.Count;
+        int warnings = Log.Warnings.Count;
+        StubBeaver beaver = new StubBeaver();
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos, "multicolony: the first load has nothing to re-arm");
+        ColonyWorkingHours.Current = new ColonyWorkingHours();
+        Check(MultiColonyBridge.TryEndHours(beaver, out float endHours) && Near(endHours, 20f),
+            "multicolony: the shift end comes from the beaver's colony");
+        string probed = MultiColonyBridge.Description;
+        Check(probed.StartsWith("present; "), "multicolony: the probe finds MultiColony's working hours");
+        ColonyWorkingHours.ColonySlot = null;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: a beaver of no colony keeps the game's shift end");
+        ColonyWorkingHours.ColonySlot = 1;
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: an exception falls back to the game's shift end");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: the game's shift end for the rest of the game");
+        Check(Log.Warnings.Count == warnings + 1 &&
+              Log.Warnings[warnings] == "MultiColony: present, but asking it failed (test); " +
+                                        "using the game's shift end for the rest of this game",
+            "multicolony: one warning per game, saying how long it lasts");
+        MultiColonyBridge.NewGame();
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "multicolony: asked again after the next load");
+        Check(Log.Infos.Count == infos + 1 &&
+              Log.Infos[infos] == "MultiColony: failure from the previous game cleared; asking it again in this game.",
+            "multicolony: the load that re-arms it says so");
+        Check(MultiColonyBridge.Description == probed, "multicolony: the next game's log line gives the probe result again");
+        MultiColonyBridge.NewGame();
+        Check(Log.Infos.Count == infos + 1, "multicolony: a load with nothing to re-arm says nothing");
+        ColonyWorkingHours.ThrowOnce = true;
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _) && Log.Warnings.Count == warnings + 2,
+            "multicolony: a later game can fail and warn again");
+
+        // GameLoad.Reset is the reset the configurator runs at every load, join and rehost. Both bugs were a load that
+        // left a switch-off in place, so one call must re-arm the breaker and the MultiColony bridge together.
+        Plugin.HooksInstalled = true;
+        Safety.Trip("a check before the load", new InvalidOperationException("test"));
+        Stats.Evaluations = 5;
+        Check(!Safety.Active && !MultiColonyBridge.TryEndHours(beaver, out _),
+            "load: the breaker and the MultiColony bridge are both off before the load");
+        infos = Log.Infos.Count;
+        GameLoad.Reset();
+        Check(Safety.Active, "load: the configurator's reset re-arms the breaker");
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "load: the configurator's reset re-arms the MultiColony bridge");
+        Check(Log.Infos.Count == infos + 2 &&
+              Log.Infos[infos] == "Breaker from the previous game cleared; active again for this game." &&
+              Log.Infos[infos + 1] == "MultiColony: failure from the previous game cleared; asking it again in this game." &&
+              Stats.Evaluations == 0,
+            "load: the reset says what it re-armed and starts the day's counters over");
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.

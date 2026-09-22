@@ -10,6 +10,9 @@ or `.\build.ps1 -Test`. The checks compile `source\Planning\FuelPlanner.cs` on i
 behind each rule: hours left from points and decay, the just-in-time window and leaving time, the shift test and
 that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in both orders, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
+They also compile `Safety.cs`, `MultiColonyBridge.cs`, `Stats.cs` and `GameLoad.cs` as shipped against the
+stand-ins in `tests\Stubs.cs`, and check that the circuit breaker and the MultiColony bridge stay off for the rest of
+one game only and come back through `GameLoad.Reset`, the reset the configurator runs at every load.
 
 ## Site checks (no game needed)
 
