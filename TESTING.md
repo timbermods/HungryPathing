@@ -12,10 +12,13 @@ that it does not change as a shift runs, the builder rule, storage ranking with 
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 
 They also read the hooks' source under `source\` (the hooks need the game's assemblies to compile, the checks do
-not) and check two Harmony rules for lockstep co-op: every prefix that can return `false` carries
-`[HarmonyPriority(Priority.Last)]`, and nothing calls `UnpatchAll`, or `Unpatch` by patch type without naming an
-owner (which means every owner), so a failed install takes off only this mod's patches. The scan ignores comments
-and strings and is itself checked on a sample that breaks each rule.
+not) and check two Harmony rules for lockstep co-op: every prefix that can skip the original (one that returns
+`bool`, or sets `ref bool __runOriginal`) carries `[HarmonyPriority(Priority.Last)]`, and nothing calls
+`UnpatchAll`, or `Unpatch` by patch type with no owner or with `"*"` (both mean every owner), so a failed install
+takes off only this mod's patches. A prefix is found by its name, its attributes, its Harmony parameters, or the
+`nameof` passed as the prefix where `Patches.Apply` installs it; a check pins the list of installed prefixes, so a
+new prefix makes it fail until the list is updated. The scan ignores comments and strings and is itself checked on a
+sample that breaks each rule.
 
 ## In the game
 

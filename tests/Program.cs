@@ -89,6 +89,10 @@ internal static class Program
         List<string> replacing = HarmonyRules.ReplacingPrefixes(sources, out List<string> notLast);
         Check(replacing.Contains("Patches.cs: CriticalDecidePrefix"),
             "harmony: the source scan finds the critical redirect's prefix (found: " + string.Join(", ", replacing) + ")");
+        List<string> installed = HarmonyRules.InstalledPrefixes(sources);
+        Check(string.Join(", ", installed) == "AddRootBehaviorPrefix, CriticalDecidePrefix",
+            "harmony: the source scan reads which hooks Patches.Apply installs as prefixes (found: " +
+            string.Join(", ", installed) + ")");
         Check(notLast.Count == 0,
             "harmony: every prefix that can return false has [HarmonyPriority(Priority.Last)] (missing on: " +
             string.Join(", ", notLast) + ")");
@@ -102,31 +106,58 @@ internal static class Program
                 "// [HarmonyPriority(Priority.Last)]\n" +
                 "private static bool CommentedPrefix(ref bool __result) { return false; }\n" +
                 "[HarmonyPriority(Priority.Last)]\nprivate static bool LastPrefix(object __instance) { return true; }\n" +
+                "[HarmonyPriority(Priority.First)]\nprivate static bool FirstPrefix(ref bool __result) { return false; }\n" +
                 "[HarmonyPrefix] static bool Guard() { return true; }\n" +
                 "private static bool Unnamed(object __instance,\n    ref int __result) { return false; }\n" +
                 "private static void VoidPrefix(object __instance) { }\n" +
+                "private static void Skip(object __instance, ref bool __runOriginal) { __runOriginal = false; }\n" +
+                "private static void Watch(bool __runOriginal) { }\n" +
                 "private static bool PassPostfix(bool __result) { return __result; }\n" +
                 "private static bool Helper(int x) { return x > 0; }\n" +
+                "private static bool SkipDecide() => false;\nprivate static void Observe() { }\n" +
+                "private static bool Direct() => true;\nprivate static bool Added() => true;\n" +
+                "private static bool After() => true;\nprivate static bool Named() => true;\n" +
                 "string url = \"http://x // [HarmonyPriority(Priority.Last)]\"; static bool QuotedPrefix() => true;\n" +
+                "private static void Install(Harmony h, Type t, string m, string prefix, string postfix = null) { }\n" +
+                "Install(harmony, typeof(T), \"M\", nameof(SkipDecide));\n" +
+                "Install(harmony, typeof(T), \"M\", nameof(Observe), nameof(Helper));\n" +
+                "harmony.Patch(m, new HarmonyMethod(typeof(S), nameof(Direct)), new HarmonyMethod(typeof(S), nameof(PassPostfix)));\n" +
+                "harmony.Patch(m, postfix: new HarmonyMethod(typeof(S), nameof(After)),\n" +
+                "    prefix: new HarmonyMethod(AccessTools.Method(typeof(S), nameof(S.Named))));\n" +
+                "processor.AddPrefix(new HarmonyMethod(typeof(S), nameof(Added)));\n" +
                 "harmony.UnpatchAll(id); /* harmony.UnpatchAll(); */ harmony.Unpatch(m, HarmonyPatchType.All);\n" +
                 "harmony.Unpatch(m, HarmonyPatchType.Prefix, id); harmony.Unpatch(m, patch);\n" +
                 "Log($\"{s.Trim('\"')} // x\"); harmony.UnpatchAll();\n" +
-                "harmony.Unpatch(AccessTools.Method(typeof(T), \"M\", new[] { typeof(int) }), HarmonyPatchType.All);\n"))
+                "harmony.Unpatch(AccessTools.Method(typeof(T), \"M\", new[] { typeof(int) }), HarmonyPatchType.All);\n" +
+                "harmony.Unpatch(m, HarmonyPatchType.All, \"*\"); harmony.Unpatch(m, type: HarmonyPatchType.All);\n" +
+                "harmony.Unpatch(original: m, type: HarmonyPatchType.All, harmonyID: id);\n" +
+                "harmony.Unpatch(m, HarmonyPatchType.All, harmonyID: \"*\"); Log(\"*\");\n"))
         };
         List<string> sampleReplacing = HarmonyRules.ReplacingPrefixes(sample, out List<string> sampleNotLast);
+        List<string> sampleInstalled = HarmonyRules.InstalledPrefixes(sample);
         Check(string.Join(", ", sampleReplacing) ==
-              "Sample.cs: CommentedPrefix, Sample.cs: LastPrefix, Sample.cs: Guard, Sample.cs: Unnamed, Sample.cs: QuotedPrefix" &&
+              "Sample.cs: CommentedPrefix, Sample.cs: LastPrefix, Sample.cs: FirstPrefix, Sample.cs: Guard, " +
+              "Sample.cs: Unnamed, Sample.cs: Skip, Sample.cs: SkipDecide, Sample.cs: Direct, Sample.cs: Added, " +
+              "Sample.cs: Named, Sample.cs: QuotedPrefix" &&
               string.Join(", ", sampleNotLast) ==
-              "Sample.cs: CommentedPrefix, Sample.cs: Guard, Sample.cs: Unnamed, Sample.cs: QuotedPrefix",
-            "harmony: the scan tells bool prefixes from other methods and ignores the attribute in comments and strings " +
-            "(prefixes: " + string.Join(", ", sampleReplacing) + "; not last: " + string.Join(", ", sampleNotLast) + ")");
+              "Sample.cs: CommentedPrefix, Sample.cs: FirstPrefix, Sample.cs: Guard, Sample.cs: Unnamed, Sample.cs: Skip, " +
+              "Sample.cs: SkipDecide, Sample.cs: Direct, Sample.cs: Added, Sample.cs: Named, Sample.cs: QuotedPrefix" &&
+              string.Join(", ", sampleInstalled) == "Added, Direct, Named, Observe, SkipDecide",
+            "harmony: the scan finds prefixes that can skip the original (bool prefixes by name, attribute, parameters " +
+            "or install call, and any prefix that sets __runOriginal), accepts only Priority.Last, and ignores the " +
+            "attribute in comments and strings (prefixes: " + string.Join(", ", sampleReplacing) + "; not last: " +
+            string.Join(", ", sampleNotLast) + "; installed: " + string.Join(", ", sampleInstalled) + ")");
         List<string> sampleUnscoped = HarmonyRules.UnscopedUnpatches(sample);
-        Check(sampleUnscoped.Count == 4 && sampleUnscoped[0] == "Sample.cs: UnpatchAll" &&
-              sampleUnscoped[1] == "Sample.cs: UnpatchAll" &&
-              sampleUnscoped[2] == "Sample.cs: Unpatch(m, HarmonyPatchType.All) with no owner" &&
-              sampleUnscoped[3].EndsWith("}), HarmonyPatchType.All) with no owner", StringComparison.Ordinal),
+        Check(string.Join(" | ", sampleUnscoped) ==
+              "Sample.cs: UnpatchAll | Sample.cs: UnpatchAll | " +
+              "Sample.cs: Unpatch(m, HarmonyPatchType.All) with no owner | " +
+              "Sample.cs: Unpatch(AccessTools.Method(typeof(T), \"\", new[] { typeof(int) }), HarmonyPatchType.All) with no owner | " +
+              "Sample.cs: Unpatch(m, HarmonyPatchType.All, \"*\") for every owner | " +
+              "Sample.cs: Unpatch(m, type: HarmonyPatchType.All) with no owner | " +
+              "Sample.cs: Unpatch(m, HarmonyPatchType.All, harmonyID: \"*\") for every owner",
             "harmony: the scan finds UnpatchAll, also after strings inside an interpolation, and an Unpatch that takes " +
-            "off every owner's patches (found: " + string.Join(", ", sampleUnscoped) + ")");
+            "off every owner's patches, with no owner or with \"*\", named arguments included (found: " +
+            string.Join(" | ", sampleUnscoped) + ")");
 
         if (_failures == 0)
         {

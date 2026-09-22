@@ -6,22 +6,42 @@ using System.Text.RegularExpressions;
 
 // Rules for the mod's Harmony hooks, checked on the source because the hooks need the game's assemblies to compile
 // and these checks run without them. Comments and string contents are blanked first, so a rule that is only written
-// in a comment does not count.
+// in a comment does not count. The scan is a heuristic: it knows the usual ways to declare and install a hook (listed
+// on each rule), and the sample in Program.cs pins down each one.
 internal static class HarmonyRules
 {
-    // A static method returning bool, with the attributes written directly above it.
-    private static readonly Regex BoolMethod = new Regex(
+    // A method returning bool or void (the only return types a Harmony prefix can have), with the attributes written
+    // directly above it, up to the parenthesis that opens its parameters (read with Arguments, so they can span lines).
+    private static readonly Regex HookMethod = new Regex(
         @"(?<attrs>(?:\[[^\[\]]*\]\s*)*)" +
         @"(?<mods>(?:\b(?:public|private|protected|internal|static|unsafe|new|extern)\s+)*)" +
-        @"\b(?:bool|Boolean|System\.Boolean)\s+(?<name>\w+)\s*\((?<params>[^)]*)\)");
+        @"\b(?<returns>bool|Boolean|System\.Boolean|void)\s+(?<name>\w+)\s*\(");
+    // Any method declared with an access or static modifier, up to the parenthesis that opens its parameters.
+    private static readonly Regex MethodDeclaration = new Regex(
+        @"\b(?:public|private|protected|internal|static)\s+[\w.<>\[\],?]+\s+(?<name>\w+)\s*\(");
+    private static readonly Regex Static = new Regex(@"\bstatic\b");
+    private static readonly Regex ReturnsBool = new Regex(@"^(?:bool|Boolean|System\.Boolean)$");
     // Harmony fills parameters named __instance, __result, __state, ___field and so on; plain methods have none.
     private static readonly Regex InjectedParameter = new Regex(@"\b__\w+");
+    // A prefix of either return type skips the original when it sets this parameter to false.
+    private static readonly Regex SetsRunOriginal = new Regex(
+        @"\bref\s+(?:bool|Boolean|System\.Boolean)\s+__runOriginal\b");
     private static readonly Regex HarmonyPrefix = new Regex(@"\bHarmonyPrefix(?:Attribute)?\b");
     private static readonly Regex OtherPatchKind = new Regex(@"(?:Postfix|Finalizer|Transpiler)$");
     private static readonly Regex RunsLast = new Regex(
         @"\bHarmonyPriority(?:Attribute)?\s*\(\s*(?:HarmonyLib\.)?Priority\.Last\s*\)");
     private static readonly Regex UnpatchAll = new Regex(@"\bUnpatchAll\s*\(");
     private static readonly Regex Unpatch = new Regex(@"\.\s*Unpatch\s*\(");
+    // Harmony.Patch(original, prefix, postfix, ...), and PatchProcessor.AddPrefix(prefix).
+    private static readonly Regex HarmonyPatch = new Regex(@"\.\s*Patch\s*\(");
+    private static readonly Regex AddPrefix = new Regex(@"\bAddPrefix\s*\(");
+    private static readonly Regex NameOf = new Regex(@"\bnameof\s*\(\s*(?:[\w.]+\.)?(?<name>\w+)\s*\)");
+    // A parameter named prefix, as in Harmony.Patch or a helper that wraps it.
+    private static readonly Regex PrefixParameter = new Regex(@"\s@?prefix\s*(?:=.*)?$");
+    // A named argument ("prefix: x"), but not an alias qualifier ("global::x").
+    private static readonly Regex NamedArgument = new Regex(@"^@?(?<name>\w+)\s*:(?!:)\s*");
+    // Harmony's owner id for every owner. CodeOnly keeps this one literal so the Unpatch rule can see it.
+    private const string EveryOwner = "\"*\"";
 
     // The mod's source files (everything under source\ except build output), comments and strings blanked. Empty when
     // the folder cannot be found from where the checks were built or run.
@@ -48,29 +68,35 @@ internal static class HarmonyRules
         return files;
     }
 
-    // Every Harmony prefix that returns bool, as "File.cs: Method". Such a prefix can return false and replace the
-    // original, so where it runs among other mods' prefixes on the same method decides what happens. Without an
-    // explicit priority that order is the order the mods patched in, which is each player's mod load order; lockstep
-    // co-op needs one order for everyone, and the rule is that a replacing prefix runs last. A prefix is a method named
+    // Every Harmony prefix that can skip the original, as "File.cs: Method". Such a prefix can replace the original, so
+    // where it runs among other mods' prefixes on the same method decides what happens. Without an explicit priority
+    // that order is the order the mods patched in, which is each player's mod load order; lockstep co-op needs one order
+    // for everyone, and the rule is that a replacing prefix runs last. A replacing prefix is a static method that takes
+    // ref bool __runOriginal, or a static bool method that is a prefix: installed as one (see InstalledPrefixes), named
     // *Prefix, marked [HarmonyPrefix], or taking a parameter Harmony fills (and not named as another kind of patch).
     // Those without [HarmonyPriority(Priority.Last)] are listed in notLast.
     public static List<string> ReplacingPrefixes(List<(string Name, string Code)> files, out List<string> notLast)
     {
+        List<string> installed = InstalledPrefixes(files);
         List<string> prefixes = new List<string>();
         notLast = new List<string>();
         foreach ((string file, string code) in files)
         {
-            foreach (Match method in BoolMethod.Matches(code))
+            foreach (Match method in HookMethod.Matches(code))
             {
                 string name = method.Groups["name"].Value;
                 string attributes = method.Groups["attrs"].Value;
-                if (!Regex.IsMatch(method.Groups["mods"].Value, @"\bstatic\b"))
+                if (!Static.IsMatch(method.Groups["mods"].Value))
                 {
                     continue;
                 }
-                bool prefix = name.EndsWith("Prefix", StringComparison.Ordinal) || HarmonyPrefix.IsMatch(attributes) ||
-                              (InjectedParameter.IsMatch(method.Groups["params"].Value) && !OtherPatchKind.IsMatch(name));
-                if (!prefix)
+                string parameters = string.Join(", ", Arguments(code, method.Index + method.Length));
+                bool prefix = installed.Contains(name) || name.EndsWith("Prefix", StringComparison.Ordinal) ||
+                              HarmonyPrefix.IsMatch(attributes) ||
+                              (InjectedParameter.IsMatch(parameters) && !OtherPatchKind.IsMatch(name));
+                bool replacing = SetsRunOriginal.IsMatch(parameters) ||
+                                 (prefix && ReturnsBool.IsMatch(method.Groups["returns"].Value));
+                if (!replacing)
                 {
                     continue;
                 }
@@ -84,9 +110,77 @@ internal static class HarmonyRules
         return prefixes;
     }
 
+    // The methods the files install as prefixes, sorted: every nameof(...) in the prefix argument of an install call.
+    // Those are Harmony.Patch (its second argument, or the one named prefix), PatchProcessor.AddPrefix, and any helper
+    // declared in the files with a parameter named prefix, such as the mod's own Patches.Patch. A name passed as a
+    // plain string is not seen.
+    public static List<string> InstalledPrefixes(List<(string Name, string Code)> files)
+    {
+        // Helper name -> position of its prefix parameter.
+        SortedDictionary<string, int> helpers = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        foreach ((string file, string code) in files)
+        {
+            foreach (Match method in MethodDeclaration.Matches(code))
+            {
+                List<string> parameters = Arguments(code, method.Index + method.Length);
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    if (PrefixParameter.IsMatch(parameters[i]))
+                    {
+                        helpers[method.Groups["name"].Value] = i;
+                    }
+                }
+            }
+        }
+        SortedSet<string> installed = new SortedSet<string>(StringComparer.Ordinal);
+        foreach ((string file, string code) in files)
+        {
+            foreach (Match call in HarmonyPatch.Matches(code))
+            {
+                AddNames(installed, PrefixArgument(Arguments(code, call.Index + call.Length), 1));
+            }
+            foreach (Match call in AddPrefix.Matches(code))
+            {
+                AddNames(installed, string.Join(", ", Arguments(code, call.Index + call.Length)));
+            }
+            foreach (KeyValuePair<string, int> helper in helpers)
+            {
+                // The helper called by its own name; a member call such as harmony.Patch is Harmony's, read above.
+                Regex call = new Regex(@"(?<!\.\s*)\b" + Regex.Escape(helper.Key) + @"\s*\(");
+                foreach (Match match in call.Matches(code))
+                {
+                    AddNames(installed, PrefixArgument(Arguments(code, match.Index + match.Length), helper.Value));
+                }
+            }
+        }
+        return new List<string>(installed);
+    }
+
+    // The argument given for the prefix parameter: the one named prefix, or else the one at position.
+    private static string PrefixArgument(List<string> arguments, int position)
+    {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            Match named = NamedArgument.Match(arguments[i]);
+            if (!named.Success ? i == position : named.Groups["name"].Value == "prefix")
+            {
+                return named.Success ? arguments[i].Substring(named.Length) : arguments[i];
+            }
+        }
+        return "";
+    }
+
+    private static void AddNames(SortedSet<string> names, string argument)
+    {
+        foreach (Match name in NameOf.Matches(argument))
+        {
+            names.Add(name.Groups["name"].Value);
+        }
+    }
+
     // Unpatch calls that could take off other mods' patches, as "File.cs: call": any UnpatchAll (the rule is never to
-    // call it; with no id it removes every mod's patches), and Unpatch(method, HarmonyPatchType) without an owner id,
-    // which defaults to "*", every owner.
+    // call it; with no id it removes every mod's patches), and Unpatch(method, HarmonyPatchType, owner) whose owner is
+    // left out, which defaults to "*", or is "*" itself: both mean every owner. Named arguments are read by name.
     public static List<string> UnscopedUnpatches(List<(string Name, string Code)> files)
     {
         List<string> found = new List<string>();
@@ -99,16 +193,35 @@ internal static class HarmonyRules
             foreach (Match call in Unpatch.Matches(code))
             {
                 List<string> arguments = Arguments(code, call.Index + call.Length);
-                if (arguments.Count == 2 && arguments[1].StartsWith("HarmonyPatchType.", StringComparison.Ordinal))
+                bool byType = false;
+                string owner = null;
+                for (int i = 0; i < arguments.Count; i++)
                 {
-                    found.Add(file + ": Unpatch(" + string.Join(", ", arguments) + ") with no owner");
+                    Match named = NamedArgument.Match(arguments[i]);
+                    string name = named.Success ? named.Groups["name"].Value : null;
+                    string value = named.Success ? arguments[i].Substring(named.Length) : arguments[i];
+                    if (name == "type" ||
+                        (name == null && i == 1 && Regex.IsMatch(value, @"^(?:HarmonyLib\.)?HarmonyPatchType\.")))
+                    {
+                        byType = true;
+                    }
+                    else if (name == "harmonyID" || (name == null && i == 2))
+                    {
+                        owner = value;
+                    }
+                }
+                if (byType && (owner == null || owner == EveryOwner))
+                {
+                    found.Add(file + ": Unpatch(" + string.Join(", ", arguments) + ")" +
+                              (owner == null ? " with no owner" : " for every owner"));
                 }
             }
         }
         return found;
     }
 
-    // The source with comments removed and every string or character literal reduced to "" or ' '.
+    // The source with comments removed and every string or character literal reduced to "" or ' ', except "*", which
+    // stays (see EveryOwner).
     public static string CodeOnly(string source)
     {
         StringBuilder code = new StringBuilder(source.Length);
@@ -130,8 +243,9 @@ internal static class HarmonyRules
             }
             else if (c == '"' || ((c == '@' || c == '$') && (next == '"' || next == '@' || next == '$')))
             {
+                int start = i;
                 i = SkipString(source, i);
-                code.Append("\"\"");
+                code.Append(source.Substring(start, i - start) == EveryOwner ? EveryOwner : "\"\"");
             }
             else if (c == '\'')
             {
