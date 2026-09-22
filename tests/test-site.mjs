@@ -6,7 +6,9 @@
  *
  * The rule every timbermods site follows: offer GitHub's Latest release (the newest one that is not a draft or a
  * pre-release), and only when there is none, the newest pre-release. With no answer from GitHub the page keeps what
- * it was written with, and its download buttons lead to the Latest release page.
+ * it was written with, and its download buttons lead to the Latest release page. The stylesheet rules that hide
+ * parts of a page until the release script has run (html:not([data-release-ready]) ...) are applied as a browser
+ * would, so a label left without its value (an empty "File:" line) counts as shown.
  *
  *   node tests/test-site.mjs [repo root]      (default: this checkout)
  *
@@ -173,9 +175,10 @@ function parse(html) {
 }
 
 class Document {
-  constructor(html) {
-    this.root = parse(html);
+  constructor(page) {
+    this.root = parse(readFileSync(path.join(docs, page), 'utf8'));
     this.documentElement = this.root.children.find((el) => el.tagName === 'HTML') || this.root.appendChild(new Element('html'));
+    this.hiddenUntilReady = hiddenUntilReady(this);
     this.readyState = 'interactive'; // what a deferred script sees
     this.currentScript = null;
     this.listeners = [];
@@ -200,11 +203,39 @@ function memoryStorage() {
   };
 }
 
+// The selectors a page's own stylesheets hide until the release script marks the page:
+// html:not([data-release-ready]) <selector> { display: none; }. Other CSS does not decide what a visitor reads here.
+function hiddenUntilReady(document) {
+  const tests = [];
+  for (const link of document.querySelectorAll('link')) {
+    const href = link.getAttribute('href') || '';
+    if (link.getAttribute('rel') !== 'stylesheet' || /^([a-z]+:)?\/\//i.test(href)) continue;
+    const css = readFileSync(path.join(docs, href.replace(/^\/HungryPathing\//, '')), 'utf8');
+    for (const m of css.matchAll(/html:not\(\[data-release-ready\]\)\s+([^{}]+?)\s*\{([^}]*)\}/g)) {
+      if (/display\s*:\s*none/.test(m[2])) tests.push(...compile(m[1]));
+    }
+  }
+  return tests;
+}
+
+function shown(el, document) {
+  if (el.hidden || ['HEAD', 'SCRIPT', 'STYLE', 'TEMPLATE'].includes(el.tagName)) return false;
+  return document.documentElement.hasAttribute('data-release-ready') || !document.hiddenUntilReady.some((t) => t(el));
+}
+
 // What a visitor reads: text outside the head, scripts, styles and hidden elements.
-function visibleText(node) {
+function visibleText(node, document) {
   if (node.nodeType === 3) return node.data;
-  if (node.hidden || ['HEAD', 'SCRIPT', 'STYLE', 'TEMPLATE'].includes(node.tagName)) return '';
-  return node.childNodes.map(visibleText).join('');
+  if (!shown(node, document)) return '';
+  return node.childNodes.map((n) => visibleText(n, document)).join('');
+}
+
+// Fields the release script fills in that are still empty while their label is on screen, like "File:" with no name.
+function emptyFields(document) {
+  const onScreen = (el) => { for (let n = el; n && n.nodeType === 1; n = n.parentNode) if (!shown(n, document)) return false; return true; };
+  return document.querySelectorAll('[data-release]')
+    .filter((el) => el.textContent.trim() === '' && onScreen(el) && visibleText(el.parentNode, document).trim() !== '')
+    .map((el) => `"${visibleText(el.parentNode, document).trim()}"`);
 }
 
 // ---------- running a page ----------
@@ -215,7 +246,7 @@ const pages = readdirSync(docs).filter((f) => f.endsWith('.html')).sort();
 // fresh storage, then lets the fetches settle.
 async function load(page, github) {
   const file = path.join(docs, page);
-  const document = new Document(readFileSync(file, 'utf8'));
+  const document = new Document(page);
   const log = [];
   const sandbox = {
     document, fetch: fakeGitHub(github, log), localStorage: memoryStorage(), sessionStorage: memoryStorage(),
@@ -237,9 +268,11 @@ async function load(page, github) {
   return { document, log };
 }
 
-// The page's download buttons: links to the releases whose text offers a download.
+// The page's download buttons, wherever they point: every link the release script sends to the zip, and every
+// button-styled link whose text offers a download.
 function downloadButtons(document) {
-  return document.querySelectorAll('a').filter((a) => a.href.startsWith(RELEASES) && /\bdownload\b/i.test(a.textContent));
+  return document.querySelectorAll('a').filter((a) => a.getAttribute('data-release-href') === 'download'
+    || (a.className.split(/\s+/).includes('btn') && /\bdownload\b/i.test(a.textContent)));
 }
 
 // ---------- checks ----------
@@ -271,7 +304,7 @@ const scenarios = [
   { name: 'no releases yet', list: [], offer: null },
 ];
 
-const written = new Map(pages.map((page) => [page, new Document(readFileSync(path.join(docs, page), 'utf8'))]));
+const written = new Map(pages.map((page) => [page, new Document(page)]));
 const buttonCount = [...written.values()].reduce((n, d) => n + downloadButtons(d).length, 0);
 check(['index.html', 'install.html'].every((page) => written.has(page) && downloadButtons(written.get(page)).length > 0),
   `the overview and the install guide have download buttons to check (${buttonCount} on the site)`);
@@ -279,20 +312,25 @@ const fallbacks = [...written.values()].flatMap((d) => downloadButtons(d).map((a
 check(fallbacks.every((href) => href === `${RELEASES}/latest`),
   'as written, before any script runs, every download button leads to the Latest release page',
   fallbacks.filter((href) => href !== `${RELEASES}/latest`).join(', '));
+const blanks = pages.flatMap((page) => emptyFields(written.get(page)).map((f) => `${page}: ${f}`));
+check(blanks.length === 0, 'as written, before any script runs, no page shows a label whose value the release script fills in',
+  blanks.join(', '));
 
 for (const scenario of scenarios) {
   const offered = scenario.list.find((r) => r.tag_name === scenario.offer) || null;
   const others = scenario.list.filter((r) => r !== offered);
   const hrefs = [];
   const unnamed = [];
+  const empty = [];
   let text = '';
   let threw = null;
   for (const page of pages) {
     try {
       const { document } = await load(page, scenario);
       const buttons = downloadButtons(document);
-      const pageText = visibleText(document.root);
+      const pageText = visibleText(document.root, document);
       hrefs.push(...buttons.map((a) => a.href));
+      empty.push(...emptyFields(document).map((f) => `${page}: ${f}`));
       text += `\n${pageText}`;
       if (offered && buttons.length && !mentions(pageText, offered.tag_name) && !mentions(pageText, offered.assets[0].name)) unnamed.push(page);
     } catch (e) {
@@ -300,12 +338,13 @@ for (const scenario of scenarios) {
     }
   }
   check(!threw, `${scenario.name}: every page's scripts run`, threw);
+  check(empty.length === 0, `${scenario.name}: no page shows a label left without its value`, empty.join(', '));
   const wrong = others.filter((r) => mentions(text, r.tag_name) || mentions(text, r.assets[0].name)).map((r) => r.tag_name);
   if (offered) {
     const zip = offered.assets[0].browser_download_url;
     const off = hrefs.filter((href) => href !== zip);
-    check(hrefs.length > 0 && off.length === 0, `${scenario.name}: every download button fetches ${offered.assets[0].name}`,
-      off.length ? `got ${[...new Set(off)].join(', ')}` : '');
+    check(hrefs.length === buttonCount && off.length === 0, `${scenario.name}: all ${buttonCount} download buttons fetch ${offered.assets[0].name}`,
+      off.length ? `got ${[...new Set(off)].join(', ')}` : `found ${hrefs.length} buttons`);
     check(unnamed.length === 0 && wrong.length === 0,
       `${scenario.name}: every page with a download button names ${offered.tag_name} or its file, and no page names another release`,
       wrong.length ? `also names ${wrong.join(', ')}` : `nothing named on ${unnamed.join(', ')}`);
@@ -313,8 +352,9 @@ for (const scenario of scenarios) {
     check(says === offered.prerelease, `${scenario.name}: "preview" is shown ${offered.prerelease ? 'for a pre-release' : 'only for a pre-release'}`,
       says ? 'the page says preview' : 'the page does not say preview');
   } else {
-    const moved = hrefs.filter((href) => !href.startsWith(RELEASES) || href.includes('/download/'));
-    check(moved.length === 0, `${scenario.name}: the download buttons keep the links the page was written with`, moved.join(', '));
+    const moved = hrefs.filter((href, i) => href !== fallbacks[i]);
+    check(hrefs.length === buttonCount && moved.length === 0, `${scenario.name}: the download buttons keep the links the page was written with`,
+      moved.length ? moved.join(', ') : `found ${hrefs.length} buttons`);
     check(wrong.length === 0 && !/\bpreview\b/i.test(text), `${scenario.name}: the site names no release it did not get`,
       wrong.length ? wrong.join(', ') : 'the page says preview');
   }
