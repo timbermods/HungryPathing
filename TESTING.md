@@ -61,9 +61,31 @@ changes from the save.
 
 Of the beavers mid-trip in the mod save, all 11 were walking to the nearest stocked storage of the right kind
 (none passed a closer one by more than 20 tiles); in the baseline 2 of 18 were, both after Maple Pastry. The
-remaining long walks are distance to any stocked storage at all, not choice: this colony keeps food in about 22
-storages and water in about 29, and beavers work far from them. Not yet seen: a construction-heavy day for the
-builder job check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+remaining long walks are distance to any stocked storage at all, not choice: that colony keeps food in 22
+warehouses and water in 29 tanks, the median adult works 84 tiles from the nearest stocked food and 85 from water,
+and 280 of 355 adults are more than 60 tiles from food. Not yet seen: a construction-heavy day for the builder job
+check. The circuit breaker in `Safety.cs` limits the cost of a surprise to one warning.
+
+## Reproducing the analysis
+
+A `.timber` save is a zip; extract `world.json` from it. The scripts in `tools\analysis` read that file with
+Python 3 and no extra packages:
+
+```
+python tools\analysis\needs_and_trips.py "label" path\to\world.json ["label 2" path\to\other\world.json ...]
+python tools\analysis\trip_destinations.py "label" path\to\world.json
+python tools\analysis\food_coverage.py path\to\world.json
+```
+
+- `needs_and_trips.py`: how many adults are in or near a penalty, and the walking time of recent eating trips
+  from each beaver's last ten behavior changes, split into working hours and off duty.
+- `trip_destinations.py`: for every beaver currently on an eating trip, how far its chosen storage is against the
+  nearest stocked storage of the same kind.
+- `food_coverage.py`: how far every adult is from stocked food and water, and which map cells hold the most
+  beavers far from both, which is where a new storage would pay off.
+
+Compare saves taken at the same point in the shift; a save's hours-passed value is in `DayNightCycle.DayProgress`
+times 24, and the scripts print it.
 
 What to look for in Player.log:
 

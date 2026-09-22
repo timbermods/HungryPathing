@@ -1,6 +1,6 @@
 # Hungry Pathing
 
-**Alpha.** A Timberborn mod that makes working beavers plan food and water around their shift instead of waiting
+**Beta.** A Timberborn mod that makes working beavers plan food and water around their shift instead of waiting
 for the hunger penalty, and makes them eat at the closest stocked storage while on the job instead of walking
 across the map for a fancier meal.
 
@@ -84,16 +84,29 @@ line reports evaluations and path queries so the cost is visible.
 The mod adds two components (one per adult beaver, one per district center) that keep only caches rebuilt from the
 simulation. Nothing is saved. A save made with the mod loads without it and the other way round.
 
-## Status of this alpha
+## What it did in a real colony
 
-Verified: the mod builds against game 1.1.2.4 with no warnings, every hook resolves its target in the game's
-assemblies (the hooks were written from the decompiled 1.1.2.4 code, see [DESIGN.md](DESIGN.md)), and the planner
-arithmetic passes its checks. First live run: three in-game days in a 330-adult single-district colony, played
-twice from the same save, the second time as a BeaverBuddies host with a guest connected. No exceptions, all five
-hooks installed, the buffer read 3h, and both runs produced identical daily counters and identical co-op
-consistency hashes, which is the determinism the multiplayer section promises. Still an alpha: one colony, three
-days, and the builder job check has not yet seen a construction-heavy day. If anything in the mod throws, it logs
-the stack trace once and switches itself off for the session.
+Eight in-game days in a 355-adult, single-district Folktails colony, part of them as a BeaverBuddies host with a
+guest connected. No exceptions, all five hooks installed, the buffer read 3h. Three of those days were played twice
+from the same save and produced identical daily counters and identical co-op consistency hashes both times, which
+is the determinism the multiplayer section promises.
+
+Measured an hour before the end of the shift, from the saves themselves:
+
+| | Without the mod | With the mod |
+|---|---|---|
+| Adults | 357 | 355 |
+| In the hunger or thirst penalty | 15 | 0 |
+| Within 3 hours of a penalty | 117 | 0 |
+| Median walk per working-hour eating trip | 0.96 h | 0.72 h |
+| Trips started in the last 4 hours of the shift | 49 | 21 |
+| Beavers mid-trip walking past a closer stocked storage | 2 of 18 | 0 of 11 |
+
+The rules fired about 40 to 50 just-in-time trips, 120 to 140 pre-fuel trips and 12 to 15 penalty-state redirects
+a day, at roughly 8,000 path queries a day. The walks that remain are distance to any stocked storage at all: in
+that colony the median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers
+and the method. Not yet seen: a construction-heavy day for the builder job check. If anything in the mod throws,
+it logs the stack trace once and switches itself off for the session.
 
 ## Checking that it works
 

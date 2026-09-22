@@ -50,7 +50,7 @@
           <li>Timberborn 1.1.2.4+</li>
           <li>Requires Harmony</li>
           <li>Never touches your saves</li>
-          <li>Alpha</li>
+          <li>Beta</li>
         </ul>
       </div>
 
@@ -96,7 +96,29 @@
     </div>
   </section>
 
-  <section class="band" id="how">
+  <section class="band" id="results">
+    <div class="container">
+      <div class="section-head">
+        <h2>Measured in a real colony</h2>
+        <p>A 355-beaver colony, an hour before the end of the shift, read straight from the saves. Same map, same hour, with and without the mod.</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">Without the mod</th><th scope="col">With the mod</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">In the hunger or thirst penalty</th><td>15</td><td><strong>0</strong></td></tr>
+          <tr><th scope="row">Within 3 hours of a penalty</th><td>117</td><td><strong>0</strong></td></tr>
+          <tr><th scope="row">Median walk per working-hour eating trip</th><td>0.96 h</td><td><strong>0.72 h</strong></td></tr>
+          <tr><th scope="row">Trips started in the last 4 hours of the shift</th><td>49</td><td><strong>21</strong></td></tr>
+          <tr><th scope="row">Beavers mid-trip walking past a closer stocked storage</th><td>2 of 18</td><td><strong>0 of 11</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:18px;color:var(--muted)">Eight in-game days without an error, part of them as a BeaverBuddies host; three days replayed from the same save gave identical counters and co-op hashes. The walks that remain are distance to any stocked storage at all: the median beaver in that colony works 84 tiles from the nearest food. Method and full numbers are in <a href="https://github.com/timbermods/HungryPathing/blob/main/TESTING.md">TESTING.md</a>.</p>
+    </div>
+  </section>
+
+  <section id="how">
     <div class="container">
       <div class="section-head">
         <h2>How it works</h2>
@@ -175,7 +197,7 @@
   <section class="cta">
     <div class="container">
       <h2>Ready to try it?</h2>
-      <p>This is an alpha: one colony of 330 beavers has run it for three in-game days, twice, once in co-op, with no errors and identical results both times. Try it on a copy of your save first.</p>
+      <p>Beta: one colony of 355 beavers has run it for eight in-game days, part of them in co-op, with no errors, and the numbers above are from its saves. Try it on a copy of your save first.</p>
       <div class="btn-row">
         <a class="btn" href="https://github.com/timbermods/HungryPathing/releases" data-latest-zip>Download latest release</a>
         <a class="btn btn-secondary" href="install.html">Read the install guide</a>
