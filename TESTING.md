@@ -23,6 +23,9 @@ GitHub's Latest release, the newest pre-release only when there is no Latest, ne
 (buttons leading to the Latest release page) when GitHub does not answer. `docs\assets\release.js` is the release
 script the timbermods sites share; keep it byte-identical to theirs.
 
+GitHub Actions runs both sets of checks on every pull request and every push to main
+(`.github\workflows\tests.yml`).
+
 ## In the game
 
 `tools\run-save.ps1` starts the game straight into a save; the game itself reads `-settlementName` and `-saveName`
