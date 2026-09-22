@@ -312,6 +312,12 @@ const fallbacks = [...written.values()].flatMap((d) => downloadButtons(d).map((a
 check(fallbacks.every((href) => href === `${RELEASES}/latest`),
   'as written, before any script runs, every download button leads to the Latest release page',
   fallbacks.filter((href) => href !== `${RELEASES}/latest`).join(', '));
+// The sample startup lines show <version>: a version number there goes stale with the next release (it said 0.1.0
+// until 0.2.2).
+const stale = [...pages.map((page) => `docs/${page}`), 'README.md'].flatMap((file) =>
+  readFileSync(path.join(root, file), 'utf8').split(/\r?\n/)
+    .flatMap((line, i) => (/\[HungryPathing\] v?\d+\.\d+\.\d+\S* loading\./.test(line) ? [`${file}:${i + 1}`] : [])));
+check(stale.length === 0, 'the sample log lines on the site and in README.md show <version>, not a version number', stale.join(', '));
 const blanks = pages.flatMap((page) => emptyFields(written.get(page)).map((f) => `${page}: ${f}`));
 check(blanks.length === 0, 'as written, before any script runs, no page shows a label whose value the release script fills in',
   blanks.join(', '));

@@ -23,7 +23,8 @@ GitHub's Latest release, the newest pre-release only when there is no Latest, ne
 (buttons leading to the Latest release page) when GitHub does not answer. Every link with
 `data-release-href="download"` and every `btn` link that says "download" counts as a download button. It also applies
 the stylesheet rules that hide parts of a page until the script has run, and fails when a label such as the install
-guide's `File:` line shows without its value. `docs\assets\release.js` is the release script the timbermods sites
+guide's `File:` line shows without its value, or when a sample `loading.` log line on the site or in `README.md`
+names a version number instead of `<version>`. `docs\assets\release.js` is the release script the timbermods sites
 share; keep it byte-identical to theirs.
 
 GitHub Actions runs both sets of checks on every pull request and every push to main
