@@ -100,9 +100,16 @@ internal static class Program
         TripRules timeToLeave = new TripRules(false, true, true, 3.5f, 3f, 0.5f);
         Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, timeToLeave, out reason) == 1 &&
               reason == TripReason.JustInTime, "trip: once it is time to leave, just in time takes the better food");
+        Check(FuelPlanner.PickTrip(new List<Candidate> { new Candidate(0.5f, 3f) }, 0.25f, true, 0.5f, preFuelOnly,
+                  out reason) == 0 && reason == TripReason.PreFuel,
+            "trip: a storage exactly at the near limit is a pre-fuel trip");
+        Check(FuelPlanner.ReasonFor(0.5f, preFuelOnly) == TripReason.PreFuel &&
+              FuelPlanner.ReasonFor(0.51f, preFuelOnly) == TripReason.None, "trip: the pre-fuel reason ends at the near limit");
         TripRules forced = new TripRules(true, false, true, 6f, 3f, 0.5f);
-        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, forced, out reason) == 1 &&
-              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip is unchanged");
+        Check(FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip goes to the near storage");
+        Check(FuelPlanner.PickTrip(allFar, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: with nothing near, the builder's follow-up trip takes any storage");
         Check(FuelPlanner.PickTrip(allFar, 0.25f, true, float.MaxValue, bothWindows, out reason) == 0 &&
               reason == TripReason.None, "trip: nothing near and not yet time to leave means no trip");
         Check(FuelPlanner.PickTrip(allFar, 0.25f, true, 0.5f, preFuelOnly, out reason) == -1 &&
@@ -122,6 +129,34 @@ internal static class Program
               reason == TripReason.None, "trip: with no near storage left, no trip");
         Check(FuelPlanner.PickTrip(new List<Candidate>(), 0.25f, true, float.MaxValue, bothWindows, out reason) == -1 &&
               reason == TripReason.None, "trip: nothing measured means no pick");
+        // The builder's follow-up trip keeps the near limit when its first storage cannot start a trip, and takes
+        // any storage only once no near one is left.
+        List<Candidate> forcedRetry = new List<Candidate> { new Candidate(0.4f, 3f), new Candidate(0.45f, 2f), new Candidate(0.6f, 9f) };
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, better of two near storages first");
+        forcedRetry.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, then the other near storage");
+        forcedRetry.RemoveAt(0);
+        Check(FuelPlanner.PickTrip(forcedRetry, 0.25f, true, float.MaxValue, forced, out reason) == 0 &&
+              reason == TripReason.BuilderJob, "trip: the builder's follow-up trip, then the far one");
+
+        // The builder job check itself picks among the near storages, and the trip that follows goes where it chose,
+        // which is nearer than the site it let go.
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 6f, 3f, 2f, 1f, 1f, 0.5f) == 0,
+            "builder pick: the near storage although a better food lies just past the limit");
+        int topOff = FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 5f, 3f, 0.55f, 1f, 1f, 0.5f);
+        int followUp = FuelPlanner.PickTrip(nearAndBetter, 0.25f, true, float.MaxValue, forced, out reason);
+        Check(topOff == 0 && followUp == topOff && nearAndBetter[followUp].TravelHours < 0.55f,
+            "builder pick: the follow-up trip goes to the storage that let a 0.55h site go, not past it");
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 8f, 3f, 2f, 1f, 1f, 0.5f) == -1,
+            "builder pick: enough buffer for the job means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(nearAndBetter, 0.25f, true, 5f, 3f, 0.3f, 1f, 1f, 0.5f) == -1,
+            "builder pick: a site nearer than the food means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(allFar, 0.25f, true, 6f, 3f, 2f, 1f, 1f, 0.5f) == -1,
+            "builder pick: nothing near means no top-off");
+        Check(FuelPlanner.PickBuilderTopOff(prize, 0.25f, false, 6f, 3f, 2f, 1f, 1f, 0.5f) == 2,
+            "builder pick: value-first takes the best food among the near ones");
 
         // Measuring stops at the first storage that cannot be near by straight line. On foot a walk costs at least
         // its straight line, but a tubeway tile costs 0.25, so there the straight line alone is no lower bound.

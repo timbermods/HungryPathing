@@ -49,7 +49,8 @@ unchanged, so the variety-seeking that makes evenings pleasant is not lost.
    through the game's own "could not get there" path and tops off first.
 4. **Closest storage while working.** For every trip the mod starts, and for the game's own penalty-state trips
    during working hours, the storage is chosen by walking time for the need at hand. A higher-scoring food still
-   wins when it costs at most a quarter hour more walking.
+   wins when it costs at most a quarter hour more walking; pre-fuel and the builder's top-off choose only among the
+   storages within half an hour's walk.
 
 A unit of food restores a fixed amount and the game already refuses to eat when a full unit would not fit, so
 eating earlier does not eat more. Total consumption per day is unchanged; only its timing moves.

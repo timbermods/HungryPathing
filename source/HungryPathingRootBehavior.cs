@@ -366,11 +366,10 @@ namespace HungryPathing
                 {
                     continue;
                 }
-                int best = FuelPlanner.PickCandidate(_candidates, settings.VarietyToleranceHours,
-                    settings.WorkTimeClosestFood, settings.PreFuelNearFoodHours);
-                if (best < 0 || !FuelPlanner.BuilderShouldTopOff(hoursLeft, warning, travelToSite,
-                        settings.BuilderJobWorkHours, _siteToFoodHours, _candidates[best].TravelHours,
-                        settings.PreFuelNearFoodHours))
+                int best = FuelPlanner.PickBuilderTopOff(_candidates, settings.VarietyToleranceHours,
+                    settings.WorkTimeClosestFood, hoursLeft, warning, travelToSite, settings.BuilderJobWorkHours,
+                    _siteToFoodHours, settings.PreFuelNearFoodHours);
+                if (best < 0)
                 {
                     continue;
                 }

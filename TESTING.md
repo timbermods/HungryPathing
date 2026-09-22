@@ -9,8 +9,8 @@ dotnet run --project tests/HungryPathing.Tests.csproj
 or `.\build.ps1 -Test`. The checks compile `source\Planning\FuelPlanner.cs` on its own and assert the arithmetic
 behind each rule: hours left from points and decay, the just-in-time window and leaving time, the shift test and
 that it does not change as a shift runs, the builder rule, storage ranking with its tie-breaks in both orders and
-within the near limit that pre-fuel and the builder check pick under, which storage each rule goes to and why, the
-straight-line bound on a walk and the cheapest path cost per tile it is scaled by, the
+within the near limit that pre-fuel, the builder check and the builder's follow-up trip pick under, which storage
+each rule goes to and why, the straight-line bound on a walk and the cheapest path cost per tile it is scaled by, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 
 ## In the game

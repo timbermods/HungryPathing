@@ -106,6 +106,22 @@ namespace HungryPathing.Planning
             return hoursLeft - warningHours < travelToSite + workHours + siteToFoodHours;
         }
 
+        // The builder job check: the storage to top off at before walking to the site, or -1 to go on to the site.
+        // Only storages within nearFoodHours take part, so a better food just past the limit cannot hide a near
+        // one; the forced trip that follows picks among the same storages (PickTrip).
+        public static int PickBuilderTopOff(IReadOnlyList<Candidate> candidates, float varietyToleranceHours,
+            bool closestFirst, float hoursLeft, float warningHours, float travelToSite, float workHours,
+            float siteToFoodHours, float nearFoodHours)
+        {
+            int best = PickCandidate(candidates, varietyToleranceHours, closestFirst, nearFoodHours);
+            if (best < 0 || !BuilderShouldTopOff(hoursLeft, warningHours, travelToSite, workHours, siteToFoodHours,
+                    candidates[best].TravelHours, nearFoodHours))
+            {
+                return -1;
+            }
+            return best;
+        }
+
         // Index of the storage to use, or -1. Only candidates within maxTravelHours take part, exactly as if the
         // others had not been measured. closestFirst: the least walking wins, except that any candidate
         // within varietyToleranceHours of the closest one may win on value. The window is measured from the
@@ -169,12 +185,24 @@ namespace HungryPathing.Planning
         // maxTravelHours, except when that choice gives no reason to go and pre-fuel applies: then the choice among
         // the storages within NearFoodHours is taken instead, since pre-fuel only asks for food nearby. Otherwise a
         // better food just past the near limit, which wins on value, would stop pre-fuel although a near storage
-        // exists. Returns -1 when nothing is in reach; an index with TripReason.None is where the beaver would go
-        // once it is time, which the just-in-time wake-up is measured against.
+        // exists. The builder who let a site go (Forced) takes the choice among the storages within NearFoodHours
+        // too, since one of those is why it let the site go (PickBuilderTopOff), and any storage only once none of
+        // them is left. Returns -1 when nothing is in reach; an index with TripReason.None is where the beaver would
+        // go once it is time, which the just-in-time wake-up is measured against.
         public static int PickTrip(IReadOnlyList<Candidate> candidates, float varietyToleranceHours, bool closestFirst,
             float maxTravelHours, in TripRules rules, out TripReason reason)
         {
             reason = TripReason.None;
+            if (rules.Forced)
+            {
+                int topOff = PickCandidate(candidates, varietyToleranceHours, closestFirst,
+                    Math.Min(maxTravelHours, rules.NearFoodHours));
+                if (topOff >= 0)
+                {
+                    reason = TripReason.BuilderJob;
+                    return topOff;
+                }
+            }
             int best = PickCandidate(candidates, varietyToleranceHours, closestFirst, maxTravelHours);
             if (best < 0)
             {
