@@ -43,9 +43,10 @@ namespace HungryPathing
             }
         }
 
-        // Only the configurator calls this, and it runs on every player whenever a game is loaded, joined or rehosted,
-        // before any beaver decides. It asks MultiColony again after an exception in the previous game, keeps the
-        // probe result and lets go of the previous game's last beaver. Never call it mid-game.
+        // Only GameLoad.Reset calls this, from the configurator, which runs on every player whenever a game is
+        // loaded, joined or rehosted, before any beaver decides. It asks MultiColony again after an exception in the
+        // previous game, keeps the probe result and lets go of the previous game's last beaver. Never call it
+        // mid-game.
         public static void NewGame()
         {
             _oneComponent[0] = null;

@@ -140,8 +140,8 @@ Steam shows a prompt to confirm the extra arguments.
 ## Building
 
 `.\build.ps1` builds against the game folder, lays the mod out under `dist\` and zips it. `-Install` copies it into
-`Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner on its own and need no
-game files. [TESTING.md](TESTING.md) covers the in-game checks.
+`Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner and the failure switches
+on their own and need no game files. [TESTING.md](TESTING.md) covers the in-game checks.
 
 ## Known limits
 

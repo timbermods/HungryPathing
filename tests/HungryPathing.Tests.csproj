@@ -14,5 +14,8 @@
     <Compile Include="../source/Safety.cs" Link="Mod/Safety.cs" />
     <!-- So does the MultiColony bridge, against the stand-in in Stubs.cs for MultiColony's ColonyWorkingHours. -->
     <Compile Include="../source/MultiColonyBridge.cs" Link="Mod/MultiColonyBridge.cs" />
+    <!-- The reset the configurator runs at every load, so the checks re-arm both switches the way the game does. -->
+    <Compile Include="../source/GameLoad.cs" Link="Mod/GameLoad.cs" />
+    <Compile Include="../source/Stats.cs" Link="Mod/Stats.cs" />
   </ItemGroup>
 </Project>

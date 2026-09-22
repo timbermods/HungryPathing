@@ -158,6 +158,24 @@ internal static class Program
         Check(!MultiColonyBridge.TryEndHours(beaver, out _) && Log.Warnings.Count == warnings + 2,
             "multicolony: a later game can fail and warn again");
 
+        // GameLoad.Reset is the reset the configurator runs at every load, join and rehost. Both bugs were a load that
+        // left a switch-off in place, so one call must re-arm the breaker and the MultiColony bridge together.
+        Plugin.HooksInstalled = true;
+        Safety.Trip("a check before the load", new InvalidOperationException("test"));
+        Stats.Evaluations = 5;
+        Check(!Safety.Active && !MultiColonyBridge.TryEndHours(beaver, out _),
+            "load: the breaker and the MultiColony bridge are both off before the load");
+        infos = Log.Infos.Count;
+        GameLoad.Reset();
+        Check(Safety.Active, "load: the configurator's reset re-arms the breaker");
+        Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
+            "load: the configurator's reset re-arms the MultiColony bridge");
+        Check(Log.Infos.Count == infos + 2 &&
+              Log.Infos[infos] == "Breaker from the previous game cleared; active again for this game." &&
+              Log.Infos[infos + 1] == "MultiColony: failure from the previous game cleared; asking it again in this game." &&
+              Stats.Evaluations == 0,
+            "load: the reset says what it re-armed and starts the day's counters over");
+
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.
         int lead30 = UnitsEatenOver(30, 0.8f, 0.3f, 0.6f) - UnitsEatenOver(30, 0.8f, 0.3f, 0.0f);

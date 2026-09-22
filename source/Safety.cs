@@ -27,8 +27,8 @@ namespace HungryPathing
                         "lines below.\n" + exception);
         }
 
-        // Only the configurator calls this, and it runs on every player whenever a game is loaded, joined or
-        // rehosted, before any beaver decides. Never call it mid-game.
+        // Only GameLoad.Reset calls this, from the configurator, which runs on every player whenever a game is
+        // loaded, joined or rehosted, before any beaver decides. Never call it mid-game.
         public static void NewGame()
         {
             if (State.NewGame())
