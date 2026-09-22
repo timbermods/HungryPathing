@@ -11,10 +11,11 @@ using Timberborn.WorkSystem;
 
 namespace HungryPathing
 {
-    // Five small hooks. None of them replaces game code: two mirror registrations into the district index, one
-    // inserts the mod's root behavior into the beaver's list, one lets the mod answer for a critical Hunger or
-    // Thirst during working hours, and one lets a builder release a site it would not last at. If any hook fails
-    // to install, all of them are removed and the game runs unmodified.
+    // Five small hooks: two mirror registrations into the district index, one inserts the mod's root behavior into
+    // the beaver's list, one lets the mod answer for a critical Hunger or Thirst during working hours, and one lets a
+    // builder release a site it would not last at. Only the critical one can skip game code: when the mod answers,
+    // the game's own Decide does not run. If any hook fails to install, all of them are removed and the game runs
+    // unmodified.
     internal static class Patches
     {
         public static bool Apply(string harmonyId)
