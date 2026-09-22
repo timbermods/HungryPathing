@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0 (beta, preview), 2026-09-22
+
+Changes decisions: all co-op players must update together. None of it has been observed in a live game yet; each
+change has offline checks that fail on 0.2.2 and pass here (TESTING.md).
+
+- Fixed: after an error, the mod switched itself off for the whole game process, not just the game where the error
+  happened. A player who hit one and then loaded, joined or rehosted a co-op game ran the base game while the other
+  players ran the mod. The switch-off now lasts for the rest of that game, and the next load turns the mod back on and
+  says so in the log. The warning now reads "Switched off for the rest of this game".
+- Fixed: when asking BeaverBuddies MultiColony for a colony's shift end threw, the game's single shift end was used
+  for the rest of the process instead of the rest of that game. The fallback now ends at the next load, which asks
+  MultiColony again and says so in the log.
+- Fixed: pre-fuel and the builder job check declined when the best-scoring food was a little past
+  `PreFuelNearFoodHours` while a nearer storage existed. They now choose among the storages within that limit, and a
+  builder who lets a site go tops off at one of them.
+- Fixed: tubeways, zipline cables and stairs make walks cheaper than their straight line, so storages that look far
+  but are near along them were never measured. The straight-line early stop is now scaled by the cheapest path cost
+  per tile, read from the loaded buildings once per game and named in Player.log (`Cheapest travel here:`). Pre-fuel
+  checks cost more path queries (estimated 4.5 to 5 per evaluation in the reference colony, up from about 3, still
+  below 0.1.0). Storages outside the nearest `CandidateLimit` by straight line are still not measured.
+- A beaver now remembers every storage that failed to start a trip, each for twice `RetryHours`, instead of only the
+  last one. After a penalty-state redirect in which every storage the mod tried failed, the game's own critical
+  behavior handles that beaver for `RetryHours` instead of the mod measuring again at every ask. The daily log line
+  counts failed launches, just before the path queries.
+- The critical redirect's Harmony prefix runs last (`Priority.Last`), so its order against other mods' prefixes no
+  longer depends on each player's mod load order. A failed hook install removes only this mod's patches.
+- Docs: Folktails is tested; Iron Teeth is expected to work but untested. Sample log lines show `<version>`.
+- Site: the download buttons follow GitHub's Latest release, and the newest pre-release only when there is no Latest.
+- CI: the planner checks and the new site checks run on every pull request.
+
 ## 0.2.2 (beta, preview), 2026-09-22
 
 - BeaverBuddies MultiColony: a colony with its own working hours now gets the right "hours left in the shift".
