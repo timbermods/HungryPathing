@@ -5,6 +5,7 @@ namespace HungryPathing
     // Nothing else may call it, and never mid-game. The offline checks call it too, so they run the same reset the
     // game does: the circuit breaker and the MultiColony bridge are the two switch-offs that feed decisions, and a
     // load that left either one as it was would carry a switch-off from one game into the next on that player only.
+    // What the in-game notice reports about them (SwitchedOff) is cleared with them.
     internal static class GameLoad
     {
         public static void Reset()
@@ -12,6 +13,7 @@ namespace HungryPathing
             Stats.Reset();
             Safety.NewGame();
             MultiColonyBridge.NewGame();
+            SwitchedOff.NewGame();
         }
     }
 }

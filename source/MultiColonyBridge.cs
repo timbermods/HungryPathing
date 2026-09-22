@@ -28,7 +28,8 @@ namespace HungryPathing
         // An exception while asking switches the bridge off for the rest of that game only. Which shift end a beaver
         // plans against is simulation state: a player who carried the switch-off into the next game (a rehost reloads
         // in the same process) would use the game's shift end while a co-op partner with a fresh process asks
-        // MultiColony.
+        // MultiColony. A switch-off is also said in the game (SwitchedOff), since one that only this computer hit
+        // splits a co-op game.
         private static readonly Breaker Failure = new Breaker();
         private static string _failureDescription;
 
@@ -96,6 +97,8 @@ namespace HungryPathing
                     _failureDescription = "present, but asking it failed (" + exception.GetBaseException().Message +
                                           "); using the game's shift end for the rest of this game";
                     Log.Warning("MultiColony: " + _failureDescription);
+                    SwitchedOff.Report("the MultiColony shift end (error asking MultiColony)",
+                        "beavers here plan against the game's single shift end");
                 }
                 return false;
             }

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.1 (beta, preview), 2026-09-22
+
+Does not change decisions, though co-op players should still update together. Not yet observed in a live game; the
+notice's text and timing have offline checks, the dialog itself needs the game.
+
+- A switch-off after an error is now said in the game, not only in Player.log. The mod is built so that an error
+  throws on every player at the same tick, since the code reads only the simulation, but it cannot promise that. An
+  error only one computer hits leaves that computer on the base game's behavior while the other players run the mod,
+  and a co-op game drifts apart from there. When the circuit breaker trips, or the BeaverBuddies MultiColony shift end
+  falls back to the game's, that computer now:
+  - shows a dialog that names what switched off and what beavers there do now, and asks co-op players to have the
+    host save and host that save again, with every player joining it, before playing on. The load turns the mod back
+    on for everyone (since 0.3.0 a switch-off lasts one game), so no restart is needed;
+  - writes `Day N: switched off on this computer until a game is loaded: ...` on every later in-game day of that
+    game. A player whose mod is switched off writes no daily summary line, so two players' logs still compare day by
+    day.
+
+  The dialog is shown from the frame loop, never from inside the tick where the error happened, and changes nothing
+  in the simulation.
+
 ## 0.3.0 (beta, preview), 2026-09-22
 
 Changes decisions: all co-op players must update together. None of it has been observed in a live game yet; each

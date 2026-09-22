@@ -4,8 +4,9 @@ using BeaverBuddies.Colonies;
 using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic, the circuit breaker and the MultiColony bridge, plus rules for the Harmony
-// hooks read from their source (HarmonyRules.cs). They compile that source directly and need no game files:
+// Checks on the planner arithmetic, the circuit breaker, the MultiColony bridge and what the in-game notice says when
+// either switches off, plus rules for the Harmony hooks read from their source (HarmonyRules.cs). They compile that
+// source directly and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -379,6 +380,59 @@ internal static class Program
               Log.Infos[infos + 1] == "MultiColony: failure from the previous game cleared; asking it again in this game." &&
               Stats.Evaluations == 0,
             "load: the reset says what it re-armed and starts the day's counters over");
+
+        // SwitchedOff.cs as shipped: what the in-game notice says, and when. A switch-off only one player hit leaves that
+        // computer off the mod while the others run it, so it must be said in the game once per switch-off and in the
+        // log on every later day, until the load that turns everything back on.
+        GameLoad.Reset();
+        int shown = 0;
+        Check(SwitchedOff.Count == 0 && !SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(321) == null,
+            "switched off: nothing to say while nothing is off");
+        ColonyWorkingHours.ThrowOnce = true;
+        MultiColonyBridge.TryEndHours(beaver, out _);
+        MultiColonyBridge.TryEndHours(beaver, out _);
+        Check(SwitchedOff.Count == 1 && SwitchedOff.ShouldShow(ref shown),
+            "switched off: the MultiColony fallback is reported once and shows the dialog");
+        Check(!SwitchedOff.ShouldShow(ref shown), "switched off: the dialog does not show again on the next frame");
+        Check(SwitchedOff.TakeReminder(321) == null && SwitchedOff.TakeReminder(321) == null,
+            "switched off: the day of the switch-off has the warning and no reminder");
+        Check(SwitchedOff.TakeReminder(322) ==
+              "Day 321: switched off on this computer until a game is loaded: the MultiColony shift end (error asking " +
+              "MultiColony). In multiplayer the other players' computers may not have: the host should save and host " +
+              "that save again, and every player join it, before playing on together.",
+            "switched off: the next day change says what is off for the day that ended");
+        Check(SwitchedOff.TakeReminder(322) == null, "switched off: one reminder per day");
+        Safety.Trip("HungryPathingRootBehavior.Decide", new InvalidOperationException("test"));
+        Safety.Trip("a second check", new InvalidOperationException("test"));
+        Check(SwitchedOff.Count == 2 && SwitchedOff.ShouldShow(ref shown) && !SwitchedOff.ShouldShow(ref shown),
+            "switched off: the breaker's trip is reported once and shows the dialog again");
+        Check(SwitchedOff.NoticeText() ==
+              "Hungry Pathing\n\n" +
+              "An error on this computer switched this off for the rest of this game:\n\n" +
+              "- the MultiColony shift end (error asking MultiColony): beavers here plan against the game's single " +
+              "shift end.\n" +
+              "- the whole mod (error in HungryPathingRootBehavior.Decide): beavers here behave as in the base game." +
+              "\n\nPlayer.log has the details; please report it.\n\n" +
+              "In multiplayer the other players' computers may not have switched this off, and the games can drift apart. " +
+              "Before playing on together, the host should save and host that save again, and every player join it: " +
+              "loading a game turns the mod back on for everyone.\n\n" +
+              "In single player nothing else is needed; loading a game turns the mod back on.",
+            "switched off: the dialog names each switch-off in order, what beavers do now, and what co-op players do");
+        Check(SwitchedOff.TakeReminder(323) != null &&
+              SwitchedOff.TakeReminder(324).StartsWith("Day 323: switched off on this computer until a game is loaded: " +
+                  "the MultiColony shift end (error asking MultiColony); the whole mod (error in " +
+                  "HungryPathingRootBehavior.Decide). "),
+            "switched off: the reminder names every switch-off, every day");
+        GameLoad.Reset();
+        shown = 0;
+        Check(SwitchedOff.Count == 0 && !SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(325) == null,
+            "switched off: the next load clears what the notice says along with the switches");
+        Safety.Trip("a check in the next game", new InvalidOperationException("test"));
+        Check(SwitchedOff.ShouldShow(ref shown) && SwitchedOff.TakeReminder(326).StartsWith("Day 325: "),
+            "switched off: a switch-off on a day's last tick, seen first on the next day, is counted to its own day");
+        Check(SwitchedOff.TakeReminder(326) == null && SwitchedOff.TakeReminder(327).StartsWith("Day 326: "),
+            "switched off: a switch-off in the next game counts its days afresh");
+        GameLoad.Reset();
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.

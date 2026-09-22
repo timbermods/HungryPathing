@@ -16,7 +16,11 @@ scaled by, the
 sleep and wake-up delays, and that eating earlier does not eat more over 30 and 300 days.
 They also compile `Safety.cs`, `MultiColonyBridge.cs`, `Stats.cs` and `GameLoad.cs` as shipped against the
 stand-ins in `tests\Stubs.cs`, and check that the circuit breaker and the MultiColony bridge stay off for the rest of
-one game only and come back through `GameLoad.Reset`, the reset the configurator runs at every load.
+one game only and come back through `GameLoad.Reset`, the reset the configurator runs at every load. `SwitchedOff.cs`
+is compiled the same way, to check what the in-game notice says when either switches off and when: the dialog once
+per switch-off and not on the frames after, its exact text, a `Day N: switched off` log line on every later day and
+none on the day of the switch-off, and nothing left over after the next load. The dialog itself
+(`SwitchedOffNotice.cs`) needs the game.
 
 Finally, they read the hooks' source under `source\` (the hooks need the game's assemblies to compile, the checks do
 not) and check two Harmony rules for lockstep co-op: every prefix that can skip the original (one that returns
@@ -151,6 +155,15 @@ An audit found that the pre-fuel rule read the game's single shift end while Mul
 0.2.2 asks MultiColony for the beaver's colony. The sessions above all ran MultiColony, but no colony had set its
 own hours, so both code paths give the same answer there; a game where one colony chose a different working day
 is still to be observed. The `MultiColony:` log line after `Needs in this game` says whether the bridge is active.
+
+### The switch-off notice (0.3.1)
+
+An audit pointed out that a breaker trip only one co-op player hits leaves that player on the base game while the
+others run the mod, and that the only sign of it was a warning in Player.log. 0.3.1 also shows a dialog on that
+computer and writes a `Day N: switched off on this computer` line on each later day of that game. Its text and
+timing have offline checks; the dialog has not been seen in a game yet, because nothing has tripped since 0.2.1.
+The day it happens, check that the dialog names the same `error in` place as the warning, that it shows once, and
+that the next load (or joining the host's save) brings the `Day N:` summary lines back.
 
 ## Reproducing the analysis
 

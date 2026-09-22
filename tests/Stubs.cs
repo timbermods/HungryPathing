@@ -4,8 +4,8 @@ using Timberborn.BaseComponentSystem;
 
 namespace HungryPathing
 {
-    // Stand-ins for the parts of the mod that need the game, so that Safety.cs, MultiColonyBridge.cs, Stats.cs and
-    // GameLoad.cs compile and run here as shipped. They carry only what those files read and write.
+    // Stand-ins for the parts of the mod that need the game, so that Safety.cs, MultiColonyBridge.cs, SwitchedOff.cs,
+    // Stats.cs and GameLoad.cs compile and run here as shipped. They carry only what those files read and write.
     internal sealed class Config
     {
         public bool Enabled = true;

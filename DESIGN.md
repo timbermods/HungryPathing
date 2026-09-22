@@ -153,9 +153,10 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   per-colony hours), the day-night cycle and the game's path queries. Lists are iterated in insertion order and sorts
   have total tie-breaks. No clock, no randomness, no frame timing. The only static state that changes during a game
   is the log's counters and flags, which never feed a decision, and two switch-offs that do: the circuit breaker (see
-  failure containment below) and the MultiColony bridge's (see other mods below). Each trips at the same tick on
-  every player, because the code it guards reads only the simulation, and each is cleared only in the configurator,
-  which every player runs when a game is loaded, joined or rehosted; nothing clears them mid-game. Whether the hooks
+  failure containment below) and the MultiColony bridge's (see other mods below). Each should trip at the same tick
+  on every player, because the code it guards reads only the simulation, and each is cleared only in the
+  configurator, which every player runs when a game is loaded, joined or rehosted; nothing clears them mid-game. A
+  trip that only one player hits is the one way they can differ, and it is said loudly (see failure containment). Whether the hooks
   installed and whether MultiColony's API was found are fixed for the process and are the same on every player with
   the same game and mod versions.
 - **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
@@ -206,6 +207,20 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   process and outlive the game, so a trip stored there would carry into every later game on that machine, and a
   player who had tripped it once would run the base game while a co-op partner ran the mod. Hooks that fail to
   install stay off for the whole process.
+- **A switch-off only one player hit.** The breaker and the MultiColony bridge are built to trip on every player
+  together, but nothing can promise that an error is one every computer hits: another mod, a damaged install or a
+  bug that reads something outside the simulation can throw on one computer only. That computer then runs the base
+  game's behavior while the others run the mod, and the games drift apart until BeaverBuddies notices. A warning in
+  Player.log is read too late, so `SwitchedOff` records each switch-off of the game and `SwitchedOffNotice`, from the
+  frame loop and never from inside the tick that threw, says it in the game: a dialog once per switch-off, naming
+  what switched off and what beavers there do now, and asking co-op players to have the host save and host that
+  save again, with every player joining it, before playing on; and a `Day N: switched off on this computer ...` line
+  on every later day of that game, numbered like the daily summary, which a player whose whole mod is off no longer
+  writes, so two players' logs still compare day by day.
+  Since a switch-off lasts one game, that load is all it takes to bring every player back to the mod from one
+  state; no restart is needed. The dialog is the game's own, so it pauses where the game's dialogs do (in co-op,
+  BeaverBuddies decides that). Hooks that fail to install are not reported this way: that happens at startup, the
+  same way on every player with the same game and mod versions, and the log says so.
 
 ## What was considered and left out
 
@@ -215,6 +230,10 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   reservations; unwinding them is not a vanilla path the way `Builder.Unreserve()` is. The shift-based pre-fuel
   and just-in-time rules cover haulers without knowing the destination.
 - Touching pathfinding. Nothing in the navigation assemblies is patched.
+- Tripping every player's breaker together. Sending a trip to the other players would make an asymmetric trip
+  symmetric, but it needs a way to put an event into BeaverBuddies' synchronized stream at a tick every player agrees
+  on, which is BeaverBuddies' internals and a hard dependency for a mod that works without it. Saying the trip loudly
+  and asking for a load, which re-arms every player from one state, gets the same result without either.
 - A travel bound per storage. Storages are taken nearest first by straight line, and the cost factor above is one
   number per game, so it does not change that order: a storage that tubeways or ziplines make the quickest can lie
   outside the nearest `CandidateLimit` and go unmeasured. A bound per storage would need to know which storages a

@@ -69,10 +69,17 @@ ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
 
 Every rule reads only the simulation and the game's own path queries; nothing depends on the clock, the frame rate
 or random numbers, and storages are ranked in a fixed order with fixed tie-breaks. The counters in the daily log
-line never feed back into a decision. If the mod switches itself off after an error, it does so on every player at
-the same moment, and it is back on for everyone after the next load, which all players make together when they
-join or rehost. Two players running the same version with identical settings files make identical decisions. At
-startup the log prints one `Simulation settings:` line; if two players' lines differ, their games will drift apart.
+line never feed back into a decision. Two players running the same version with identical settings files make
+identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
+games will drift apart.
+
+If the mod switches itself off after an error, it is built to do so on every player at the same moment, since the
+code that threw reads only the simulation, and it is back on for everyone after the next load, which all players
+make together when they join or rehost. An error that only one computer hits is the exception: that computer then
+runs the base game's behavior while the others run the mod. So a switch-off is also said in the game, on the
+computer where it happened, with a dialog that asks the host to save and host that save again, and every player to
+join it, before playing on. The log repeats it on every later in-game day of that game
+(`Day N: switched off on this computer ...`).
 
 Decisions also read the cheapest path cost per tile from the buildings the game loaded, placed or not, so they
 depend on the faction and on any mods that add buildings. The first time a beaver measures a walk in a game, the log
@@ -125,8 +132,8 @@ could not change the answer. The walks that remain are distance to any stocked s
 median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers and the method.
 The first day with construction queued found a second site-lookup bug in the builder job check; the circuit
 breaker caught it, the session carried on with the game's own behavior, and 0.2.1 fixes it. What the builder rule
-decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once
-and switches itself off for the rest of that game; loading a game turns it back on.
+decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once,
+switches itself off for the rest of that game and says so in a dialog; loading a game turns it back on.
 
 ## Checking that it works
 
@@ -143,7 +150,8 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 
 `<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a
 measured day ([TESTING.md](TESTING.md) has measured ones). If the `Needs in this game` line shows a buffer of 0h,
-the blueprint patches did not load. `Diagnostics = true` logs one line per trip the mod starts.
+the blueprint patches did not load. A `Switched off for the rest of this game` warning, a dialog in the game and
+`Day N: switched off on this computer` lines mean the mod hit an error; see the Multiplayer section. `Diagnostics = true` logs one line per trip the mod starts.
 `tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
 arguments.
 

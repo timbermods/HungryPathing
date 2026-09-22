@@ -16,6 +16,8 @@
     <Compile Include="../source/MultiColonyBridge.cs" Link="Mod/MultiColonyBridge.cs" />
     <!-- The reset the configurator runs at every load, so the checks re-arm both switches the way the game does. -->
     <Compile Include="../source/GameLoad.cs" Link="Mod/GameLoad.cs" />
+    <!-- What the in-game notice says about the two switches, and when; the dialog itself needs the game. -->
+    <Compile Include="../source/SwitchedOff.cs" Link="Mod/SwitchedOff.cs" />
     <Compile Include="../source/Stats.cs" Link="Mod/Stats.cs" />
   </ItemGroup>
 </Project>
