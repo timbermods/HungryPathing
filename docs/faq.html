@@ -105,7 +105,7 @@
         </details>
         <details class="q" id="factions">
           <summary>Folktails and Iron Teeth?</summary>
-          <div class="a"><p>Both. Hunger and Thirst are shared beaver needs. Bots are untouched: they have their own picker and already use the warning field.</p></div>
+          <div class="a"><p>Folktails tested; Iron Teeth expected to work, untested. Hunger and Thirst are shared beaver needs and no rule looks at the faction, but every run so far has been a Folktails colony. The part to watch is tubeways: they carry beavers much faster than walking, while the planner picks which storages are worth a path query by straight-line distance, so in a colony built around tubeways it can overlook the storage a tube reaches soonest. At worst a rule then does not fire, or sends a beaver to a storage that is closer on foot. Bots are untouched: they have their own picker and already use the warning field.</p></div>
         </details>
         <details class="q" id="pathfinding">
           <summary>Does it change pathfinding?</summary>

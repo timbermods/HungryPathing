@@ -98,12 +98,12 @@
 
       <h2 id="verify">Check that it works</h2>
       <p>Load a colony, let it run for a moment, then open the game log (see <a href="troubleshooting.html#log">where to find it</a>) and search for <code>[HungryPathing]</code>. You should see, in order:</p>
-<pre><code>[HungryPathing] 0.1.0 loading.
+<pre><code>[HungryPathing] &lt;version&gt; loading.
 [HungryPathing] Simulation settings: Enabled=True Needs=Hunger,Thirst WarningHours=0 ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. One summary line per in-game day follows while a game runs.
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: buffer 3h, ...</code></pre>
-      <p>The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
+      <p><code>&lt;version&gt;</code> is the version you installed. The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
       <div class="callout note">
         <strong class="t">Beta</strong>
         <p>This mod has run in one 355-beaver colony for 36 in-game days, nearly all as a BeaverBuddies host, without errors. That is still one colony. Try it on a copy of your save first, and if you see a <code>Switched off for this session</code> warning, please <a href="troubleshooting.html#report">report it</a> with the lines that follow.</p>
