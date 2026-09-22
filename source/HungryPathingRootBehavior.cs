@@ -115,7 +115,7 @@ namespace HungryPathing
 
         public override Decision Decide(BehaviorAgent agent)
         {
-            if (!Plugin.Settings.Enabled || !_ready)
+            if (!Safety.Active || !_ready)
             {
                 return Decision.ReleaseNow();
             }
@@ -226,7 +226,7 @@ namespace HungryPathing
         {
             decision = default;
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.RedirectCriticalTrips || !_ready)
+            if (!Safety.Active || !settings.RedirectCriticalTrips || !_ready)
             {
                 return false;
             }
@@ -298,7 +298,7 @@ namespace HungryPathing
         internal bool BuilderShouldTopOffFirst(ConstructionSite site)
         {
             Config settings = Plugin.Settings;
-            if (!settings.Enabled || !settings.BuilderJobCheck || !_ready)
+            if (!Safety.Active || !settings.BuilderJobCheck || !_ready)
             {
                 return false;
             }

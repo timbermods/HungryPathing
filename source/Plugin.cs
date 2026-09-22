@@ -9,7 +9,12 @@ namespace HungryPathing
         // Must equal the Id in manifest.json.
         public const string ModId = "kyler.hungrypathing";
 
+        // Exactly what the settings file says; nothing writes to it after startup.
         internal static Config Settings = new Config();
+
+        // Set once at startup and never reset: a hook that did not go in stays out for the whole process, which is
+        // the same on every player with the same game and mod versions.
+        internal static bool HooksInstalled;
 
         public void StartMod(IModEnvironment modEnvironment)
         {
@@ -19,9 +24,9 @@ namespace HungryPathing
                 Log.Info(version + " loading.");
                 Settings = Config.Load(modEnvironment.ModPath, modEnvironment.OriginPath, FolderAboveScripts());
                 Log.Info(Settings.ToString());
-                if (!Patches.Apply(ModId))
+                HooksInstalled = Patches.Apply(ModId);
+                if (!HooksInstalled)
                 {
-                    Settings.Enabled = false;
                     Log.Warning("Disabled for this session.");
                     return;
                 }

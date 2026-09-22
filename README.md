@@ -68,9 +68,10 @@ ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
 
 Every rule reads only the simulation and the game's own path queries; nothing depends on the clock, the frame rate
 or random numbers, and storages are ranked in a fixed order with fixed tie-breaks. The counters in the daily log
-line never feed back into a decision. Two players running the same version with identical settings files make
-identical decisions. At startup the log prints one `Simulation settings:` line; if two players' lines differ, their
-games will drift apart.
+line never feed back into a decision. If the mod switches itself off after an error, it does so on every player at
+the same moment, and it is back on for everyone after the next load, which all players make together when they
+join or rehost. Two players running the same version with identical settings files make identical decisions. At
+startup the log prints one `Simulation settings:` line; if two players' lines differ, their games will drift apart.
 
 ### BeaverBuddies MultiColony
 
@@ -117,7 +118,7 @@ median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has
 The first day with construction queued found a second site-lookup bug in the builder job check; the circuit
 breaker caught it, the session carried on with the game's own behavior, and 0.2.1 fixes it. What the builder rule
 decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once
-and switches itself off for the session.
+and switches itself off for the rest of that game; loading a game turns it back on.
 
 ## Checking that it works
 

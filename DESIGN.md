@@ -139,7 +139,11 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
 
 - **Determinism.** Inputs are need points, spec values, positions, the working-hours manager, the day-night cycle
   and the game's path queries. Lists are iterated in insertion order and sorts have total tie-breaks. No clock, no
-  randomness, no frame timing. Counters are the only mutable static state and never feed a decision.
+  randomness, no frame timing. The only static state that changes during a game is the log's counters and flags,
+  which never feed a decision, and the circuit breaker, which does (see failure containment below). It trips at the
+  same tick on every player, because the code it guards reads only the simulation, and it is cleared only in the
+  configurator, which every player runs when a game is loaded, joined or rehosted; nothing clears it mid-game.
+  Whether the hooks installed is fixed at startup and is the same on every player with the same game and mod versions.
 - **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
   and returns immediately. Appraisal runs before any path query and removes storages the beaver could not eat at.
   Path queries are capped per decision, and a pre-fuel-only check stops measuring at the first storage whose
@@ -164,7 +168,11 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   value is used. The bridge reads MultiColony's own synchronized state, so peers running both mods stay identical.
 - **Failure containment.** Every entry point the game can reach (the root behavior, the two answers the hooks ask
   for, and the hook bodies themselves) catches exceptions. The first one is logged with its stack trace and the
-  mod disables itself for the session; the game's own code never sees an exception from this mod.
+  mod disables itself for the rest of the game; the game's own code never sees an exception from this mod. The next
+  load turns it back on. The breaker keeps its own flag and never writes `Enabled`: the settings are read once per
+  process and outlive the game, so a trip stored there would carry into every later game on that machine, and a
+  player who had tripped it once would run the base game while a co-op partner ran the mod. Hooks that fail to
+  install stay off for the whole process.
 
 ## What was considered and left out
 

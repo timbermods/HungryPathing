@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic. They compile the planner source directly and need no game files:
+// Checks on the planner arithmetic and the circuit breaker. They compile that source directly and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
 internal static class Program
 {
@@ -73,6 +74,51 @@ internal static class Program
         Check(FuelPlanner.StillBackedOff(1.0f, 1.5f), "backed off before the deadline");
         Check(!FuelPlanner.StillBackedOff(1.5f, 1.5f), "a check on the deadline considers the storage again");
         Check(!FuelPlanner.StillBackedOff(2.0f, 1.5f), "not backed off after the deadline");
+
+        // The circuit breaker lasts one game. Every player trips it at the same tick and clears it at the same load,
+        // so a trip in one game must not leave that machine running the base game in the next.
+        Breaker breaker = new Breaker();
+        Check(breaker.IsActive(true), "breaker: active before anything threw");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false is never active");
+        Check(!breaker.NewGame(), "breaker: an untripped breaker has nothing to clear");
+        Check(breaker.Trip(), "breaker: the first trip of a game reports itself");
+        Check(!breaker.Trip(), "breaker: a second trip in the same game is silent");
+        Check(!breaker.IsActive(true), "breaker: inactive for the rest of the game after a trip");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after a trip");
+        Check(breaker.NewGame(), "breaker: the next load clears the trip and says so");
+        Check(breaker.IsActive(true), "breaker: active again after the next load");
+        Check(!breaker.IsActive(false), "breaker: Enabled=false stays inactive after the next load");
+        Check(!breaker.NewGame(), "breaker: a second load has nothing left to clear");
+        Check(breaker.Trip() && !breaker.IsActive(true), "breaker: trips again in the new game");
+
+        // Safety.cs as shipped. A trip must leave the settings alone, since they outlive the game; missing hooks
+        // are the one process-wide switch-off.
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = true;
+        Check(Safety.Active, "safety: active with Enabled=true and every hook installed");
+        Safety.Trip("the first check", new InvalidOperationException("test"));
+        Safety.Trip("the second check", new InvalidOperationException("test"));
+        Check(!Safety.Active, "safety: a trip switches the mod off");
+        Check(Plugin.Settings.Enabled, "safety: a trip leaves Enabled in the settings alone");
+        Check(Log.Warnings.Count == 1 &&
+              Log.Warnings[0].StartsWith("Switched off for the rest of this game after an error in the first check."),
+            "safety: one warning per game, naming the first failure");
+        Safety.NewGame();
+        Check(Safety.Active, "safety: active again after the next load");
+        Check(Log.Infos.Count == 1 &&
+              Log.Infos[0] == "Breaker from the previous game cleared; active again for this game.",
+            "safety: the load that clears a trip says so");
+        Safety.NewGame();
+        Check(Log.Infos.Count == 1, "safety: a load with nothing to clear says nothing");
+        Safety.Trip("a check in the next game", new InvalidOperationException("test"));
+        Check(!Safety.Active && Log.Warnings.Count == 2, "safety: a later game trips and warns again");
+        Safety.NewGame();
+        Plugin.Settings.Enabled = false;
+        Check(!Safety.Active, "safety: Enabled=false keeps it off");
+        Plugin.Settings.Enabled = true;
+        Plugin.HooksInstalled = false;
+        Safety.NewGame();
+        Check(!Safety.Active, "safety: a load does not bring back hooks that failed to install");
 
         // Guardrail: a unit of food restores a fixed amount, so eating earlier does not change how much is eaten
         // per day. The early eater is ahead by the units it ate before the late one started, and that lead never grows.

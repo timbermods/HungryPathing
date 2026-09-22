@@ -10,5 +10,7 @@
   <ItemGroup>
     <!-- The planner has no game dependencies, so the checks compile it directly and run without the game. -->
     <Compile Include="../source/Planning/*.cs" Link="Planning/%(Filename)%(Extension)" />
+    <!-- The circuit breaker's wiring runs as shipped against the stand-ins in Stubs.cs for the settings and the log. -->
+    <Compile Include="../source/Safety.cs" Link="Mod/Safety.cs" />
   </ItemGroup>
 </Project>
