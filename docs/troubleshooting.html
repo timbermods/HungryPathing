@@ -7,7 +7,8 @@
 <meta name="description" content="Fixes for the Hungry Pathing Timberborn mod: not listed, hooks not installed, a zero buffer, beavers still crossing the map, co-op drift, and how to report a problem.">
 <link rel="canonical" href="https://timbermods.github.io/HungryPathing/troubleshooting.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0d1716">
+<meta name="theme-color" content="#1d4a86">
+<link rel="preload" href="assets/fonts/big-shoulders-display-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -24,7 +25,7 @@
         <li><a href="install.html">Install</a></li>
         <li><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></li>
         <li><a href="faq.html">FAQ</a></li>
-        <li><a class="btn btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
+        <li><a class="btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
       </ul>
     </nav>
   </div>
@@ -121,9 +122,9 @@
         <h2>A dialog or the log says the mod "switched off" after an error</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>Something in the mod's own code threw. The mod logs the stack trace once and disables itself for the rest of that game, so the game carries on as if it were not installed. Since 0.3.1 it also says so in a dialog and writes <code>Day N: switched off on this computer ...</code> on every later day of that game. Versions up to 0.2.2 word the warning "Switched off for this session".</dd>
+          <dd>Something in the mod's own code threw. The mod logs the stack trace once and disables itself for the rest of that game, so the game carries on as if it were not installed. It also says so in a dialog, and writes <code>Day N: switched off on this computer ...</code> on every later day of that game.</dd>
           <dt>Fix</dt>
-          <dd>In co-op, other players' computers may still be running the mod, so the games can drift apart: before playing on, the host saves and hosts that save again, and every player joins it. That load turns the mod back on for everyone. Then please <a href="#report">report it</a> with the whole warning, including the lines after it. Loading a game re-enables the mod (up to 0.2.2, only restarting the game did); if the warning comes back at the same point, set <code>Enabled = false</code> on every computer until a fix is out.</dd>
+          <dd>In co-op, other players' computers may still be running the mod, so the games can drift apart: before playing on, the host saves and hosts that save again, and every player joins it. That load turns the mod back on for everyone. Then please <a href="#report">report it</a> with the whole warning, including the lines after it. Loading a game re-enables the mod; if the warning comes back at the same point, set <code>Enabled = false</code> on every computer until a fix is out.</dd>
         </dl>
       </article>
 
@@ -169,7 +170,7 @@
         <h2>Stutter in a big colony</h2>
         <dl>
           <dt>What to look at</dt>
-          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. Several thousand per day for a few hundred beavers is normal and cheap (about 7,500 a day in the 355-beaver test colony on 0.2.0); tens of thousands is not.</dd>
+          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. Several thousand per day for a few hundred beavers is normal and cheap (about 7,500 a day in the 355-beaver test colony); tens of thousands is not.</dd>
           <dt>Fix</dt>
           <dd>Lower <code>CandidateLimit</code> (path queries per check), raise <code>RetryHours</code> (time between checks), or lower <code>JustInTimeLeadHours</code> (how early walks start being measured). All three are simulation settings, so co-op peers must change them together.</dd>
         </dl>
@@ -213,8 +214,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
-      <p>Not affiliated with or endorsed by Mechanistry.</p>
+      <p><strong>Hungry Pathing</strong></p>
+      <p>An unofficial community mod for Timberborn, maintained by Timbermods. Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>

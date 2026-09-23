@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hungry Pathing</title>
-<meta name="description" content="A Timberborn mod: working beavers plan food and water around their shift and eat at the closest stocked storage, instead of waiting for the hunger penalty and crossing the map for a fancier meal.">
+<meta name="description" content="A Timberborn mod: working beavers eat and drink before the hunger penalty, timed to their shift, at the closest stocked storage. Off duty nothing changes, and beavers don't eat more.">
 <link rel="canonical" href="https://timbermods.github.io/HungryPathing/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Hungry Pathing, a Timberborn mod">
-<meta property="og:description" content="Working beavers top off before a shift they cannot finish, leave far jobs early enough to reach food before the penalty, and eat at the closest stocked storage.">
+<meta property="og:description" content="Fed before the whistle, not after: working beavers eat before the hunger penalty, at the closest stocked storage, timed to their shift.">
 <meta property="og:url" content="https://timbermods.github.io/HungryPathing/">
-<meta property="og:image" content="https://timbermods.github.io/HungryPathing/assets/banner.svg">
-<meta name="theme-color" content="#0d1716">
+<meta property="og:image" content="https://timbermods.github.io/HungryPathing/assets/og.png">
+<meta name="theme-color" content="#1d4a86">
+<link rel="preload" href="assets/fonts/big-shoulders-display-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -29,7 +30,7 @@
         <li><a href="install.html">Install</a></li>
         <li><a href="troubleshooting.html">Troubleshooting</a></li>
         <li><a href="faq.html">FAQ</a></li>
-        <li><a class="btn btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
+        <li><a class="btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
       </ul>
     </nav>
   </div>
@@ -39,165 +40,195 @@
   <div class="hero">
     <div class="container hero-grid">
       <div>
-        <span class="eyebrow">Timberborn mod <span class="ver"><span data-release="tag"></span><span data-release-show="prerelease" hidden> preview</span></span></span>
-        <h1>Beavers that eat before the shift, not after the penalty.</h1>
-        <p class="lede">Working beavers top off before a shift they cannot finish, leave far jobs early enough to reach food before the hunger penalty, and eat at the closest stocked storage instead of crossing the map for a fancier meal.</p>
+        <h1>Hungry Pathing</h1>
+        <p class="pitch">Fed before the whistle, not after.</p>
+        <p class="lede">A Timberborn mod for working beavers. Instead of working until hunger or thirst hits zero and then crossing the map for a fancier meal, they eat and drink in time, at the closest stocked storage, with three hours to spare.</p>
+        <ul class="facts">
+          <li><b>Working hours only.</b> Off duty the game's own behavior runs unchanged, so evenings keep their variety.</li>
+          <li><b>Closest stocked storage while working.</b> A fancier food wins only when it costs at most a quarter hour more walking.</li>
+          <li><b>Same amount eaten.</b> Only the timing moves. The game does the walking, reserving and eating.</li>
+          <li><b>Built for co-op, tuned in one file.</b> Players stay in step on the same <code>HungryPathing.cfg</code>.</li>
+        </ul>
         <div class="btn-row">
-          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
+          <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v10M4.5 7.5L9 12l4.5-4.5M3 15.5h12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download latest release</a>
           <a class="btn btn-secondary" href="install.html">Install guide</a>
         </div>
-        <ul class="chips" aria-label="At a glance">
-          <li>Timberborn 1.1.2.4+</li>
-          <li>Requires Harmony</li>
-          <li>Never touches your saves</li>
-          <li>Beta</li>
-        </ul>
+        <p class="status-note"><strong>Beta.</strong> <span class="ver">Latest: <span data-release="tag"></span><span data-release-show="prerelease" hidden> preview</span>. </span>One 355-beaver colony ran it for 36 in-game days, nearly all in co-op; the newest changes haven't been played in a live colony yet. Try it on a copy of your save first. <a href="#status">What is tested, and what isn't</a></p>
       </div>
 
-      <figure class="demo" aria-labelledby="fig-cap">
-        <img src="assets/banner.svg" width="640" height="400" alt="A beaver at a construction site with a short walk to a nearby warehouse and a long faded walk to the district center; a hunger bar with a three-hour buffer marked" style="display:block;width:100%;height:auto;border-radius:10px">
-        <figcaption class="demo-foot" id="fig-cap"><span>A builder with a stocked warehouse next door no longer walks to the district center for bread.</span></figcaption>
+      <figure class="board" aria-labelledby="fig-cap">
+        <div class="board-head"><b>One shift, one beaver</b><span>Hunger over a 16-hour shift</span></div>
+        <svg class="shift" viewBox="0 0 640 372" role="img" aria-labelledby="sh-title sh-desc">
+          <title id="sh-title">A working shift on the slate board</title>
+          <desc id="sh-desc">A line for hours of food left falls through the shift. With the mod the beaver leaves in time, walks to the closest storage and eats with three hours still in hand. The game's own timing works until the bar is empty, then walks in the penalty.</desc>
+          <defs>
+            <marker id="up" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1L9 5L1 9z" fill="#ece9e1"/></marker>
+            <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+          </defs>
+          <rect class="buffer" x="70" y="245" width="530" height="45"/>
+          <line class="buffer-edge" x1="70" y1="245" x2="600" y2="245"/>
+          <g class="gridline"><line x1="70" y1="170" x2="600" y2="170"/><line x1="70" y1="110" x2="600" y2="110"/><line x1="70" y1="50" x2="600" y2="50"/></g>
+          <path class="axis" d="M70 44 V290 H604"/>
+          <line class="axis" x1="600" y1="44" x2="600" y2="290" stroke-dasharray="4 5"/>
+          <g class="lbl" text-anchor="middle">
+            <text x="70" y="312">0</text><text x="202.5" y="312">4h</text><text x="335" y="312">8h</text><text x="467.5" y="312">12h</text><text x="600" y="312">16h</text>
+          </g>
+          <text class="lbl" x="600" y="36" text-anchor="end">whistle</text>
+          <text class="lbl" x="62" y="294" text-anchor="end">0</text>
+          <text class="lbl" x="62" y="249" text-anchor="end">3h</text>
+          <text class="lbl" x="62" y="54" text-anchor="end">16h</text>
+          <text class="lbl" x="78" y="238">three-hour buffer</text>
+          <text class="lbl" x="604" y="364" text-anchor="end">hours into the shift</text>
+          <text class="lbl" x="335" y="36" text-anchor="middle">hours of food left</text>
+          <g class="chalk">
+            <path id="sh-game" class="game" d="M70.0 87.5 L517.2 290.0"/>
+            <path id="sh-penalty" class="penalty" d="M517.2 290.0 L561.4 290.0"/>
+            <path id="sh-game-eat" class="eat" d="M561.4 290.0 L561.4 239.0"/>
+            <path id="sh-mod" class="mod" d="M70.0 87.5 L384.7 230.0"/>
+            <path id="sh-drop" class="drop" d="M384.7 230.0 L384.7 296"/>
+            <path id="sh-walk" class="walk" d="M384.7 230.0 L417.8 245.0"/>
+            <path id="sh-eat" class="eat" d="M417.8 245.0 L417.8 194.0"/>
+          </g>
+          <text id="sh-leave" class="lbl-strong" x="384.7" y="338" text-anchor="middle">leaves 9:30</text>
+          <text id="sh-eat-label" class="lbl-strong" x="425.8" y="198.0">eats, 3:00 left</text>
+          <text id="sh-pen-label" class="lbl pen" x="539.3" y="338" text-anchor="middle">penalty</text>
+        </svg>
+        <div class="board-controls" id="sh-controls" hidden>
+          <label for="sh-walk-range">Walk to the closest stocked storage</label>
+          <output id="sh-out" for="sh-walk-range">1:00</output>
+          <input type="range" id="sh-walk-range" min="15" max="180" step="15" value="60">
+        </div>
+        <div class="board-read" aria-live="polite">
+          <p class="mod-read" id="sh-read-mod">It leaves 9:30 into the shift, walks 1:00, and eats with 3:00 still in hand.</p>
+          <p class="game-read" id="sh-read-game">The game’s own timing: it works until the bar is empty 13:30 into the shift, then walks 1:20 in the penalty, at three-quarter speed.</p>
+        </div>
+        <figcaption id="fig-cap">An illustration drawn from the mod's rules, for one made-up beaver whose bar is 13½ hours from empty at the start of the shift. The white line is the mod; the dotted line is the game's own timing. Arrows mark meals; how far the bar refills depends on the food.</figcaption>
       </figure>
     </div>
   </div>
 
-  <section id="features">
+  <section class="ruled" id="features">
     <div class="container">
       <div class="section-head">
-        <h2>What it does</h2>
-        <p>In the base game a working beaver only leaves the job once hunger or thirst is already at zero, and then walks to whichever food scores the most need points, however far away. This mod plans ahead and walks less.</p>
+        <h2>The canteen rules</h2>
+        <p>In the base game a working beaver leaves the job only once hunger or thirst is already at zero, then walks to whichever food scores the most, however far away. During working hours, the mod plans ahead and walks less.</p>
       </div>
-      <div class="cards">
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">1</span>A three-hour buffer</h3>
-          <p>Hunger and Thirst get the "hours of warning" field the game already uses for bots, set to three hours through two tiny blueprint patches. Working beavers keep that buffer in hand instead of running the bar to zero.</p>
-        </article>
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">2</span>Leaves just in time</h3>
-          <p>A beaver at a far site measures the walk to the closest stocked storage and leaves early enough to arrive with the buffer intact. No more half-speed work while trudging back.</p>
-        </article>
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">3</span>Tops off when food is near</h3>
-          <p>If a storage is within half an hour's walk and the beaver would not last the rest of the shift plus the buffer, it eats now. At the start of a shift that is breakfast; mid-shift it catches a hauler passing a warehouse.</p>
-        </article>
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">4</span>Builders check the trip</h3>
-          <p>A builder who has just reserved a site it would not last at lets the site go, through the game's own "could not get there" path, and tops off first. The site goes back to the pool for the next builder, or the same one after eating.</p>
-        </article>
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">5</span>Closest storage while working</h3>
-          <p>Every trip the mod starts, and the game's own penalty-state trips during working hours, goes to the storage with the shortest walk for that need. A fancier food wins only when it costs at most a quarter hour more.</p>
-        </article>
-        <article class="card">
-          <h3><span class="ico" aria-hidden="true">6</span>Off duty, nothing changes</h3>
-          <p>Evenings and days off run the game's own behavior, so beavers still seek out variety and wellbeing buildings. Food consumption per day is unchanged: only its timing moves.</p>
-        </article>
-      </div>
+      <ul class="signs">
+        <li class="sign"><h3>Three hours to spare</h3><p>Hunger and Thirst get the "hours of warning" the game already uses for bots, set to three hours. Working beavers keep that buffer in hand instead of running the bar to zero.</p></li>
+        <li class="sign"><h3>Leave just in time</h3><p>A beaver at a far site measures the walk to the closest stocked storage and leaves early enough to arrive with the buffer still in hand. No half-speed work on the way back.</p></li>
+        <li class="sign"><h3>Top off when it's near</h3><p>If food is within half an hour's walk and the beaver would not last the rest of the shift plus the buffer, it eats now: breakfast at the start of a shift, or a hauler passing a warehouse.</p></li>
+        <li class="sign"><h3>Builders check first</h3><p>A builder who has just taken a site it would not last at lets the site go, the game's own way, and tops off first. The site goes back to the pool for the next builder.</p></li>
+        <li class="sign"><h3>Nearest canteen</h3><p>Every trip the mod starts, and the game's own penalty-state trips during working hours, goes to the storage with the shortest walk for that need.</p></li>
+        <li class="sign after-hours"><h3>After the whistle</h3><p>Evenings and days off run the game's own behavior, so beavers still seek out variety and wellbeing buildings. Daily consumption is unchanged; only its timing moves.</p></li>
+      </ul>
     </div>
   </section>
 
-  <section class="band" id="results">
+  <section class="ruled" id="results">
     <div class="container">
       <div class="section-head">
         <h2>Measured in a real colony</h2>
-        <p>A 355-beaver colony, an hour before the end of the shift, read straight from the saves. Same map, same hour, with and without the mod.</p>
+        <p>A 355-beaver colony an hour before the end of the shift, read straight from the saves. Same map, same hour, without and with the mod.</p>
       </div>
-      <table>
-        <thead>
-          <tr><th scope="col"></th><th scope="col">Without the mod</th><th scope="col">With the mod</th></tr>
-        </thead>
-        <tbody>
-          <tr><th scope="row">In the hunger or thirst penalty</th><td>15</td><td><strong>0</strong></td></tr>
-          <tr><th scope="row">Within 3 hours of a penalty</th><td>117</td><td><strong>0</strong></td></tr>
-          <tr><th scope="row">Median walk per working-hour eating trip</th><td>0.96 h</td><td><strong>0.72 h</strong></td></tr>
-          <tr><th scope="row">Trips started in the last 4 hours of the shift</th><td>49</td><td><strong>21</strong></td></tr>
-          <tr><th scope="row">Beavers mid-trip walking past a closer stocked storage</th><td>2 of 18</td><td><strong>0 of 11</strong></td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top:18px;color:var(--muted)">Measured on 0.1.0. 36 in-game days on 0.1.0 and 0.2.0, nearly all as a BeaverBuddies host, with one error, which 0.2.1 fixed; three days replayed from the same save gave identical counters and co-op hashes. The 0.3 releases refine which storage a beaver picks and have not been played in a live colony yet. The walks that remain are distance to any stocked storage at all: the median beaver in that colony works 84 tiles from the nearest food. Method and full numbers are in <a href="https://github.com/timbermods/HungryPathing/blob/main/TESTING.md">TESTING.md</a>.</p>
+      <div class="tally">
+        <table>
+          <caption class="sr-only">Beavers and trips at the same hour, without and with the mod</caption>
+          <thead><tr><th scope="col"><span class="sr-only">Measure</span></th><th scope="col">Without the mod</th><th scope="col">With the mod</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">In the hunger or thirst penalty</th><td class="without" data-label="Without the mod">15</td><td class="with" data-label="With the mod">0</td></tr>
+            <tr><th scope="row">Within 3 hours of a penalty</th><td class="without" data-label="Without the mod">117</td><td class="with" data-label="With the mod">0</td></tr>
+            <tr><th scope="row">Median walk per working-hour eating trip</th><td class="without" data-label="Without the mod">0.96 h</td><td class="with" data-label="With the mod">0.72 h</td></tr>
+            <tr><th scope="row">Trips started in the last 4 hours of the shift</th><td class="without" data-label="Without the mod">49</td><td class="with" data-label="With the mod">21</td></tr>
+            <tr><th scope="row">Beavers mid-trip walking past a closer stocked storage</th><td class="without" data-label="Without the mod">2 of 18</td><td class="with" data-label="With the mod">0 of 11</td></tr>
+          </tbody>
+        </table>
+        <p class="tally-note">The walks that remain are distance to any stocked storage at all: the median beaver in that colony works 84 tiles from the nearest food. Method and full numbers are in <a href="https://github.com/timbermods/HungryPathing/blob/main/TESTING.md">TESTING.md</a>.</p>
+      </div>
     </div>
   </section>
 
-  <section id="how">
+  <section class="ruled" id="how">
     <div class="container">
       <div class="section-head">
         <h2>How it works</h2>
         <p>The mod decides; the game does the walking, the reserving and the eating.</p>
       </div>
       <ol class="steps">
-        <li>
-          <h3>A planner sits beside the worker behavior</h3>
-          <p>Each adult beaver gets one extra behavior, asked at exactly the moments the game would hand it the next piece of work. It runs only for employed beavers during working hours.</p>
-        </li>
-        <li>
-          <h3>It measures instead of guessing</h3>
-          <p>Hours left until a need hits zero, hours left in the shift, and the real walking time to the nearest stocked storages, using the game's own path queries. Storages the beaver could not take a full unit from are skipped before any path is computed.</p>
-        </li>
-        <li>
-          <h3>It hands the trip to the game</h3>
-          <p>When a rule fires, the planner returns one of the game's own storage behaviors. Walking in, reserving the unit, eating and the animation are all vanilla, and the trip is recorded in saves as vanilla too.</p>
-        </li>
+        <li><h3>A planner beside the worker</h3><p>Each adult beaver gets one extra behavior, asked at exactly the moments the game would hand it the next piece of work. It runs only for employed beavers during working hours.</p></li>
+        <li><h3>It measures, not guesses</h3><p>Hours left until a need hits zero, hours left in the shift, and the real walk to the nearest stocked storages, using the game's own path queries.</p></li>
+        <li><h3>It hands the trip to the game</h3><p>When a rule fires, the planner returns one of the game's own storage behaviors. Walking, reserving, eating and the animation are all the game's, and saves record the trip as the game's too.</p></li>
       </ol>
     </div>
   </section>
 
-  <section id="details">
+  <section class="ruled" id="details">
     <div class="container">
       <div class="section-head">
         <h2>Good to know</h2>
         <p>Built for large colonies and for co-op, with a few deliberate edges.</p>
       </div>
-      <div class="two-col">
-        <div class="card">
-          <h3>Supported</h3>
-          <ul class="tick">
-            <li>Hunger and Thirst by default; any need satisfied by consumable goods in storages can be added</li>
-            <li>Every rule, threshold and cost bound is a setting in one plain text file</li>
-            <li>One summary line per in-game day in the log, and optional per-trip diagnostics</li>
-            <li>Folktails tested; Iron Teeth expected to work, untested (<a href="faq.html#factions">see tubeways</a>)</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Not included</h3>
-          <ul class="tick no">
-            <li>Carrying rations into the field</li>
-            <li>Predicting where a hauler is about to go (the shift rule covers them)</li>
-            <li>Changes to pathfinding or to the district system</li>
-            <li>An in-game settings screen, for now</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Nothing is saved</h3>
-          <p>The mod keeps only caches rebuilt from the simulation. A save made with the mod loads without it and the other way around, so it can be added to or removed from any colony.</p>
-        </div>
-        <div class="card">
-          <h3>Fails on its own</h3>
-          <p>If a game update moves one of the five hooks, the mod installs none of them and says so in the log. If anything in the mod throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p>
-        </div>
+      <div class="notes">
+        <div><h3>Supported</h3><ul class="checks"><li>Hunger and Thirst by default; any need met by goods in storages can be added</li><li>Every rule, threshold and cost bound is a line in the settings file, <code>HungryPathing.cfg</code></li><li>One summary line per in-game day in the log, and optional per-trip diagnostics</li><li>Folktails tested; Iron Teeth expected to work, untested (<a href="faq.html#factions">see tubeways</a>)</li></ul></div>
+        <div><h3>Not included</h3><ul class="checks no"><li>Carrying rations into the field</li><li>Predicting where a hauler is about to go (the shift rule covers them)</li><li>Changes to pathfinding or to the district system</li><li>An in-game settings screen, for now</li></ul></div>
+        <div><h3>Nothing is saved</h3><p>The mod keeps only caches rebuilt from the simulation. A save made with the mod loads without it and the other way around, so it can be added to or removed from any colony.</p></div>
+        <div><h3>Fails on its own</h3><p>If a game update moves one of the five hooks, the mod installs none of them and says so in the log. If anything in the mod throws, it logs the error once, switches itself off for the rest of that game and says so in a dialog.</p></div>
       </div>
-      <p style="margin-top:18px;color:var(--muted)">Running a large colony? A well-fed beaver sleeps until a rule could apply, a beaver near a trigger re-checks every half hour of game time, and a check costs at most eight path queries for each need (the <code>CandidateLimit</code> setting). The daily log line reports the totals so the cost stays visible.</p>
+      <p class="aside-note">In a large colony a well-fed beaver sleeps until a rule could apply, a beaver near a trigger re-checks every half hour of game time, and a check costs at most eight path queries per need. The daily log line reports the totals, so the cost stays visible.</p>
     </div>
   </section>
 
-  <section class="band" id="compat">
+  <section class="ruled" id="compat">
     <div class="container">
       <div class="section-head"><h2>Compatibility</h2></div>
-      <table>
-        <tbody>
-          <tr><th scope="row">Game version</th><td>Timberborn <strong>1.1.2.4</strong>. Built and checked against 1.1.2.4; the hooks were written from that version's code and disable themselves if a later version moves them.</td></tr>
-          <tr><th scope="row">Multiplayer</th><td>Every decision reads only the simulation, with fixed ordering and tie-breaks, so when every player installs the same version of the mod, runs the same game version and uses an <strong>identical settings file</strong>, every player makes identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare. With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours (since Hungry Pathing 0.2.2), and the storage index is per district, so colonies never eat from each other's storages. If the mod switches itself off after an error on one computer only, a dialog there says so and asks the host to save and host that save again (since 0.3.1).</td></tr>
-          <tr><th scope="row">Other mods</th><td>Requires <strong>Harmony</strong> from the Steam Workshop. A mod that also edits the Hunger or Thirst blueprints will merge with this one by load order; a mod that replaces the game's need-picking behavior for beavers would overlap.</td></tr>
-          <tr><th scope="row">Saves</th><td>Untouched. You can remove the mod at any time.</td></tr>
-          <tr><th scope="row">Language</th><td>No user interface text, except one dialog in English if the mod switches itself off after an error. Log lines are in English.</td></tr>
-        </tbody>
-      </table>
+      <dl class="sheet-rows">
+        <div><dt>Game version</dt><dd><p>Timberborn <strong>1.1.2.4</strong>. The hooks were written from that version's code and turn themselves off if a later version moves them.</p></dd></div>
+        <div><dt>Co-op</dt><dd><p>Every decision reads only the simulation, with fixed ordering and tie-breaks. When every player installs the same version of the mod, runs the same game version and uses an <strong>identical settings file</strong>, every player makes identical decisions. The log prints one <code>Simulation settings:</code> line at startup to compare.</p><p>With <strong>BeaverBuddies MultiColony</strong>, each beaver's shift end comes from its own colony's working hours, and the storage index is per district, so colonies never eat from each other's storage.</p></dd></div>
+        <div><dt>Other mods</dt><dd><p>Requires <strong>Harmony</strong> from the Steam Workshop. A mod that also edits the Hunger or Thirst blueprints merges with this one by load order; a mod that replaces the game's need-picking for beavers would overlap.</p></dd></div>
+        <div><dt>Saves</dt><dd><p>Untouched. You can remove the mod at any time.</p></dd></div>
+        <div><dt>Language</dt><dd><p>No interface text, except one dialog in English if the mod switches itself off after an error. Log lines are in English.</p></dd></div>
+      </dl>
     </div>
   </section>
 
-  <section class="cta">
+  <section class="ruled" id="status">
     <div class="container">
-      <h2>Ready to try it?</h2>
-      <p>Beta: one colony of 355 beavers has run 0.1.0 and 0.2.0 for 36 in-game days, nearly all in co-op, and the numbers above are from its saves. The current release, 0.3.1, has not been played in a live colony yet. Try it on a copy of your save first.</p>
+      <div class="section-head">
+        <h2>What is tested, and what isn't</h2>
+        <p>A beta: one colony's worth of play, plus offline checks. Try it on a copy of your save first.</p>
+      </div>
+      <div class="status-grid">
+        <div>
+          <h3>Played</h3>
+          <ul class="checks">
+            <li>36 in-game days in one single-district Folktails colony of 330 to 355 adults, nearly all as a BeaverBuddies host with a guest. The table above comes from that colony's saves.</li>
+            <li>Three days replayed from the same save gave identical counters and co-op hashes.</li>
+            <li>The one error found there, in the builder job check on a first construction day, is fixed.</li>
+          </ul>
+        </div>
+        <div class="open-col">
+          <h3>Not yet</h3>
+          <ul class="checks open">
+            <li>The newest changes, which refine which storage a beaver picks, in a live colony (offline checks only).</li>
+            <li>The builder rule's decisions on a construction-heavy day.</li>
+            <li>A MultiColony game where a colony set its own working hours.</li>
+            <li>The switch-off dialog in a real game.</li>
+            <li>Iron Teeth, and anything but Windows.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled cta">
+    <div class="container">
+      <div>
+        <h2>Two minutes to install</h2>
+        <ol>
+          <li><b>Harmony</b> from the Steam Workshop.</li>
+          <li><b>The zip under Assets</b> on the release page, not Source code, extracted into <code>Documents\Timberborn\Mods</code>.</li>
+          <li><b>Enable it and restart.</b> In co-op, everyone uses the same version and the same settings file.</li>
+        </ol>
+      </div>
       <div class="btn-row">
         <a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download latest release</a>
         <a class="btn btn-secondary" href="install.html">Read the install guide</a>
@@ -209,8 +240,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
-      <p>Not affiliated with or endorsed by Mechanistry.</p>
+      <p><strong>Hungry Pathing</strong></p>
+      <p>An unofficial community mod for Timberborn, maintained by Timbermods. Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>
@@ -223,6 +254,7 @@
     </ul>
   </div>
 </footer>
+<script src="assets/shift.js" defer></script>
 <script src="assets/release.js" defer data-repo="timbermods/HungryPathing" data-asset="^HungryPathing-[\d.]+\.zip$"></script>
 </body>
 </html>
