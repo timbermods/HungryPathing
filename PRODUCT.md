@@ -95,12 +95,15 @@ against any.
 
 - **Stack and hosting:** plain static HTML/CSS with no build step, in `docs/` on `main`: `index.html` (Overview),
   `install.html`, `troubleshooting.html`, `faq.html`, `404.html`, and `docs/assets/` (`style.css`, `release.js`,
-  `banner.svg`, `favicon.svg`). GitHub Pages serves `main:/docs` (legacy build) at
-  https://timbermods.github.io/HungryPathing/, so merging to `main` publishes; there is no deploy script. System
-  fonts only, dark theme by default with a `prefers-color-scheme: light` variant. The FAQ's Expand all / Collapse all
-  and open-from-hash are an inline script in `faq.html`. `404.html` loads its stylesheet and links by absolute
-  `/HungryPathing/` paths (it is served at any depth); keep it that way. One of the Timbermods sites; the footer links
-  to https://timbermods.github.io/.
+  `shift.js` for the home page's slate board, `favicon.svg`, `og.png` for link previews, `fonts/` and `textures/`;
+  `banner.svg` is still there but no page shows it). GitHub Pages serves `main:/docs` (legacy build) at
+  https://timbermods.github.io/HungryPathing/, so merging to `main` publishes; there is no deploy script. Headings,
+  buttons and labels use Big Shoulders Display 700 and 800, self-hosted in `docs/assets/fonts/` (OFL), and body text
+  uses the system font. Light by default, with a dark theme that follows `prefers-color-scheme` (no toggle); the look
+  is recorded in `docs/DESIGN.md` (the root DESIGN.md is the mod's own design document). The FAQ's Expand all /
+  Collapse all and open-from-hash are an inline script in `faq.html`. `404.html` loads its stylesheet and links by
+  absolute `/HungryPathing/` paths (it is served at any depth); keep it that way. One of the Timbermods sites; the
+  footer links to https://timbermods.github.io/.
 - **Contracts the site test enforces** (`node tests/test-site.mjs`, Node only, no packages, no network; run by
   `.github/workflows/tests.yml` on every pull request and every push to `main`, after the planner checks and even if
   they failed). It parses every `*.html` directly in `docs/` into a stub DOM, runs each page's local scripts against
@@ -167,9 +170,7 @@ against any.
   the switch-off dialog; Iron Teeth; anything but Windows. Say this plainly and without alarm ("try it on a copy of
   your save first"). Describe the mod as it is now; version history belongs in CHANGELOG.md. Upgrade facts players
   need: close the game, extract over the old folder and choose Replace, keep a copy of an edited `HungryPathing.cfg`
-  (the zip ships defaults), every co-op player updates to the same version together, nothing to migrate. The current
-  pages still carry version-history phrases ("since 0.3.1", "since Hungry Pathing 0.2.2", "Versions up to 0.2.2 word
-  the warning ...", "up to 0.2.2, only restarting the game did"); these break the standing rule and should go.
+  (the zip ships defaults), every co-op player updates to the same version together, nothing to migrate.
 - **Sources of truth:** README.md, CONFIGURATION.md, DESIGN.md, TESTING.md and the release notes. Where the site and
   those disagree, flag it; don't guess.
 
@@ -178,17 +179,20 @@ against any.
 - **Voice:** a fellow player explaining a useful mod: plain, exact, a little dry, numbers where they exist. Never
   hype, never "smart AI beavers". The mod decides; the game does the walking.
 - **No official Timberborn logos or key art.** The game's own item icons (food, water, goods) are allowed where used,
-  credited as Timberborn's; the current site uses none. The site's own art is original SVG (the brand mark with a
-  hunger bar and a walk arc; `banner.svg`).
+  credited as Timberborn's; the current site uses none. The site's own art is original: the inline SVG brand mark
+  (a hunger bar and a walk arc), the slate board's chalk SVG, and procedural textures from
+  `docs/assets/textures/make_textures.py`.
 - **License:** MIT, copyright Timbermods, for the mod, docs and site.
 - **Unofficial community mod, not affiliated with or endorsed by Mechanistry.** Part of Timbermods. The footer says
   both.
 
 ## Evidence on Hand
 
-- `docs/assets/banner.svg`: an original illustration (a beaver at a construction site, a short walk to a nearby
-  warehouse, a long faded walk to the district center, a hunger bar with the three-hour buffer). It is a diagram,
-  not a screenshot. `docs/assets/favicon.svg` and the inline brand mark in each page header.
+- The slate board on the home page: an inline SVG of one made-up beaver's shift, drawn from the mod's rules by
+  `docs/assets/shift.js` and labelled as an illustration. `docs/assets/og.png` is a capture of the home hero.
+  `docs/assets/banner.svg` (an original diagram of a short walk to a nearby warehouse against a long walk to the
+  district center) is kept but not shown on any page. `docs/assets/favicon.svg` and the inline brand mark in each
+  page header.
 - **Real measured data:** the before-and-after table (355-beaver colony, an hour before the end of the shift, from
   the saves: penalty 15 → 0, within 3 h 117 → 0, median working-hour trip 0.96 h → 0.72 h, late-shift trips
   49 → 21, walking past a closer storage 2 of 18 → 0 of 11), and in TESTING.md: the 33-day averages (49
