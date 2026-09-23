@@ -274,7 +274,7 @@ Enamel plates with a keyline, lettered in Big Shoulders.
 ### Navigation
 - **Header:** a sticky cobalt strip, 64px tall, with a 3px cream bottom rule. The brand is the mod's logo SVG plus the name in Big Shoulders 800 at 1.45rem.
 - **Links:** Big Shoulders 700 at 1.15rem in pale cobalt-white, 44px targets. Hover turns them white. The current page is white with a 3px coral underline. GitHub is a small cream-outlined tag.
-- **Footer:** slate with a 10px timber top border and a 2-column link list in chalk, with 40px targets.
+- **Footer:** slate with a 10px timber top border and a 2-column link list in chalk, with 44px targets.
 
 ### Enamel Sign
 The five canteen rules. A nine-slice of `enamel.png` (`border: 24px solid transparent; border-image: url(enamel.png) 24 fill round`) gives the cream plate a cobalt border and chipped iron corners. The heading is an uppercase cobalt sign title; the text is enamel-ink at .98rem. Each sign is one rule with one heading and one paragraph.
