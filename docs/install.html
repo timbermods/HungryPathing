@@ -7,7 +7,8 @@
 <meta name="description" content="How to install, enable, check, configure, update and remove the Hungry Pathing Timberborn mod.">
 <link rel="canonical" href="https://timbermods.github.io/HungryPathing/install.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0d1716">
+<meta name="theme-color" content="#1d4a86">
+<link rel="preload" href="assets/fonts/big-shoulders-display-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -24,7 +25,7 @@
         <li><a href="install.html" aria-current="page">Install</a></li>
         <li><a href="troubleshooting.html">Troubleshooting</a></li>
         <li><a href="faq.html">FAQ</a></li>
-        <li><a class="btn btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
+        <li><a class="btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
       </ul>
     </nav>
   </div>
@@ -104,10 +105,17 @@
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. One summary line per in-game day follows while a game runs.
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: buffer 3h, ...</code></pre>
-      <p><code>&lt;version&gt;</code> is the version you installed, and the <code>...</code> parts vary. The <strong>buffer 3h</strong> part confirms the blueprint patches loaded. After each in-game day a <code>Day N: trips started by rule: ...</code> line says how often each rule fired.</p>
+      <p><code>&lt;version&gt;</code> is the version you installed, and the <code>...</code> parts vary. Three of those lines are the ones to check:</p>
+      <dl class="confirm">
+        <dt>Hooks installed (5/5).</dt><dd>All five of the mod's hooks attached to the game. Anything else means a game update moved one; see <a href="troubleshooting.html#hooks">Troubleshooting</a>.</dd>
+        <dt>Hunger: buffer 3h ... Thirst: buffer 3h</dt><dd>The three-hour buffer is in place for both needs.</dd>
+        <dt>Simulation settings: ...</dt><dd>The values the mod uses. In co-op, every player's line must read the same.</dd>
+      </dl>
+      <p>After each in-game day a summary line says how often each rule fired. It looks like this (an example from the test colony; your numbers will differ):</p>
+<pre><code>[HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.</code></pre>
       <div class="callout note">
         <strong class="t">Beta</strong>
-        <p>0.1.0 and 0.2.0 have run in one 355-beaver colony for 36 in-game days, nearly all as a BeaverBuddies host; the one error found there was fixed in 0.2.1. That is still one colony, and 0.3.1 has not been played in a live colony yet. Try it on a copy of your save first, and if the mod says it <a href="troubleshooting.html#switched-off">switched off</a>, please <a href="troubleshooting.html#report">report it</a> with the lines that follow the warning.</p>
+        <p>One 355-beaver colony has run the mod for 36 in-game days, nearly all as a BeaverBuddies host, and the one error found there is fixed. That is still one colony, and the newest changes haven't been played in a live colony yet. Try it on a copy of your save first, and if the mod says it <a href="troubleshooting.html#switched-off">switched off</a>, please <a href="troubleshooting.html#report">report it</a> with the lines that follow the warning.</p>
       </div>
       <p>If something doesn't look right, head to <a href="troubleshooting.html">Troubleshooting</a>.</p>
 
@@ -150,8 +158,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
-      <p>Not affiliated with or endorsed by Mechanistry.</p>
+      <p><strong>Hungry Pathing</strong></p>
+      <p>An unofficial community mod for Timberborn, maintained by Timbermods. Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>

@@ -7,7 +7,8 @@
 <meta name="description" content="Questions and answers about the Hungry Pathing Timberborn mod: what it changes, why the base game walks so far, food consumption, co-op, saves and settings.">
 <link rel="canonical" href="https://timbermods.github.io/HungryPathing/faq.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0d1716">
+<meta name="theme-color" content="#1d4a86">
+<link rel="preload" href="assets/fonts/big-shoulders-display-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -24,7 +25,7 @@
         <li><a href="install.html">Install</a></li>
         <li><a href="troubleshooting.html">Troubleshooting</a></li>
         <li><a href="faq.html" aria-current="page">FAQ</a></li>
-        <li><a class="btn btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
+        <li><a class="btn-small" href="https://github.com/timbermods/HungryPathing">GitHub</a></li>
       </ul>
     </nav>
   </div>
@@ -38,8 +39,8 @@
     </div>
   </div>
 
-  <div class="container" style="padding-top:34px;padding-bottom:60px">
-    <div class="prose" style="max-width:52em">
+  <div class="container faq-wrap">
+    <div class="prose">
       <div class="q-tools">
         <button type="button" class="btn btn-secondary btn-small" data-expand>Expand all</button>
         <button type="button" class="btn btn-secondary btn-small" data-collapse>Collapse all</button>
@@ -93,7 +94,7 @@
         <h2>Compatibility</h2>
         <details class="q" id="coop">
           <summary>Does it work in co-op with BeaverBuddies?</summary>
-          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player installs the same version of the mod, runs the same game version and uses an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p><p>If the mod switches itself off after an error on one computer only, that computer runs the base game while the others run the mod. Since 0.3.1 a dialog on that computer says so. The host then saves and hosts that save again, and every player joins it; the load turns the mod back on for everyone.</p></div>
+          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player installs the same version of the mod, runs the same game version and uses an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p><p>If the mod switches itself off after an error on one computer only, that computer runs the base game while the others run the mod, and a dialog on that computer says so. The host then saves and hosts that save again, and every player joins it; the load turns the mod back on for everyone.</p></div>
         </details>
         <details class="q" id="saves">
           <summary>Is it safe to add to or remove from an existing colony?</summary>
@@ -117,7 +118,7 @@
         <h2>Status</h2>
         <details class="q" id="alpha">
           <summary>Why is it called a beta?</summary>
-          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. 0.1.0 and 0.2.0 ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, with identical results when days were replayed and the before-and-after numbers on the <a href="index.html#results">overview</a>; the one error found there was fixed in 0.2.1. The 0.3 releases, which refine which storage a beaver picks, have offline checks but have not been played in a live colony yet. One colony is still one colony, and the builder rule has not yet seen a construction-heavy day, so it is a beta rather than a 1.0. "Beta" here does not mean a GitHub pre-release: the release marked Latest on GitHub is a regular release, and the label means the mod is still being tested and tuned. If anything in it throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p></div>
+          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. It ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, with identical results when days were replayed and the before-and-after numbers on the <a href="index.html#results">overview</a>; the one error found there is fixed. The newest changes, which refine which storage a beaver picks, have offline checks but haven't been played in a live colony yet. One colony is still one colony, and the builder rule has not yet seen a construction-heavy day, so it is a beta rather than a 1.0. "Beta" here does not mean a GitHub pre-release: the release marked Latest on GitHub is a regular release, and the label means the mod is still being tested and tuned. If anything in it throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p></div>
         </details>
         <details class="q" id="help">
           <summary>How can I help?</summary>
@@ -131,8 +132,8 @@
 <footer class="site-footer">
   <div class="container foot">
     <div>
-      <p><strong>Hungry Pathing</strong>, an unofficial community mod for Timberborn.</p>
-      <p>Not affiliated with or endorsed by Mechanistry.</p>
+      <p><strong>Hungry Pathing</strong></p>
+      <p>An unofficial community mod for Timberborn, maintained by Timbermods. Not affiliated with or endorsed by Mechanistry.</p>
     </div>
     <ul aria-label="Links">
       <li><a href="install.html">Install</a></li>

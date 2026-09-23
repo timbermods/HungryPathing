@@ -1,0 +1,609 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-23T20:22:50+00:00",
+  "title": "Design System: Hungry Pathing site",
+  "extensions": {
+    "colorMeta": {
+      "cobalt": {
+        "role": "primary",
+        "displayName": "Sign Cobalt",
+        "canonical": "oklch(41.2% 0.112 257)",
+        "tonalRamp": [
+          "#000038",
+          "#002159",
+          "#13417c",
+          "#34619f",
+          "#5584c4",
+          "#77a7ea",
+          "#9accff",
+          "#bef2ff"
+        ]
+      },
+      "cobalt-deep": {
+        "role": "primary",
+        "displayName": "Deep Cobalt",
+        "canonical": "oklch(33.4% 0.089 257)",
+        "tonalRamp": [
+          "#00052f",
+          "#02234f",
+          "#204270",
+          "#3f6293",
+          "#5f84b7",
+          "#81a7dc",
+          "#a4ccff",
+          "#c8f2ff"
+        ]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Hunger Coral",
+        "canonical": "oklch(68.7% 0.150 33)",
+        "tonalRamp": [
+          "#2f0000",
+          "#590000",
+          "#7f0a00",
+          "#a53622",
+          "#cc5a44",
+          "#f47e66",
+          "#ffa38a",
+          "#ffceb7"
+        ]
+      },
+      "water": {
+        "role": "secondary",
+        "displayName": "Water Blue",
+        "canonical": "oklch(78.3% 0.087 231)",
+        "tonalRamp": [
+          "#000d28",
+          "#002a47",
+          "#004967",
+          "#1e6a89",
+          "#458cad",
+          "#69afd2",
+          "#8dd4f8",
+          "#b2faff"
+        ]
+      },
+      "enamel": {
+        "role": "neutral",
+        "displayName": "Vitreous Cream",
+        "canonical": "oklch(93.2% 0.025 89)",
+        "tonalRamp": [
+          "#0f0b02",
+          "#2a2517",
+          "#474233",
+          "#676151",
+          "#888272",
+          "#aba594",
+          "#d0c9b7",
+          "#f5eedc"
+        ]
+      },
+      "enamel-ink": {
+        "role": "neutral",
+        "displayName": "Enamel Ink",
+        "canonical": "oklch(28.2% 0.042 256)",
+        "tonalRamp": [
+          "#010b1c",
+          "#172639",
+          "#334358",
+          "#516379",
+          "#72849c",
+          "#94a7c0",
+          "#b8cbe5",
+          "#dcf0ff"
+        ]
+      },
+      "slate": {
+        "role": "neutral",
+        "displayName": "Blue-Black Slate",
+        "canonical": "oklch(27.7% 0.011 237)",
+        "tonalRamp": [
+          "#070c0f",
+          "#20262a",
+          "#3d4347",
+          "#5b6267",
+          "#7c8388",
+          "#9fa6ab",
+          "#c3cad0",
+          "#e8f0f5"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "oklch(93.4% 0.011 90)",
+        "tonalRamp": [
+          "#0d0b06",
+          "#27251f",
+          "#44423b",
+          "#64615a",
+          "#85827b",
+          "#a8a59d",
+          "#ccc9c1",
+          "#f1eee6"
+        ]
+      },
+      "chalk-muted": {
+        "role": "neutral",
+        "displayName": "Worn Chalk",
+        "canonical": "oklch(79.1% 0.007 146)",
+        "tonalRamp": [
+          "#090c09",
+          "#232623",
+          "#404340",
+          "#5f625f",
+          "#808380",
+          "#a2a6a2",
+          "#c6cac6",
+          "#ecf0ec"
+        ]
+      },
+      "frame": {
+        "role": "neutral",
+        "displayName": "Timber Frame",
+        "canonical": "oklch(40.3% 0.043 59)",
+        "tonalRamp": [
+          "#180600",
+          "#34200e",
+          "#533d2b",
+          "#745c49",
+          "#967d69",
+          "#ba9f8b",
+          "#dfc3ae",
+          "#ffe8d3"
+        ]
+      },
+      "yard": {
+        "role": "neutral",
+        "displayName": "Sawdust Yard (day)",
+        "canonical": "oklch(89.9% 0.019 86)",
+        "tonalRamp": [
+          "#0f0b04",
+          "#29251b",
+          "#464137",
+          "#666155",
+          "#878276",
+          "#aaa498",
+          "#cec9bc",
+          "#f4eee1"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Yard Ink (day)",
+        "canonical": "oklch(25.0% 0.010 248)",
+        "tonalRamp": [
+          "#080c0f",
+          "#21262a",
+          "#3e4347",
+          "#5d6267",
+          "#7e8388",
+          "#a0a6ab",
+          "#c4cacf",
+          "#eaeff5"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Faded Ink (day)",
+        "canonical": "oklch(43.9% 0.011 243)",
+        "tonalRamp": [
+          "#070c10",
+          "#20262a",
+          "#3d4348",
+          "#5c6267",
+          "#7d8389",
+          "#9fa6ac",
+          "#c3cad0",
+          "#e8f0f6"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Yard Rule (day)",
+        "canonical": "oklch(80.7% 0.029 87)",
+        "tonalRamp": [
+          "#100a00",
+          "#2b2414",
+          "#494130",
+          "#68604f",
+          "#8a826f",
+          "#ada491",
+          "#d1c8b4",
+          "#f7eed9"
+        ]
+      },
+      "link-hover": {
+        "role": "primary",
+        "displayName": "Link Hover (day)",
+        "canonical": "oklch(33.4% 0.095 258)",
+        "tonalRamp": [
+          "#000432",
+          "#012252",
+          "#1f4173",
+          "#3e6296",
+          "#5e83bb",
+          "#80a7e0",
+          "#a3cbff",
+          "#c7f1ff"
+        ]
+      },
+      "coral-ink": {
+        "role": "secondary",
+        "displayName": "Coral Ink (day)",
+        "canonical": "oklch(51.5% 0.139 35)",
+        "tonalRamp": [
+          "#2f0000",
+          "#560000",
+          "#7b1600",
+          "#a03c24",
+          "#c75f46",
+          "#ee8268",
+          "#ffa78b",
+          "#ffcfb4"
+        ]
+      },
+      "water-ink": {
+        "role": "secondary",
+        "displayName": "Water Ink (day)",
+        "canonical": "oklch(48.7% 0.096 240)",
+        "tonalRamp": [
+          "#00092e",
+          "#00284e",
+          "#00476f",
+          "#216892",
+          "#468ab6",
+          "#6aaddb",
+          "#8ed2ff",
+          "#b2f8ff"
+        ]
+      },
+      "yard-night": {
+        "role": "neutral",
+        "displayName": "Soot Shed (night)",
+        "canonical": "oklch(22.1% 0.005 248)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232527",
+          "#404245",
+          "#5f6164",
+          "#808385",
+          "#a3a5a8",
+          "#c7c9cc",
+          "#eceff2"
+        ]
+      },
+      "ink-night": {
+        "role": "neutral",
+        "displayName": "Yard Ink (night)",
+        "canonical": "oklch(92.6% 0.014 85)",
+        "tonalRamp": [
+          "#0e0b05",
+          "#28251d",
+          "#464239",
+          "#656158",
+          "#868279",
+          "#a9a49b",
+          "#cdc9bf",
+          "#f3eee4"
+        ]
+      },
+      "muted-night": {
+        "role": "neutral",
+        "displayName": "Faded Ink (night)",
+        "canonical": "oklch(75.4% 0.009 122)",
+        "tonalRamp": [
+          "#0a0c08",
+          "#242621",
+          "#41433e",
+          "#60625d",
+          "#81837d",
+          "#a4a6a0",
+          "#c8cac4",
+          "#edefe9"
+        ]
+      },
+      "rule-night": {
+        "role": "neutral",
+        "displayName": "Yard Rule (night)",
+        "canonical": "oklch(34.6% 0.008 240)",
+        "tonalRamp": [
+          "#080c0e",
+          "#222628",
+          "#3e4346",
+          "#5d6265",
+          "#7e8386",
+          "#a1a6a9",
+          "#c5cace",
+          "#eaeff3"
+        ]
+      },
+      "link-night": {
+        "role": "primary",
+        "displayName": "Link (night)",
+        "canonical": "oklch(77.8% 0.087 257)",
+        "tonalRamp": [
+          "#00062e",
+          "#03244e",
+          "#21426f",
+          "#406292",
+          "#6084b6",
+          "#82a7db",
+          "#a5ccff",
+          "#caf1ff"
+        ]
+      },
+      "link-hover-night": {
+        "role": "primary",
+        "displayName": "Link Hover (night)",
+        "canonical": "oklch(86.3% 0.053 256)",
+        "tonalRamp": [
+          "#000a21",
+          "#13253e",
+          "#2f435e",
+          "#4e637f",
+          "#6e84a2",
+          "#90a7c6",
+          "#b3cbec",
+          "#d8f1ff"
+        ]
+      },
+      "coral-ink-night": {
+        "role": "secondary",
+        "displayName": "Coral Ink (night)",
+        "canonical": "oklch(75.1% 0.125 35)",
+        "tonalRamp": [
+          "#2e0000",
+          "#520000",
+          "#761f07",
+          "#9b422c",
+          "#c1644c",
+          "#e8876e",
+          "#ffab91",
+          "#ffd0b5"
+        ]
+      },
+      "water-ink-night": {
+        "role": "secondary",
+        "displayName": "Water Ink (night)",
+        "canonical": "oklch(81.7% 0.076 230)",
+        "tonalRamp": [
+          "#000e24",
+          "#002a42",
+          "#004962",
+          "#2b6984",
+          "#4e8ba7",
+          "#71aecc",
+          "#95d3f1",
+          "#baf9ff"
+        ]
+      },
+      "band": {
+        "role": "neutral",
+        "displayName": "Band Wash (day)",
+        "canonical": "rgba(30, 34, 38, .05)"
+      },
+      "band-night": {
+        "role": "neutral",
+        "displayName": "Band Wash (night)",
+        "canonical": "rgba(235, 230, 220, .04)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home h1; guide page heads use clamp(2.8rem, 6vw, 4.2rem)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section h2; steps down inside guide prose and troubleshooting issues."
+      },
+      "pitch": {
+        "displayName": "Pitch",
+        "purpose": "The one coral-ink line under the home h1."
+      },
+      "sign-title": {
+        "displayName": "Sign Title",
+        "purpose": "Enamel sign headings only; uppercase."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "h3."
+      },
+      "tally-figure": {
+        "displayName": "Tally Figure",
+        "purpose": "Measured figures on the chalk tally."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Table heads, the board control label, dt terms, TOC heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text, in the system face."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code, config and log lines."
+      }
+    },
+    "shadows": [
+      {
+        "name": "enamel-keyline",
+        "value": "inset 0 0 0 2px var(--cobalt), inset 0 0 0 3px var(--enamel)",
+        "purpose": "Cream inner line on cobalt buttons and step discs."
+      },
+      {
+        "name": "slate-seat",
+        "value": "inset 0 0 0 1px rgba(0, 0, 0, .5), 0 1px 0 rgba(0, 0, 0, .25)",
+        "purpose": "Seats the slate board in its timber frame; board only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-plate",
+        "value": "cubic-bezier(.2, .8, .2, 1)",
+        "purpose": "Button lift and FAQ chevron turn."
+      },
+      {
+        "name": "duration-press",
+        "value": ".15s",
+        "purpose": "Button hover: 1px lift and fill change."
+      },
+      {
+        "name": "duration-chevron",
+        "value": ".2s",
+        "purpose": "FAQ chevron rotation."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition: none; animation: none",
+        "purpose": "All transitions off under prefers-reduced-motion. The board never animates; its marks jump."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "hero-stack",
+        "value": "960px"
+      },
+      {
+        "name": "grids-collapse",
+        "value": "860px"
+      },
+      {
+        "name": "phone",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Cobalt enamel plate with a cream keyline; downloads and the main action.",
+      "html": "<a class=\"ds-btn\" href=\"#\"><svg viewBox=\"0 0 18 18\" aria-hidden=\"true\"><path d=\"M9 2v10M4.5 7.5L9 12l4.5-4.5M3 15.5h12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Download latest release</a>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:4px;background:var(--cobalt);color:var(--enamel);font:800 1.3rem/1 var(--display);letter-spacing:.04em;text-decoration:none;border:2px solid var(--cobalt-deep);box-shadow:inset 0 0 0 2px var(--cobalt),inset 0 0 0 3px var(--enamel);cursor:pointer;transition:transform .15s cubic-bezier(.2,.8,.2,1),background-color .15s}.ds-btn:hover{background:var(--cobalt-deep);color:#fff;transform:translateY(-1px)}.ds-btn:focus-visible{outline:3px solid var(--cobalt);outline-offset:3px}.ds-btn svg{width:18px;height:18px;flex:none}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ink-outlined plate without the keyline; guide links beside the primary.",
+      "html": "<a class=\"ds-btn ds-btn-secondary\" href=\"#\">Install guide</a>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:4px;background:var(--cobalt);color:var(--enamel);font:800 1.3rem/1 var(--display);letter-spacing:.04em;text-decoration:none;border:2px solid var(--cobalt-deep);box-shadow:inset 0 0 0 2px var(--cobalt),inset 0 0 0 3px var(--enamel);cursor:pointer;transition:transform .15s cubic-bezier(.2,.8,.2,1),background-color .15s}.ds-btn:hover{background:var(--cobalt-deep);color:#fff;transform:translateY(-1px)}.ds-btn:focus-visible{outline:3px solid var(--cobalt);outline-offset:3px}.ds-btn svg{width:18px;height:18px;flex:none}.ds-btn-secondary{background:transparent;color:var(--ink);border-color:var(--ink);box-shadow:none}.ds-btn-secondary:hover{background:var(--band);color:var(--ink)}"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "Flat cobalt enamel strip with a cream bottom rule; a coral underline marks the current page.",
+      "html": "<header class=\"ds-head\"><a class=\"ds-brand\" href=\"#\">Hungry Pathing</a><nav><a href=\"#\" aria-current=\"page\">Overview</a><a href=\"#\">Install</a><a href=\"#\">FAQ</a><a class=\"ds-tag\" href=\"#\">GitHub</a></nav></header>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;min-height:64px;padding:0 24px;background:var(--cobalt);color:var(--enamel);border-bottom:3px solid var(--enamel)}.ds-brand{color:var(--enamel);text-decoration:none;font:800 1.45rem/1 var(--display);letter-spacing:.02em}.ds-brand:hover{color:#fff}.ds-head nav{display:flex;gap:2px;align-items:center}.ds-head nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;color:#d6dff0;text-decoration:none;font:700 1.15rem/1 var(--display);letter-spacing:.03em;border-bottom:3px solid transparent}.ds-head nav a:hover{color:#fff}.ds-head nav a[aria-current=\"page\"]{color:#fff;border-bottom-color:var(--coral)}.ds-head nav a.ds-tag{margin-left:8px;border:2px solid var(--enamel);border-radius:3px;color:var(--enamel);padding:0 14px}.ds-head a:focus-visible{outline:3px solid var(--enamel);outline-offset:3px}"
+    },
+    {
+      "name": "Enamel Sign",
+      "kind": "card",
+      "refersTo": "sign",
+      "description": "One rule, one sign. The site draws the plate from the enamel.png nine-slice; this preview approximates it with borders.",
+      "html": "<div class=\"ds-sign\"><h3>Three hours to spare</h3><p>Working beavers keep a three-hour buffer in hand instead of running the bar to zero.</p></div>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-sign{background:var(--enamel);color:var(--enamel-ink);border:6px solid var(--cobalt);outline:2px solid var(--enamel);outline-offset:-10px;padding:22px 24px;max-width:340px}.ds-sign h3{margin:0 0 .35em;color:var(--cobalt);font:800 1.7rem/1 var(--display);letter-spacing:.03em;text-transform:uppercase}.ds-sign p{margin:0;font:400 .98rem/1.62 var(--font)}"
+    },
+    {
+      "name": "After the Whistle Notice",
+      "kind": "card",
+      "refersTo": "sign-after-hours",
+      "description": "Chalk on slate in an 8px timber frame: what the mod leaves alone.",
+      "html": "<div class=\"ds-notice\"><h3>After the whistle</h3><p>Evenings and days off run the game’s own behavior. Only the timing moves.</p></div>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-notice{background:var(--slate);color:var(--chalk);border:8px solid var(--frame);padding:22px 24px;max-width:340px}.ds-notice h3{margin:0 0 .35em;font:800 1.7rem/1 var(--display);letter-spacing:.03em;text-transform:uppercase}.ds-notice p{margin:0;color:var(--chalk-muted);font:400 .98rem/1.62 var(--font)}"
+    },
+    {
+      "name": "Chalk Tally",
+      "kind": "custom",
+      "refersTo": "tally",
+      "description": "Measured before/after figures in chalk on framed slate.",
+      "html": "<div class=\"ds-tally\"><table><thead><tr><th></th><th>Without the mod</th><th>With the mod</th></tr></thead><tbody><tr><th>In the hunger or thirst penalty</th><td class=\"w\">15</td><td>0</td></tr><tr><th>Median walk per working-hour eating trip</th><td class=\"w\">0.96 h</td><td>0.72 h</td></tr></tbody></table></div>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-tally{background:var(--slate);color:var(--chalk);border:10px solid var(--frame);padding:24px}.ds-tally table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}.ds-tally th,.ds-tally td{text-align:left;padding:12px 16px 12px 0;border-bottom:1px dashed rgba(236,233,225,.28)}.ds-tally thead th{font:700 1.15rem/1.2 var(--display);letter-spacing:.03em;color:var(--chalk-muted);border-bottom:2px solid rgba(236,233,225,.5)}.ds-tally tbody th{font:600 1rem/1.4 var(--font)}.ds-tally td{font:800 1.9rem/1 var(--display)}.ds-tally td.w{color:var(--chalk-muted)}.ds-tally tr:last-child>*{border-bottom:0}"
+    },
+    {
+      "name": "Slate Board",
+      "kind": "custom",
+      "refersTo": "board",
+      "description": "One shift in chalk: the buffer band, the mod line, the dashed water walk, the dotted game timing into a coral penalty, and an event row under the axis.",
+      "html": "<figure class=\"ds-board\"><div class=\"ds-bh\"><b>One shift, one beaver</b><span>Hunger over a 16-hour shift</span></div><svg viewBox=\"0 0 640 344\" role=\"img\" aria-label=\"A working shift on the slate board\"><rect x=\"70\" y=\"245\" width=\"530\" height=\"45\" fill=\"rgba(232,115,92,.16)\"/><line x1=\"70\" y1=\"245\" x2=\"600\" y2=\"245\" stroke=\"#e8735c\" stroke-width=\"1.4\" stroke-dasharray=\"6 5\"/><path d=\"M70 44 V290 H604\" stroke=\"#b8bcb8\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M70 87.5 L517.2 290\" stroke=\"#cfc9bb\" stroke-width=\"3\" stroke-dasharray=\"1 8\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M517.2 290 L561.4 290\" stroke=\"#e8735c\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M70 87.5 L384.7 230\" stroke=\"#ece9e1\" stroke-width=\"3.4\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M384.7 230 L384.7 296\" stroke=\"#7cc3e6\" stroke-width=\"1.4\" stroke-dasharray=\"2 4\" fill=\"none\"/><path d=\"M384.7 230 L417.8 245\" stroke=\"#7cc3e6\" stroke-width=\"3.4\" stroke-dasharray=\"9 7\" stroke-linecap=\"round\" fill=\"none\"/><path d=\"M417.8 245 L417.8 200\" stroke=\"#ece9e1\" stroke-width=\"2\"/><text x=\"384.7\" y=\"334\" fill=\"#ece9e1\" font-size=\"17\" font-weight=\"800\" text-anchor=\"middle\" font-family=\"Big Shoulders Display, Arial Narrow, sans-serif\">leaves 9:30</text><text x=\"539.3\" y=\"334\" fill=\"#e8735c\" font-size=\"15\" font-weight=\"700\" text-anchor=\"middle\" font-family=\"Big Shoulders Display, Arial Narrow, sans-serif\">penalty</text></svg></figure>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-board{margin:0;background:var(--slate);color:var(--chalk);border:10px solid var(--frame);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 1px 0 rgba(0,0,0,.25);padding:18px 18px 16px;max-width:560px}.ds-bh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 16px;margin:0 4px 4px}.ds-bh b{font:800 1.5rem/1.1 var(--display);letter-spacing:.03em}.ds-bh span{font:400 .88rem/1.4 var(--font);color:var(--chalk-muted)}.ds-board svg{display:block;width:100%;height:auto}"
+    },
+    {
+      "name": "Step Disc",
+      "kind": "custom",
+      "refersTo": "step-disc",
+      "description": "A counter in a cobalt enamel disc beside each guide step.",
+      "html": "<ol class=\"ds-steps\"><li><h3>Close Timberborn</h3><p>Mods are loaded when the game starts, so quit it first.</p></li><li><h3>Download the zip</h3><p>Choose the file under Assets, not Source code.</p></li></ol>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-steps{list-style:none;padding:0;margin:0;counter-reset:s;color:var(--ink);font:400 1.0625rem/1.62 var(--font)}.ds-steps>li{counter-increment:s;position:relative;padding:14px 0 14px 52px;border-top:1px solid var(--rule)}.ds-steps>li::before{content:counter(s);position:absolute;left:0;top:12px;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--cobalt);color:var(--enamel);box-shadow:inset 0 0 0 2px var(--cobalt),inset 0 0 0 3px var(--enamel);font:800 1.25rem/1 var(--display)}.ds-steps h3{margin:4px 0 .2em;font:700 1.55rem/1.05 var(--display)}.ds-steps p{margin:0}"
+    },
+    {
+      "name": "Log Line to Confirm",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "A log line set in mono chalk on a slate strip, with its meaning below.",
+      "html": "<dl class=\"ds-confirm\"><dt>[HungryPathing] Hooks installed</dt><dd>The mod loaded and found every hook.</dd></dl>",
+      "css": ":host{--cobalt:#1d4a86;--cobalt-deep:#143663;--enamel:#efe8d6;--enamel-ink:#1b2a3e;--slate:#23292d;--chalk:#ece9e1;--chalk-muted:#b8bcb8;--coral:#e8735c;--water:#7cc3e6;--frame:#5a4331;--ink:#1e2226;--muted:#4d5358;--rule:#c8bfab;--band:rgba(30,34,38,.05);--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--font:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;--mono:ui-monospace,\"Cascadia Mono\",Consolas,monospace} .ds-confirm{margin:0}.ds-confirm dt{font:400 .9rem/1.5 var(--mono);padding:10px 12px;background:var(--slate);color:var(--chalk)}.ds-confirm dd{margin:0;padding:8px 0 0;color:var(--muted);font:400 1rem/1.62 var(--font)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Works Canteen",
+    "overview": "The site is the canteen yard of a timber mill at the end of a shift. Three materials carry everything: cream vitreous enamel with cobalt borders and lettering for signs and buttons, blue-black slate with chalk for anything measured or timed (the shift board, the before/after tally, log lines, the footer), and a dark timber frame that holds the slate. They sit on a works-yard ground of wood chips: sawdust-grey by day, sooty timber-shed dark by night. Light and dark follow the system setting; there is no toggle.\n\nThe enamel and the slate are fixed materials: they look the same in both themes. Only the yard, the ink written directly on it, its rules and links change with the light. Times are always given as shift clock times or hours (\"leaves 9:30\", \"3:00 left\", \"0.96 h\"), and the one board holds every time in one gaze. Every sign has one job and one fixed layout.\n\nTexture is produced raster, never CSS imitation: `slate.webp`, `yard-day.webp`, `yard-night.webp` (512px repeating tiles) and the 96px `enamel.png` nine-slice all come from `assets/textures/make_textures.py` (numpy and Pillow, fixed seed, no source images). Big Shoulders Display (700 and 800, OFL) is self-hosted in `assets/fonts/`.",
+    "keyCharacteristics": [
+      "Three fixed materials (enamel, slate, timber frame) on a theme-following yard ground",
+      "Condensed industrial sign lettering over a plain system body face",
+      "Chalk colours with jobs: coral for hunger, the buffer and the penalty; water blue for the walk and the board's control",
+      "Rules and ruled rows instead of cards; the only panels are enamel signs and framed slate",
+      "Every time is a clock time or an hour count"
+    ],
+    "rules": [
+      {
+        "name": "The Fixed Materials Rule",
+        "body": "Enamel, slate, chalk, coral, water and frame keep the same values in both themes. Only the yard tokens (yard, ink, muted, rule, band, link, coral-ink, water-ink) change with `prefers-color-scheme`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Chalk Has Jobs Rule",
+        "body": "Coral means hunger or its penalty, water means the walk or the control. Neither is decoration, and neither is used as a raw fill on the yard. There, text uses coral-ink or water-ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lettering Rule",
+        "body": "Big Shoulders appears only in its two shipped weights (700 and 800). Uppercase is reserved for enamel sign titles. Headings use sentence case.",
+        "section": "typography"
+      },
+      {
+        "name": "The Clock Rule",
+        "body": "Durations and moments are written as clock times or hour counts, in tabular figures wherever they are compared.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Offset Rule",
+        "body": "No drop shadows, offset shadows, glows or CSS bevels. The header is a flat cobalt strip with a 3px cream bottom rule.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** put anything measured or timed on slate in chalk, inside a timber frame (10px, or 8px on phones and on the notice).",
+      "**Do** make every enamel sign from the `enamel.png` nine-slice. Give it one heading and one short paragraph.",
+      "**Do** write times as clock times or hours, with tabular figures where they are compared.",
+      "**Do** let light and dark follow `prefers-color-scheme` alone. Only the yard tokens change.",
+      "**Do** produce new textures with `make_textures.py` and ship each with its provenance.",
+      "**Do** keep touch targets at 44px or more, and the 3px offset focus ring.",
+      "**Do** let the board work without script: draw its default state in the markup, and use script only to reveal and drive the control."
+    ],
+    "donts": [
+      "**Don't** add offset or drop shadows, glows, radial washes or CSS bevels. Depth is frame and material.",
+      "**Don't** use coral or water as decoration, or as raw text on the yard.",
+      "**Don't** use pill chips, identical numbered cards or the teal-and-gold palette. Those belonged to the borrowed look this world replaced.",
+      "**Don't** add a theme toggle.",
+      "**Don't** use Timberborn game art or faked screenshots. The board is an illustration and says so.",
+      "**Don't** load Big Shoulders weights other than 700 and 800, or set body text in it."
+    ]
+  }
+}
