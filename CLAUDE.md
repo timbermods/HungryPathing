@@ -71,9 +71,8 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
   teal-and-gold palette; a theme toggle; game art or faked screenshots; other Big Shoulders weights or body text in it.
 - New components: build from these tokens and components, match the neighbours, and add them to `docs/DESIGN.md` and
   `docs/.impeccable/design.json`.
-- **To-dos (open):** (1) the guide TOC links and footer links are 40px tall (`.toc a`, `.foot a`), under the 44px rule;
-  raise them to 44px and update docs/DESIGN.md. (2) `docs/assets/og.png` has no generator in the repo (a Playwright
-  capture of the home hero at 1200x630): re-capture it whenever the hero changes, then `embed-prompt` it again.
+- `docs/assets/og.png` has no generator in the repo (a Playwright capture of the home hero at 1200x630): re-capture it
+  whenever the hero changes, then `embed-prompt` it again.
 
 ### The slate board and the site test's stub DOM
 
