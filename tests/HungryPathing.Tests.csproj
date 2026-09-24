@@ -12,7 +12,7 @@
     <Compile Include="../source/Planning/*.cs" Link="Planning/%(Filename)%(Extension)" />
     <!-- The circuit breaker's wiring runs as shipped against the stand-ins in Stubs.cs for the settings and the log. -->
     <Compile Include="../source/Safety.cs" Link="Mod/Safety.cs" />
-    <!-- So does the MultiColony bridge, against the stand-in in Stubs.cs for MultiColony's ColonyWorkingHours. -->
+    <!-- So does the Timber Together bridge, against the stand-in in Stubs.cs for Timber Together's ColonyWorkingHours. -->
     <Compile Include="../source/MultiColonyBridge.cs" Link="Mod/MultiColonyBridge.cs" />
     <!-- The reset the configurator runs at every load, so the checks re-arm both switches the way the game does. -->
     <Compile Include="../source/GameLoad.cs" Link="Mod/GameLoad.cs" />

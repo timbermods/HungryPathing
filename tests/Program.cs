@@ -4,7 +4,7 @@ using BeaverBuddies.Colonies;
 using HungryPathing;
 using HungryPathing.Planning;
 
-// Checks on the planner arithmetic, the circuit breaker, the MultiColony bridge and what the in-game notice says when
+// Checks on the planner arithmetic, the circuit breaker, the Timber Together bridge and what the in-game notice says when
 // either switches off, plus rules for the Harmony hooks read from their source (HarmonyRules.cs). They compile that
 // source directly and need no game files:
 //   dotnet run --project tests/HungryPathing.Tests.csproj
@@ -327,57 +327,57 @@ internal static class Program
         Safety.NewGame();
         Check(!Safety.Active, "safety: a load does not bring back hooks that failed to install");
 
-        // MultiColonyBridge.cs as shipped. Whether MultiColony is there is fixed for the process, but an exception from
+        // MultiColonyBridge.cs as shipped. Whether Timber Together is there is fixed for the process, but an exception from
         // it lasts one game, like the breaker: a player who hit one in an earlier game must not keep the game's shift
-        // end in the next while a co-op partner with a fresh process asks MultiColony.
+        // end in the next while a co-op partner with a fresh process asks Timber Together.
         int infos = Log.Infos.Count;
         int warnings = Log.Warnings.Count;
         StubBeaver beaver = new StubBeaver();
         MultiColonyBridge.NewGame();
-        Check(Log.Infos.Count == infos, "multicolony: the first load has nothing to re-arm");
+        Check(Log.Infos.Count == infos, "timber together: the first load has nothing to re-arm");
         ColonyWorkingHours.Current = new ColonyWorkingHours();
         Check(MultiColonyBridge.TryEndHours(beaver, out float endHours) && Near(endHours, 20f),
-            "multicolony: the shift end comes from the beaver's colony");
+            "timber together: the shift end comes from the beaver's colony");
         string probed = MultiColonyBridge.Description;
-        Check(probed.StartsWith("present; "), "multicolony: the probe finds MultiColony's working hours");
+        Check(probed.StartsWith("present; "), "timber together: the probe finds Timber Together's working hours");
         ColonyWorkingHours.ColonySlot = null;
-        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: a beaver of no colony keeps the game's shift end");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "timber together: a beaver of no colony keeps the game's shift end");
         ColonyWorkingHours.ColonySlot = 1;
         ColonyWorkingHours.ThrowOnce = true;
-        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: an exception falls back to the game's shift end");
-        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "multicolony: the game's shift end for the rest of the game");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "timber together: an exception falls back to the game's shift end");
+        Check(!MultiColonyBridge.TryEndHours(beaver, out _), "timber together: the game's shift end for the rest of the game");
         Check(Log.Warnings.Count == warnings + 1 &&
-              Log.Warnings[warnings] == "MultiColony: present, but asking it failed (test); " +
+              Log.Warnings[warnings] == "Timber Together: present, but asking it failed (test); " +
                                         "using the game's shift end for the rest of this game",
-            "multicolony: one warning per game, saying how long it lasts");
+            "timber together: one warning per game, saying how long it lasts");
         MultiColonyBridge.NewGame();
         Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
-            "multicolony: asked again after the next load");
+            "timber together: asked again after the next load");
         Check(Log.Infos.Count == infos + 1 &&
-              Log.Infos[infos] == "MultiColony: failure from the previous game cleared; asking it again in this game.",
-            "multicolony: the load that re-arms it says so");
-        Check(MultiColonyBridge.Description == probed, "multicolony: the next game's log line gives the probe result again");
+              Log.Infos[infos] == "Timber Together: failure from the previous game cleared; asking it again in this game.",
+            "timber together: the load that re-arms it says so");
+        Check(MultiColonyBridge.Description == probed, "timber together: the next game's log line gives the probe result again");
         MultiColonyBridge.NewGame();
-        Check(Log.Infos.Count == infos + 1, "multicolony: a load with nothing to re-arm says nothing");
+        Check(Log.Infos.Count == infos + 1, "timber together: a load with nothing to re-arm says nothing");
         ColonyWorkingHours.ThrowOnce = true;
         Check(!MultiColonyBridge.TryEndHours(beaver, out _) && Log.Warnings.Count == warnings + 2,
-            "multicolony: a later game can fail and warn again");
+            "timber together: a later game can fail and warn again");
 
         // GameLoad.Reset is the reset the configurator runs at every load, join and rehost. Both bugs were a load that
-        // left a switch-off in place, so one call must re-arm the breaker and the MultiColony bridge together.
+        // left a switch-off in place, so one call must re-arm the breaker and the Timber Together bridge together.
         Plugin.HooksInstalled = true;
         Safety.Trip("a check before the load", new InvalidOperationException("test"));
         Stats.Evaluations = 5;
         Check(!Safety.Active && !MultiColonyBridge.TryEndHours(beaver, out _),
-            "load: the breaker and the MultiColony bridge are both off before the load");
+            "load: the breaker and the Timber Together bridge are both off before the load");
         infos = Log.Infos.Count;
         GameLoad.Reset();
         Check(Safety.Active, "load: the configurator's reset re-arms the breaker");
         Check(MultiColonyBridge.TryEndHours(beaver, out endHours) && Near(endHours, 20f),
-            "load: the configurator's reset re-arms the MultiColony bridge");
+            "load: the configurator's reset re-arms the Timber Together bridge");
         Check(Log.Infos.Count == infos + 2 &&
               Log.Infos[infos] == "Breaker from the previous game cleared; active again for this game." &&
-              Log.Infos[infos + 1] == "MultiColony: failure from the previous game cleared; asking it again in this game." &&
+              Log.Infos[infos + 1] == "Timber Together: failure from the previous game cleared; asking it again in this game." &&
               Stats.Evaluations == 0,
             "load: the reset says what it re-armed and starts the day's counters over");
 
@@ -392,13 +392,13 @@ internal static class Program
         MultiColonyBridge.TryEndHours(beaver, out _);
         MultiColonyBridge.TryEndHours(beaver, out _);
         Check(SwitchedOff.Count == 1 && SwitchedOff.ShouldShow(ref shown),
-            "switched off: the MultiColony fallback is reported once and shows the dialog");
+            "switched off: the Timber Together fallback is reported once and shows the dialog");
         Check(!SwitchedOff.ShouldShow(ref shown), "switched off: the dialog does not show again on the next frame");
         Check(SwitchedOff.TakeReminder(321) == null && SwitchedOff.TakeReminder(321) == null,
             "switched off: the day of the switch-off has the warning and no reminder");
         Check(SwitchedOff.TakeReminder(322) ==
-              "Day 321: switched off on this computer until a game is loaded: the MultiColony shift end (error asking " +
-              "MultiColony). In multiplayer the other players' computers may not have: the host should save and host " +
+              "Day 321: switched off on this computer until a game is loaded: the Timber Together shift end (error asking " +
+              "Timber Together). In multiplayer the other players' computers may not have: the host should save and host " +
               "that save again, and every player join it, before playing on together.",
             "switched off: the next day change says what is off for the day that ended");
         Check(SwitchedOff.TakeReminder(322) == null, "switched off: one reminder per day");
@@ -409,7 +409,7 @@ internal static class Program
         Check(SwitchedOff.NoticeText() ==
               "Hungry Pathing\n\n" +
               "An error on this computer switched this off for the rest of this game:\n\n" +
-              "- the MultiColony shift end (error asking MultiColony): beavers here plan against the game's single " +
+              "- the Timber Together shift end (error asking Timber Together): beavers here plan against the game's single " +
               "shift end.\n" +
               "- the whole mod (error in HungryPathingRootBehavior.Decide): beavers here behave as in the base game." +
               "\n\nPlayer.log has the details; please report it.\n\n" +
@@ -420,7 +420,7 @@ internal static class Program
             "switched off: the dialog names each switch-off in order, what beavers do now, and what co-op players do");
         Check(SwitchedOff.TakeReminder(323) != null &&
               SwitchedOff.TakeReminder(324).StartsWith("Day 323: switched off on this computer until a game is loaded: " +
-                  "the MultiColony shift end (error asking MultiColony); the whole mod (error in " +
+                  "the Timber Together shift end (error asking Timber Together); the whole mod (error in " +
                   "HungryPathingRootBehavior.Decide). "),
             "switched off: the reminder names every switch-off, every day");
         GameLoad.Reset();

@@ -5,9 +5,9 @@ using Timberborn.BaseComponentSystem;
 
 namespace HungryPathing
 {
-    // BeaverBuddies MultiColony gives each colony its own working hours. It patches the per-beaver "are we working"
+    // Timber Together gives each colony its own working hours. It patches the per-beaver "are we working"
     // test, which this mod already goes through, but not WorkingHoursManager.EndHours, which this mod reads for
-    // "hours left in the shift". So when MultiColony is present, the shift end is asked from it, for the beaver's
+    // "hours left in the shift". So when Timber Together is present, the shift end is asked from it, for the beaver's
     // own colony, through reflection: no reference, no dependency, and if its API ever changes the mod says so once
     // and falls back to the game's value.
     internal static class MultiColonyBridge
@@ -28,7 +28,7 @@ namespace HungryPathing
         // An exception while asking switches the bridge off for the rest of that game only. Which shift end a beaver
         // plans against is simulation state: a player who carried the switch-off into the next game (a rehost reloads
         // in the same process) would use the game's shift end while a co-op partner with a fresh process asks
-        // MultiColony. A switch-off is also said in the game (SwitchedOff), since one that only this computer hit
+        // Timber Together. A switch-off is also said in the game (SwitchedOff), since one that only this computer hit
         // splits a co-op game.
         private static readonly Breaker Failure = new Breaker();
         private static string _failureDescription;
@@ -45,7 +45,7 @@ namespace HungryPathing
         }
 
         // Only GameLoad.Reset calls this, from the configurator, which runs on every player whenever a game is
-        // loaded, joined or rehosted, before any beaver decides. It asks MultiColony again after an exception in the
+        // loaded, joined or rehosted, before any beaver decides. It asks Timber Together again after an exception in the
         // previous game, keeps the probe result and lets go of the previous game's last beaver. Never call it
         // mid-game.
         public static void NewGame()
@@ -54,7 +54,7 @@ namespace HungryPathing
             _oneSlot[0] = null;
             if (Failure.NewGame())
             {
-                Log.Info("MultiColony: failure from the previous game cleared; asking it again in this game.");
+                Log.Info("Timber Together: failure from the previous game cleared; asking it again in this game.");
             }
         }
 
@@ -64,7 +64,7 @@ namespace HungryPathing
             Probe();
         }
 
-        // True with the beaver's colony's shift end when MultiColony is running separate colonies and knows the
+        // True with the beaver's colony's shift end when Timber Together is running separate colonies and knows the
         // beaver's colony. False means: use the game's WorkingHoursManager.
         public static bool TryEndHours(BaseComponent beaver, out float endHours)
         {
@@ -96,8 +96,8 @@ namespace HungryPathing
                 {
                     _failureDescription = "present, but asking it failed (" + exception.GetBaseException().Message +
                                           "); using the game's shift end for the rest of this game";
-                    Log.Warning("MultiColony: " + _failureDescription);
-                    SwitchedOff.Report("the MultiColony shift end (error asking MultiColony)",
+                    Log.Warning("Timber Together: " + _failureDescription);
+                    SwitchedOff.Report("the Timber Together shift end (error asking Timber Together)",
                         "beavers here plan against the game's single shift end");
                 }
                 return false;

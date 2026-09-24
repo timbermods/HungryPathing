@@ -1,6 +1,6 @@
 namespace HungryPathing.Planning
 {
-    // A switch-off that lasts exactly one game: the circuit breaker's (Safety) and the MultiColony bridge's. It is kept
+    // A switch-off that lasts exactly one game: the circuit breaker's (Safety) and the Timber Together bridge's. It is kept
     // apart from the settings, which outlive the game. It feeds decisions, which makes it simulation state. The code
     // it guards reads only the simulation, so every player should trip it at the same tick (a trip only one player hit
     // is said in the game, see SwitchedOff), and NewGame is called only when a game is loaded, which every player does
