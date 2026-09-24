@@ -17,6 +17,25 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
 - **There are two DESIGN.md files.** The root `DESIGN.md` is the MOD's design document (game code paths, the planner's
   reasoning); never touch it for site work. The SITE's design record is `docs/DESIGN.md`.
 
+## Writing README and website text
+
+Kyler, 2026-09-24: "simplicity and elegance is effective and desirable." Every change to the README, the website
+text and the player docs follows these rules.
+
+- **Write for a Timberborn player** who wants to download, install and use the mod. Developer detail goes in
+  TESTING.md (building and checks), DESIGN.md (how the mod decides) or CHANGELOG.md; link to it rather than
+  repeating it.
+- **Short.** One idea per sentence, most under about 20 words. A paragraph or FAQ answer is one to three sentences,
+  a troubleshooting answer a few numbered steps.
+- **Lead with the action.** Menu paths as arrow chains; on-screen labels in bold, exactly as in game.
+- **Say each thing once**, where a player would look for it; link to it elsewhere.
+- **Plain words.** No internals (class names, ids, formats) unless the player needs them to act.
+- **Cut** filler, repeated caveats, edge cases a player won't meet, and history ("since …", "no longer", older
+  builds). Describe the mod as it is now.
+- **Check every fact against the code** before writing it; changelogs lag.
+- **Keep, briefly:** credits, the unofficial line, the status, and safety facts.
+- **Reread as a new player before publishing.** Every step works as written, and nothing is said twice.
+
 ## Website
 
 - **Where:** `docs/`: `index.html` (Overview), `install.html`, `troubleshooting.html`, `faq.html`, `404.html`;
@@ -96,6 +115,7 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
 
 ### Content rules
 
+- Write every player-facing change by *Writing README and website text* above.
 - Describe the mod as it is now: no "New in", "since 0.x" or "added in" on player pages.
 - Played/not-played status matches the README ("**Beta.**"; "What it did in a real colony": one Folktails colony of
   330 to 355 adults, 36 in-game days, nearly all as a BeaverBuddies host; the builder rule is not yet observed on a
@@ -117,7 +137,8 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
 
 ### Update the website for a new release
 
-When asked to "update the website for the latest release, consistent with the design":
+When asked to "update the website for the latest release, consistent with the design" (write it by
+*Writing README and website text* above):
 1. Read `gh release view <tag> -R timbermods/HungryPathing`, README.md, CHANGELOG.md, CONFIGURATION.md, TESTING.md
    and `packaging/manifest.json`. List every player-facing change.
 2. Update every place the site states a changed fact:
@@ -125,7 +146,7 @@ When asked to "update the website for the latest release, consistent with the de
      (install `p.file-name`); no `data-release-pinned`. `grep -rn "0\.3\.1" docs` stays empty.
    - Status: index hero `.status-note`; index `#status` (intro, Played, Not yet); install `#verify` "Beta" callout and
      `#coop` "with this beta"; faq `#alpha`.
-   - Game 1.1.2.4 and Harmony 2.4.1: index `#compat`, install `#requirements`, faq `#alpha`.
+   - Game 1.1.2.4 and Harmony 2.4.1: index `#compat`, install `#requirements`.
    - Hooks "5/5" / "five hooks": index `#details`, install `#verify`, troubleshooting `#hooks` and `#log`.
    - Log lines: install `#verify` (`pre` and `dl.confirm`), troubleshooting `#log`.
    - Settings keys: install `#settings` table, faq `#one-rule` and `#change-buffer`, troubleshooting `#still-far`,

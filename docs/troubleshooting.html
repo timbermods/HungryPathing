@@ -35,7 +35,7 @@
   <div class="page-head">
     <div class="container">
       <h1>Troubleshooting</h1>
-      <p>Almost everything the mod does shows up in the game log, so most problems are one search away.</p>
+      <p>Almost everything the mod does shows up in the game log. Most problems are one search away.</p>
     </div>
   </div>
 
@@ -70,8 +70,8 @@
               <li>Close Timberborn.</li>
               <li>Open <code>Documents\Timberborn\Mods</code> and check that this file exists: <code>HungryPathing\version-1.1\manifest.json</code>.</li>
               <li>If it is at <code>HungryPathing\HungryPathing\version-1.1\manifest.json</code> instead, move the inner folder up a level.</li>
-              <li>Make sure you extracted the whole zip. <code>Scripts\HungryPathing.dll</code> and <code>Needs\</code> must sit next to <code>manifest.json</code>.</li>
-              <li>Start the game again. See the <a href="install.html#install">install steps</a> for the exact layout.</li>
+              <li>Make sure you extracted the whole zip. <code>Scripts\HungryPathing.dll</code> and <code>Needs\</code> must sit next to <code>manifest.json</code> (<a href="install.html#install">the exact layout</a>).</li>
+              <li>Start the game again.</li>
             </ol>
           </dd>
         </dl>
@@ -81,7 +81,7 @@
         <h2>The mod is listed but there are no <code>[HungryPathing]</code> lines in the log</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>The mod is disabled in the mod manager, or Harmony is missing or disabled, in which case the game could not load the mod's code and logs an error mentioning <code>HarmonyLib</code> instead.</dd>
+          <dd>The mod is disabled in the mod manager, or Harmony is missing or disabled. Without Harmony the game can't load the mod's code and logs an error naming <code>HarmonyLib</code> instead.</dd>
           <dt>Fix</dt>
           <dd>
             <ol>
@@ -96,9 +96,9 @@
         <h2>The log says "A hook could not be installed; the game runs unmodified"</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>A game update moved one of the five methods the mod attaches to. The mod then installs none of them and does nothing for the session, on purpose.</dd>
+          <dd>A game update moved one of the mod's five hooks. The mod then stays off, on purpose, and the game runs as if it weren't installed.</dd>
           <dt>Fix</dt>
-          <dd>Check the <a href="https://github.com/timbermods/HungryPathing/releases">releases page</a> for a build that names your game version. If there is none, <a href="#report">report it</a> with the warning line, which says which hook failed. Your colony is unaffected in the meantime.</dd>
+          <dd>Check the <a href="https://github.com/timbermods/HungryPathing/releases">releases page</a> for a build that names your game version. If there is none, <a href="#report">report it</a> with the warning line, which names the hook. Your colony is unaffected in the meantime.</dd>
         </dl>
       </article>
 
@@ -106,14 +106,14 @@
         <h2>"Needs in this game" shows a buffer of 0h</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>The two blueprint patches were not applied. Either the <code>Needs</code> folder is missing from <code>version-1.1</code>, or another mod that also edits the Hunger or Thirst blueprint loads after this one and sets the field back to zero.</dd>
+          <dd>The mod's two buffer files were not applied. Either the <code>Needs</code> folder is missing from <code>version-1.1</code>, or another mod that edits the Hunger or Thirst blueprint loads after this one and sets the buffer back to zero.</dd>
           <dt>Fix</dt>
           <dd>
             <ol>
               <li>Check that <code>version-1.1\Needs\Need.Beaver.Hunger.blueprint.json</code> and the Thirst file exist.</li>
-              <li>If another mod edits those blueprints, change the mods' order in the mod manager so this one loads later, or set <code>WarningHours = 3</code> in <code>HungryPathing.cfg</code>, which overrides the blueprint value.</li>
+              <li>If another mod edits those blueprints, set <code>WarningHours = 3</code> in <code>HungryPathing.cfg</code>. It overrides the blueprint value.</li>
             </ol>
-            With a buffer of 0h the just-in-time rule waits until the last moment and the pre-fuel rule triggers less, but nothing breaks.
+            With a buffer of 0h the just-in-time rule waits until the last moment and pre-fuel fires less, but nothing breaks.
           </dd>
         </dl>
       </article>
@@ -122,9 +122,16 @@
         <h2>A dialog or the log says the mod "switched off" after an error</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>Something in the mod's own code threw. The mod logs the stack trace once and disables itself for the rest of that game, so the game carries on as if it were not installed. It also says so in a dialog, and writes <code>Day N: switched off on this computer ...</code> on every later day of that game.</dd>
+          <dd>The mod hit an error and switched itself off, or one part of itself, for the rest of that game. The dialog says what beavers on that computer do now. The log repeats <code>Day N: switched off on this computer ...</code> on every later day.</dd>
           <dt>Fix</dt>
-          <dd>In co-op, other players' computers may still be running the mod, so the games can drift apart: before playing on, the host saves and hosts that save again, and every player joins it. That load turns the mod back on for everyone. Then please <a href="#report">report it</a> with the whole warning, including the lines after it. Loading a game re-enables the mod; if the warning comes back at the same point, set <code>Enabled = false</code> on every computer until a fix is out.</dd>
+          <dd>
+            <ol>
+              <li>In co-op, the other computers may still run the mod, so the games can drift apart. Before playing on, the host saves and hosts that save again, and every player joins it.</li>
+              <li>In single player, keep playing or load a save. Loading a game turns the mod back on.</li>
+              <li>Please <a href="#report">report it</a> with the whole warning, including the lines after it.</li>
+              <li>If the warning comes back at the same point, set <code>Enabled = false</code> on every computer until a fix is out.</li>
+            </ol>
+          </dd>
         </dl>
       </article>
 
@@ -139,8 +146,8 @@
               <li>Is the storage in the beaver's <strong>district</strong>? Beavers only see storages registered with their own district center.</li>
               <li>Does it hold food or water <strong>right now</strong>? Units already reserved by beavers on their way count as gone, so a small warehouse can be empty for the next arrival.</li>
               <li>Is the beaver <strong>off duty</strong>? Evenings run the game's own behavior on purpose, and that is where variety-seeking happens.</li>
-              <li>Is it a <strong>penalty-state</strong> trip during work? Those follow the mod only while <code>RedirectCriticalTrips = true</code>, and not for <code>RetryHours</code> after a redirect in which every storage the mod measured failed to start a trip. Each such failure counts in the daily line's <strong>failed launches</strong>.</li>
-              <li>Read the daily <code>Day N: trips started by rule</code> line. If every count is zero, the planner never fires: check the <a href="#buffer-zero">buffer</a> and that <code>Enabled = true</code>. Set <code>Diagnostics = true</code> to see each trip and the walking time it measured.</li>
+              <li>Is it a <strong>penalty-state</strong> trip during work? The mod redirects those only while <code>RedirectCriticalTrips = true</code>.</li>
+              <li>Read the daily <code>Day N: trips started by rule</code> line. If every count is zero, the mod never acts: check the <a href="#buffer-zero">buffer</a> and that <code>Enabled = true</code>. Set <code>Diagnostics = true</code> to see each trip and its walking time.</li>
             </ol>
           </dd>
         </dl>
@@ -150,9 +157,9 @@
         <h2>Everyone heads for food at the start of the shift</h2>
         <dl>
           <dt>What is happening</dt>
-          <dd>The pre-fuel rule: a beaver that would not last the whole shift plus the buffer, and has food within half an hour, tops off before starting work. The first morning after installing, many beavers qualify at once because the game never topped them off; after a day it settles into the ones the evening missed.</dd>
+          <dd>The pre-fuel rule. A beaver that won't last the shift plus the buffer, with food within half an hour, tops off before starting work. The first morning after installing, many beavers qualify at once; after a day it settles down to the ones the evening missed.</dd>
           <dt>If you want less of it</dt>
-          <dd>Lower <code>PreFuelNearFoodHours</code> so only beavers right next to food do it, or set <code>PreFuel = false</code> and keep the just-in-time rule. Food consumption per day is the same either way; only the timing moves.</dd>
+          <dd>Lower <code>PreFuelNearFoodHours</code> so only beavers right next to food do it. Or set <code>PreFuel = false</code> and keep the just-in-time rule.</dd>
         </dl>
       </article>
 
@@ -160,7 +167,7 @@
         <h2>A builder keeps letting go of the same site</h2>
         <dl>
           <dt>What should happen</dt>
-          <dd>A builder lets a site go at most once per half hour of game time (<code>RetryHours</code>), tops off, and then takes whatever site the game hands it next. Seeing the same builder drop a site repeatedly without eating in between means the food it counted on was gone by the time it got there.</dd>
+          <dd>A builder lets a site go at most once per half hour of game time (<code>RetryHours</code>), tops off, then takes the next site the game hands it. If it drops a site again and again without eating, the food it counted on was gone when it arrived.</dd>
           <dt>Fix</dt>
           <dd>Set <code>BuilderJobCheck = false</code> for now and <a href="#report">report it</a> with <code>Diagnostics = true</code> lines around the event. The other rules keep working.</dd>
         </dl>
@@ -170,9 +177,9 @@
         <h2>Stutter in a big colony</h2>
         <dl>
           <dt>What to look at</dt>
-          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. Several thousand per day for a few hundred beavers is normal and cheap (about 7,500 a day in the 355-beaver test colony); tens of thousands is not.</dd>
+          <dd>The daily line ends with the number of <strong>path queries</strong> the mod made. Several thousand a day for a few hundred beavers is normal and cheap (about 7,500 in the 355-beaver test colony). Tens of thousands is not.</dd>
           <dt>Fix</dt>
-          <dd>Lower <code>CandidateLimit</code> (path queries per check), raise <code>RetryHours</code> (time between checks), or lower <code>JustInTimeLeadHours</code> (how early walks start being measured). All three are simulation settings, so co-op peers must change them together.</dd>
+          <dd>Lower <code>CandidateLimit</code> (path queries per check), raise <code>RetryHours</code> (time between checks), or lower <code>JustInTimeLeadHours</code> (how early walks are measured). In co-op, every player changes them together.</dd>
         </dl>
       </article>
 
@@ -180,23 +187,23 @@
         <h2>A co-op game drifts apart after installing the mod</h2>
         <dl>
           <dt>Likely cause</dt>
-          <dd>The players run different versions of the mod, different game versions or different settings files. All three change what beavers decide. Or the mod <a href="#switched-off">switched off</a> after an error on one computer only; that computer's log has the warning and <code>Day N: switched off</code> lines the others do not have.</dd>
+          <dd>The players run different versions of the mod, different game versions or different settings files. Or the mod <a href="#switched-off">switched off</a> on one computer only; that computer's log has <code>Day N: switched off</code> lines.</dd>
           <dt>Fix</dt>
-          <dd>Compare the <code>Simulation settings:</code> line each player's log prints at startup, and the version in the <code>loading.</code> line. Make them identical, then start from a fresh sync.</dd>
+          <dd>Compare the <code>Simulation settings:</code> line each player's log prints at startup, and the version in the <code>loading.</code> line. Make them identical. Then the host saves and hosts that save again, and every player joins it.</dd>
         </dl>
       </article>
 
       <h2 id="log">Finding the game log</h2>
       <p>Timberborn writes a log every time it runs. On Windows it is here:</p>
 <pre><code>%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log</code></pre>
-      <p>Paste that into the File Explorer address bar to open it. <code>Player-prev.log</code> next to it is the previous session, which is useful if the game crashed. Search the file for <code>[HungryPathing]</code>. You'll see:</p>
+      <p>Paste that into the File Explorer address bar to open it. <code>Player-prev.log</code> next to it is the previous session, useful if the game crashed. Search the file for <code>[HungryPathing]</code>. You'll see:</p>
       <ul>
         <li><code>[HungryPathing] &lt;version&gt; loading.</code>, the settings line, <code>Hooks installed (5/5).</code> and <code>Active.</code> when the mod started normally.</li>
         <li><code>Needs in this game: ...</code> once a colony is running, with the buffer per need.</li>
         <li><code>Day N: trips started by rule: ...</code> once per in-game day.</li>
-        <li><code>Switched off for the rest of this game ...</code> followed by a stack trace, if something went wrong, and <code>Day N: switched off on this computer ...</code> on each later day of that game (instead of the daily line when the whole mod is off).</li>
+        <li><code>Switched off for the rest of this game ...</code> and a stack trace if the mod hit an error, then <code>Day N: switched off on this computer ...</code> on each later day.</li>
       </ul>
-      <p>No <code>[HungryPathing]</code> lines at all means the game never loaded the mod, so go back to <a href="#not-listed">the first fix</a>.</p>
+      <p>No <code>[HungryPathing]</code> lines at all means the game never loaded the mod: see <a href="#not-listed">the first fix</a>.</p>
 
       <h2 id="report">Reporting a problem</h2>
       <p>Open an issue on GitHub and include as much of this as you can:</p>

@@ -1,5 +1,10 @@
 # Testing
 
+## Building
+
+`.\build.ps1` builds against the game folder, lays the mod out under `dist\` and zips it. `-Test` also runs the
+planner checks below. `-Install` copies the result into `Documents\Timberborn\Mods`.
+
 ## Planner checks (no game needed)
 
 ```
