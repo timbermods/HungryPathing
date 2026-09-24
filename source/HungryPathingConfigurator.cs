@@ -19,7 +19,7 @@ namespace HungryPathing
             containerDefinition.MultiBind<TemplateModule>().ToProvider(ProvideTemplateModule).AsSingleton();
             // One per game, so the path costs are read again from the templates at every load.
             containerDefinition.Bind<TravelCostBound>().AsSingleton();
-            // Says in the game when the mod, or its MultiColony shift end, switched off after an error.
+            // Says in the game when the mod, or its Timber Together shift end, switched off after an error.
             containerDefinition.Bind<SwitchedOffNotice>().AsSingleton();
         }
 

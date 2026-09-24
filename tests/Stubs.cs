@@ -48,7 +48,7 @@ namespace Timberborn.BaseComponentSystem
 
 namespace BeaverBuddies.Colonies
 {
-    // The shape of BeaverBuddies MultiColony's ColonyWorkingHours that MultiColonyBridge finds by name: a static
+    // The shape of Timber Together's ColonyWorkingHours that MultiColonyBridge finds by name: a static
     // Instance, EndHours for a colony slot, and a static ColonyOf that is null for a beaver of no colony.
     public class ColonyWorkingHours
     {

@@ -4,7 +4,7 @@ using System.Text;
 namespace HungryPathing
 {
     // What switched itself off after an error in this game, in the order it happened: the circuit breaker (Safety),
-    // which takes the whole mod off, and the MultiColony bridge, which falls back to the game's shift end.
+    // which takes the whole mod off, and the Timber Together bridge, which falls back to the game's shift end.
     //
     // Both guard code that reads only the simulation, so an error there should throw on every player at the same tick.
     // That is what the code is built for, not something it can promise: an error that only one computer hits leaves

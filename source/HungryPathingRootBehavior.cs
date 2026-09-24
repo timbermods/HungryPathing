@@ -580,7 +580,7 @@ namespace HungryPathing
         }
 
         // When this beaver's working day ends, in hours of the day. The game keeps one value for everyone;
-        // BeaverBuddies MultiColony keeps one per colony and is asked first when it is present.
+        // Timber Together keeps one per colony and is asked first when it is present.
         private float ShiftEndHours()
         {
             return MultiColonyBridge.TryEndHours(this, out float endHours) ? endHours : _workingHoursManager.EndHours;
@@ -647,7 +647,7 @@ namespace HungryPathing
                           $"so a full bar lasts {24f / Mathf.Max(0.0001f, Mathf.Abs(spec.DailyDelta)) * spec.MaximumValue:0.#}h");
             }
             Log.Info("Needs in this game: " + string.Join("; ", parts) + ".");
-            Log.Info("MultiColony: " + MultiColonyBridge.Description + ".");
+            Log.Info("Timber Together: " + MultiColonyBridge.Description + ".");
         }
     }
 }

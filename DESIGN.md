@@ -151,17 +151,17 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
 ### Guardrails
 
 - **Determinism.** Inputs are the settings, need points, spec values, positions, the working-hours manager (or
-  MultiColony's per-colony hours), the day-night cycle, the game's path queries and the cheapest path cost per tile
+  Timber Together's per-colony hours), the day-night cycle, the game's path queries and the cheapest path cost per tile
   of the loaded building templates (see Performance). Each beaver's timers and failed-storage list are fields of its
   own component, created empty at every load. Lists are iterated in insertion order and sorts have total
   tie-breaks. No clock, no randomness, no frame timing. Static state that changes during a game is of two kinds.
   The daily counters and log-once flags (`Stats`, one warning flag in `HungryPathingRootBehavior`) and the record
   the in-game notice reads (`SwitchedOff`) never feed a decision. Two switch-offs do: the circuit breaker (see
-  failure containment below) and the MultiColony bridge's (see other mods below). Each should trip at the same tick
+  failure containment below) and the Timber Together bridge's (see other mods below). Each should trip at the same tick
   on every player, because the code it guards reads only the simulation. Each is cleared only by `GameLoad.Reset`,
   which the configurator runs on every player when a game is loaded, joined or rehosted; nothing clears them
   mid-game. A trip that only one player hits is the one way they can differ, and it is said loudly (see failure
-  containment). The settings and whether the hooks installed are set at startup, and what the MultiColony probe
+  containment). The settings and whether the hooks installed are set at startup, and what the Timber Together probe
   found is set the first time it is asked. All three then stay fixed for the process and are the same on every
   player with the same game and mod versions and settings file.
 - **Performance.** Cheap checks first: a beaver with hours to spare sets a wake-up time (at most three hours away)
@@ -198,13 +198,13 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   The planner checks include a 300-day simulation of this.
 - **Other mods that change working hours.** `InWorkContext` uses `WorkerWorkingHours.AreWorkingHours`, which is
   the per-beaver test other mods patch. The shift end is one global value in the game, `WorkingHoursManager.EndHours`,
-  and BeaverBuddies MultiColony keeps one per colony without patching that property. `MultiColonyBridge` finds
-  MultiColony's `ColonyWorkingHours` by name at runtime, resolves the beaver's colony with its `ColonyOf` and asks
+  and Timber Together keeps one per colony without patching that property. `MultiColonyBridge` finds
+  Timber Together's `ColonyWorkingHours` by name at runtime, resolves the beaver's colony with its `ColonyOf` and asks
   `EndHours(slot)`. A mismatch in that API leaves the bridge off for the whole process, since the loaded mods do not
   change while the game runs. An exception switches it off with one warning for the rest of that game and the game's
   value is used; the configurator re-arms it at the next load, like the circuit breaker, so a player who hit one in
-  an earlier game does not keep the game's value while a co-op partner with a fresh process asks MultiColony. The
-  bridge reads MultiColony's own synchronized state, so peers running both mods stay identical.
+  an earlier game does not keep the game's value while a co-op partner with a fresh process asks Timber Together. The
+  bridge reads Timber Together's own synchronized state, so peers running both mods stay identical.
 - **Failure containment.** Every entry point the game can reach (the root behavior, the two answers the hooks ask
   for, and the hook bodies themselves) catches exceptions. The first one is logged with its stack trace and the
   mod disables itself for the rest of the game; the game's own code never sees an exception from this mod. The next
@@ -212,7 +212,7 @@ The fallback goes through `ConstructionSiteAccessible`, which names the site's o
   process and outlive the game, so a trip stored there would carry into every later game on that machine, and a
   player who had tripped it once would run the base game while a co-op partner ran the mod. Hooks that fail to
   install stay off for the whole process.
-- **A switch-off only one player hit.** The breaker and the MultiColony bridge are built to trip on every player
+- **A switch-off only one player hit.** The breaker and the Timber Together bridge are built to trip on every player
   together, but nothing can promise that an error is one every computer hits: another mod, a damaged install or a
   bug that reads something outside the simulation can throw on one computer only. That computer then runs the base
   game's behavior while the others run the mod, and the games drift apart until BeaverBuddies notices. A warning in

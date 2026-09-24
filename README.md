@@ -92,12 +92,12 @@ depend on the faction and on any mods that add buildings. The first time a beave
 prints one `Cheapest travel here:` line; every player's should match, and if they differ, the players do not have
 the same buildings loaded.
 
-### BeaverBuddies MultiColony
+### Timber Together
 
-MultiColony gives each colony its own working hours. The mod already goes through the per-beaver working-hours test
-MultiColony patches, and its storage index is per district, so beavers never eat from the other colony's storages.
+Timber Together gives each colony its own working hours. The mod already goes through the per-beaver working-hours test
+Timber Together patches, and its storage index is per district, so beavers never eat from the other colony's storages.
 Since 0.2.2 the "hours left in the shift" used by the pre-fuel rule also comes from the beaver's own colony when
-MultiColony is present, asked through reflection with no dependency; without it, or if MultiColony's API changes,
+Timber Together is present, asked through reflection with no dependency; without it, or if Timber Together's API changes,
 the game's single value is used and the log says so.
 
 ## Performance
@@ -153,7 +153,7 @@ Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) 
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. ...
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: ...
-[HungryPathing] MultiColony: ...
+[HungryPathing] Timber Together: ...
 [HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.
 ```
 

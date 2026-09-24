@@ -11,7 +11,7 @@ web
 Timberborn players with a working colony, usually a large one (hundreds of beavers), who have watched builders and
 haulers drop tools at a far site, work at half speed once hunger hits zero, then walk across the map to the district
 center for bread while a stocked warehouse sits next door. Many play co-op through BeaverBuddies (the Stability Fork
-or MultiColony) and need to know it won't desync their game. Comfortable enough with mods to unzip a folder, but
+or Timber Together) and need to know it won't desync their game. Comfortable enough with mods to unzip a folder, but
 mostly not programmers. They arrive from the Timbermods org site, a friend or a forum post, want to know in one look
 what changes and whether it's safe to add to an existing colony, install it, and later read one log line to confirm
 it works. Returning players come back to update, tune the settings file, or report a problem.
@@ -56,7 +56,7 @@ by need points before looking at distance, so plain berries next to the site los
 nearly every time. Hungry Pathing keeps the game's own behaviors and changes only *when* a working beaver goes and
 *which* storage it picks, from measured walking times. It is not a pathfinding mod, not a ration-carrying mod and
 adds no buildings. It is built for lockstep co-op (decisions read only the simulation, with fixed ordering and
-tie-breaks), and with BeaverBuddies MultiColony each colony's own working hours are used. The numbers are measured,
+tie-breaks), and with Timber Together each colony's own working hours are used. The numbers are measured,
 not promised: a 355-beaver colony went from 15 beavers in a penalty and 117 within three hours of one to 0 and 0 at
 the same hour of the shift. No other mod doing the same job is known to the maintainer; don't name or compare
 against any.
@@ -75,7 +75,7 @@ against any.
 - **Co-op:** works with BeaverBuddies. Condition: every player installs the same mod version, runs the same game
   version and uses an identical `HungryPathing.cfg` (only `DailyReport` and `Diagnostics` may differ). The
   `Simulation settings:` line printed at startup is what players compare. BeaverBuddies itself only warns when mod
-  versions differ. With **BeaverBuddies MultiColony**, each beaver's shift end comes from its own colony's working
+  versions differ. With **Timber Together**, each beaver's shift end comes from its own colony's working
   hours (asked through reflection, no dependency) and the storage index is per district, so colonies never eat from
   each other's storages. 0.3.x changes decisions compared with 0.2.1: co-op players update together.
 - **Factions:** Folktails tested; Iron Teeth expected to work, untested. Tubeways and ziplines can hide the quickest
@@ -160,13 +160,13 @@ against any.
   `RedirectCriticalTrips`); "working hours", "off duty", "shift"; "storage" for warehouses and tanks generally;
   "switched off" for the circuit breaker (the log says `Switched off for the rest of this game`); "the daily summary
   line" (`Day N: trips started by rule: ...`); the `Simulation settings:` line; "path queries"; "the settings file"
-  (`HungryPathing.cfg`), never "Mod Settings" or "options menu". Co-op mod: BeaverBuddies; BeaverBuddies MultiColony.
+  (`HungryPathing.cfg`), never "Mod Settings" or "options menu". Co-op mod: BeaverBuddies; Timber Together.
 - **Honest status of what has been played:** 0.1.0 and 0.2.0 ran 36 in-game days in one single-district Folktails
   colony of 330 to 355 adults, nearly all as a BeaverBuddies host with a guest; three days replayed from the same
   save gave identical counters and co-op hashes. The before-and-after table comes from that colony's saves on
   0.1.0. One error was found there (the builder job check on the first construction day, 0.2.0) and fixed in 0.2.1.
   **Not played in a live game:** 0.2.1, 0.2.2, 0.3.0 and **0.3.1, the current release** (offline checks only); the
-  builder rule's decisions on a construction-heavy day; a MultiColony game where a colony set its own working hours;
+  builder rule's decisions on a construction-heavy day; a Timber Together game where a colony set its own working hours;
   the switch-off dialog; Iron Teeth; anything but Windows. Say this plainly and without alarm ("try it on a copy of
   your save first"). Describe the mod as it is now; version history belongs in CHANGELOG.md. Upgrade facts players
   need: close the game, extract over the old folder and choose Replace, keep a copy of an edited `HungryPathing.cfg`
@@ -203,7 +203,7 @@ against any.
   illustrative, and are labeled so.
 - **Does not exist and must not be faked:** any in-game screenshot or clip (of beavers eating, the colony, the mod
   manager entry, or the switch-off dialog, which has never been seen in a game); any before/after image; Iron Teeth
-  or MultiColony-with-own-hours results; testimonials, player counts, download numbers, Workshop ratings or press.
+  or Timber Together-with-own-hours results; testimonials, player counts, download numbers, Workshop ratings or press.
   Leave marked slots for the maintainer's own shots if a page wants them.
 
 ## Product Principles
