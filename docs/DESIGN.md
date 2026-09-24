@@ -174,9 +174,9 @@ components:
 
 The site is the canteen yard of a timber mill at the end of a shift. Three materials carry everything: cream vitreous enamel with cobalt borders and lettering for signs and buttons, blue-black slate with chalk for anything measured or timed (the shift board, the before/after tally, log lines, the footer), and a dark timber frame that holds the slate. They sit on a works-yard ground of wood chips: sawdust-grey by day, sooty timber-shed dark by night. Light and dark follow the system setting; there is no toggle.
 
-The enamel and the slate are fixed materials: they look the same in both themes. Only the yard, the ink written directly on it, its rules and links change with the light. Times are always given as shift clock times or hours ("leaves 9:30", "3:00 left", "0.96 h"), and the one board holds every time in one gaze. Every sign has one job and one fixed layout.
+The slate is a fixed material: it looks the same in both themes. The enamel signs have a night plate: at night their field is dark (`enamel-night.png`) with light lettering, the cobalt border unchanged. Only the yard, the ink written directly on it, its rules and links change with the light. Times are always given as shift clock times or hours ("leaves 9:30", "3:00 left", "0.96 h"), and the one board holds every time in one gaze. Every sign has one job and one fixed layout.
 
-Texture is produced raster, never CSS imitation: `slate.webp`, `yard-day.webp`, `yard-night.webp` (512px repeating tiles) and the 96px `enamel.png` nine-slice all come from `assets/textures/make_textures.py` (numpy and Pillow, fixed seed, no source images). Big Shoulders Display (700 and 800, OFL) is self-hosted in `assets/fonts/`.
+Texture is produced raster, never CSS imitation: `yard-day.webp`, `yard-night.webp` (512px repeating tiles) and the 96px `enamel.png` and `enamel-night.png` nine-slices all come from `assets/textures/make_textures.py` (numpy and Pillow, fixed seed, no source images). Big Shoulders Display (700 and 800, OFL) is self-hosted in `assets/fonts/`.
 
 **Key Characteristics:**
 - Three fixed materials (enamel, slate, timber frame) on a theme-following yard ground
@@ -200,7 +200,7 @@ A cobalt-and-cream enamel pair and a slate-and-chalk pair are fixed across theme
 ### Neutral
 - **Vitreous Cream** (enamel): the sign plate, the text on cobalt, the selection text, and the header's bottom rule.
 - **Enamel Ink** (enamel-ink): body text on a sign plate.
-- **Blue-Black Slate** (slate, with `slate.webp`): the board, the tally, the "After the whistle" notice, code blocks, log lines to confirm, and the footer.
+- **Blue-Black Slate** (slate, a flat colour): the board, the tally, the "After the whistle" notice, code blocks, log lines to confirm, and the footer.
 - **Chalk** (chalk) and **Worn Chalk** (chalk-muted): primary and secondary writing on slate. Chalk rules on slate are chalk at 14% to 50% alpha, usually dashed.
 - **Timber Frame** (frame): the 10px frame around the board and tally, the 8px frame around the after-hours notice, and the footer's top border.
 - **Sawdust Yard** (yard, with `yard-day.webp`) and **Soot Shed** (yard-night, with `yard-night.webp`): the page ground.
@@ -321,6 +321,7 @@ Native `details` elements separated by rules. Each summary is at least 56px tall
 - **Do** let the board work without script: draw its default state in the markup, and use script only to reveal and drive the control.
 
 ### Don't:
+- **Don't** texture the slate: it is a flat colour, with no chalk dust, smears, smoke or grain (Kyler, 2026-09-24).
 - **Don't** add offset or drop shadows, glows, radial washes or CSS bevels. Depth is frame and material.
 - **Don't** use coral or water as decoration, or as raw text on the yard.
 - **Don't** use pill chips, identical numbered cards or the teal-and-gold palette. Those belonged to the borrowed look this world replaced.

@@ -80,7 +80,9 @@ text and the player docs follows these rules.
     #bcd4f5, coral-ink #a8432b / #f29077, water-ink #1f6690 / #8fcdeb.
 - Fonts: Big Shoulders Display 700/800 (headings, brand, nav, buttons, labels, tally figures), self-hosted in
   `docs/assets/fonts/` with `OFL-BigShoulders.txt`. Body: system-ui; code: ui-monospace. No other webfonts, no CDN.
-- Textures: `slate.webp`, `yard-day.webp`, `yard-night.webp` (512px tiles) and `enamel.png` (96px nine-slice, slice
+- The slate is a flat colour: never a texture, chalk dust, smears, smoke or grain on it (Kyler, 2026-09-24: it
+  read as smoke).
+- Textures: `yard-day.webp`, `yard-night.webp` (512px tiles) and `enamel.png` / `enamel-night.png` (96px nine-slices, slice
   24) come from `docs/assets/textures/make_textures.py` (numpy + Pillow, fixed seeds; run it in that folder). Change
   the script and re-run it; never edit the images. Every shipping raster carries provenance: with
   `IMP=$(ls -d ~/.claude/plugins/cache/impeccable/impeccable/*/skills/impeccable | tail -1)`, run

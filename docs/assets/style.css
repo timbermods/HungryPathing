@@ -28,8 +28,10 @@
   --cobalt-deep: #143663;
   --enamel: #efe8d6;
   --enamel-ink: #1b2a3e;
+  --sign-plate: url("textures/enamel.png");
+  --sign-ink: var(--enamel-ink);
+  --sign-head: var(--cobalt);
   --slate: #23292d;
-  --slate-tex: url("textures/slate.webp");
   --chalk: #ece9e1;
   --chalk-muted: #b8bcb8;
   --coral: #e8735c;
@@ -55,6 +57,9 @@
     --focus: #93b9ee;
     --coral-ink: #f29077;
     --water-ink: #8fcdeb;
+    --sign-plate: url("textures/enamel-night.png");
+    --sign-ink: #ebe6dc;
+    --sign-head: #93b9ee;
   }
 }
 
@@ -120,7 +125,7 @@ a.btn.btn-secondary:hover, button.btn.btn-secondary:hover { background: var(--ba
 html:not([data-release-ready]) .ver { display: none; }
 
 /* the slate board: one shift in chalk, in a timber frame */
-.board { margin: 0; background: var(--slate) var(--slate-tex); color: var(--chalk); border: 10px solid var(--frame); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .5), 0 1px 0 rgba(0, 0, 0, .25); padding: 18px 18px 16px; }
+.board { margin: 0; background: var(--slate); color: var(--chalk); border: 10px solid var(--frame); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .5), 0 1px 0 rgba(0, 0, 0, .25); padding: 18px 18px 16px; }
 .board-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; margin: 0 4px 4px; }
 .board-head b { font: 800 1.5rem/1.1 var(--display); letter-spacing: .03em; }
 .board-head span { font-size: .88rem; color: var(--chalk-muted); }
@@ -161,16 +166,16 @@ section { padding: clamp(56px, 8vw, 100px) 0; }
 
 /* enamel signs: each rule has one sign, one job */
 .signs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; list-style: none; margin: 0; padding: 0; }
-.sign { margin: 0; border: 24px solid transparent; border-image: url("textures/enamel.png") 24 fill round; color: var(--enamel-ink); padding: 4px 6px 8px; }
-.sign h3 { color: var(--cobalt); font-size: 1.7rem; letter-spacing: .03em; text-transform: uppercase; margin-bottom: .35em; }
+.sign { margin: 0; border: 24px solid transparent; border-image: var(--sign-plate) 24 fill round; color: var(--sign-ink); padding: 4px 6px 8px; }
+.sign h3 { color: var(--sign-head); font-size: 1.7rem; letter-spacing: .03em; text-transform: uppercase; margin-bottom: .35em; }
 .sign p { margin: 0; font-size: .98rem; }
-.sign a { color: var(--cobalt); }
-.sign.after-hours { border-image-source: none; border: 8px solid var(--frame); padding: 22px 24px; background: var(--slate) var(--slate-tex); color: var(--chalk); }
+.sign a { color: var(--sign-head); }
+.sign.after-hours { border-image-source: none; border: 8px solid var(--frame); padding: 22px 24px; background: var(--slate); color: var(--chalk); }
 .sign.after-hours h3 { color: var(--chalk); }
 .sign.after-hours p { color: var(--chalk-muted); }
 
 /* the tally: the measured colony, in chalk */
-.tally { background: var(--slate) var(--slate-tex); color: var(--chalk); border: 10px solid var(--frame); padding: clamp(18px, 3vw, 30px); }
+.tally { background: var(--slate); color: var(--chalk); border: 10px solid var(--frame); padding: clamp(18px, 3vw, 30px); }
 .tally table { font-size: 1rem; }
 .tally th, .tally td { text-align: left; padding: 12px 16px 12px 0; border-bottom: 1px dashed rgba(236, 233, 225, .28); vertical-align: middle; }
 .tally thead th { font: 700 1.15rem/1.2 var(--display); letter-spacing: .03em; color: var(--chalk-muted); border-bottom: 2px solid rgba(236, 233, 225, .5); }
@@ -240,7 +245,7 @@ section { padding: clamp(56px, 8vw, 100px) 0; }
 .prose table { margin: 0 0 1.4rem; font-size: .95rem; }
 .prose th, .prose td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .prose thead th { font: 700 1.15rem/1.2 var(--display); letter-spacing: .02em; border-bottom: 2px solid var(--rule-strong); }
-pre { margin: 0 0 1.2rem; padding: 14px 16px; background: var(--slate) var(--slate-tex); color: var(--chalk); border-radius: 2px; overflow-x: auto; line-height: 1.5; font-size: .9rem; }
+pre { margin: 0 0 1.2rem; padding: 14px 16px; background: var(--slate); color: var(--chalk); border-radius: 2px; overflow-x: auto; line-height: 1.5; font-size: .9rem; }
 pre code { background: none; padding: 0; font-size: inherit; color: inherit; white-space: pre-wrap; word-break: break-word; }
 .callout { margin: 0 0 1.4rem; padding: 18px 20px; border: 2px solid var(--rule-strong); background: var(--band); }
 .callout > :last-child { margin-bottom: 0; }
@@ -249,7 +254,7 @@ pre code { background: none; padding: 0; font-size: inherit; color: inherit; whi
 /* assets/release.js fills in the file name and then marks the page; until then there is no name to show. */
 html:not([data-release-ready]) .file-name { display: none; }
 .confirm { margin: 0 0 1.2rem; }
-.confirm dt { font-family: var(--mono); font-size: .9rem; padding: 10px 12px; background: var(--slate) var(--slate-tex); color: var(--chalk); overflow-wrap: anywhere; }
+.confirm dt { font-family: var(--mono); font-size: .9rem; padding: 10px 12px; background: var(--slate); color: var(--chalk); overflow-wrap: anywhere; }
 .confirm dd { margin: 0 0 12px; padding: 8px 0 0; color: var(--muted); }
 
 .issue { padding: 22px 0; border-top: 2px solid var(--rule-strong); }
@@ -277,7 +282,7 @@ details.q .a > :last-child { margin-bottom: 0; }
 details.q[open] { border-top: 3px solid var(--cobalt); }
 
 /* ---------- footer ---------- */
-.site-footer { background: var(--slate) var(--slate-tex); color: var(--chalk-muted); border-top: 10px solid var(--frame); padding: 40px 0; font-size: .96rem; }
+.site-footer { background: var(--slate); color: var(--chalk-muted); border-top: 10px solid var(--frame); padding: 40px 0; font-size: .96rem; }
 .foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px 40px; align-items: start; }
 .foot p { margin: 0 0 .4em; }
 .foot strong { color: var(--chalk); font: 800 1.35rem/1.2 var(--display); letter-spacing: .02em; }
