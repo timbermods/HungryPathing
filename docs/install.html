@@ -60,7 +60,7 @@
         <li><strong>Harmony</strong> from the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3284904751">Steam Workshop</a>, version 2.4.1 or newer, installed and enabled.</li>
         <li>A <code>Mods</code> folder inside your Timberborn user folder, normally <code>Documents\Timberborn\Mods</code>. If it doesn't exist yet, start the game once or create it yourself.</li>
       </ul>
-      <p>The mod has been built and checked on Windows. If your Timberborn user folder is somewhere else, extract into the <code>Mods</code> folder there instead.</p>
+      <p>The mod has been built and checked on Windows only. If your Timberborn user folder is somewhere else, use the <code>Mods</code> folder there.</p>
 
       <h2 id="install">Install</h2>
       <ol class="steps">
@@ -70,13 +70,13 @@
         </li>
         <li>
           <h3>Download the zip</h3>
-          <p>Get the latest release from GitHub. Choose the file named like <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not the one called <em>Source code</em>.</p>
+          <p>On the latest release, choose <code>HungryPathing-X.Y.Z.zip</code> under <strong>Assets</strong>, not <em>Source code</em>.</p>
           <div class="btn-row"><a class="btn" href="https://github.com/timbermods/HungryPathing/releases/latest" data-release-href="download">Download the latest zip</a></div>
           <p class="file-name">File: <code data-release="asset-name"></code></p>
         </li>
         <li>
           <h3>Extract it into your Mods folder</h3>
-          <p>Right-click the zip, choose <strong>Extract All</strong>, and pick <code>Documents\Timberborn\Mods</code>. The result must look exactly like this, with <code>manifest.json</code> and the settings file side by side inside <code>version-1.1</code>:</p>
+          <p>Right-click the zip, choose <strong>Extract All</strong>, and pick <code>Documents\Timberborn\Mods</code>. The result must look exactly like this:</p>
 <pre><code>Documents\Timberborn\Mods\
   HungryPathing\
     version-1.1\
@@ -93,64 +93,65 @@
         </li>
         <li>
           <h3>Start Timberborn and enable the mod</h3>
-          <p>Open the game's mod manager, make sure <strong>Harmony</strong> is enabled, enable <strong>Hungry Pathing</strong>, and restart the game if it asks you to.</p>
+          <p>In the game's mod manager, enable <strong>Harmony</strong> and <strong>Hungry Pathing</strong>. Restart the game if it asks you to.</p>
         </li>
       </ol>
 
       <h2 id="verify">Check that it works</h2>
-      <p>Load a colony, let it run for a moment, then open the game log (see <a href="troubleshooting.html#log">where to find it</a>) and search for <code>[HungryPathing]</code>. You should see, in order:</p>
+      <p>Load a colony and let it run for a moment. Then open the game log (<a href="troubleshooting.html#log">where to find it</a>) and search for <code>[HungryPathing]</code>. You should see, in order:</p>
 <pre><code>[HungryPathing] &lt;version&gt; loading.
 [HungryPathing] Settings read from ...
 [HungryPathing] Simulation settings: Enabled=True Needs=Hunger,Thirst WarningHours=0 ...
 [HungryPathing] Hooks installed (5/5).
 [HungryPathing] Active. One summary line per in-game day follows while a game runs.
 [HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: buffer 3h, ...</code></pre>
-      <p><code>&lt;version&gt;</code> is the version you installed, and the <code>...</code> parts vary. Three of those lines are the ones to check:</p>
+      <p><code>&lt;version&gt;</code> is the version you installed, and the <code>...</code> parts vary. Check these three:</p>
       <dl class="confirm">
-        <dt>Hooks installed (5/5).</dt><dd>All five of the mod's hooks attached to the game. Anything else means a game update moved one; see <a href="troubleshooting.html#hooks">Troubleshooting</a>.</dd>
+        <dt>Hooks installed (5/5).</dt><dd>All five of the mod's hooks attached to the game. Anything else means a game update moved one (<a href="troubleshooting.html#hooks">what to do</a>).</dd>
         <dt>Hunger: buffer 3h ... Thirst: buffer 3h</dt><dd>The three-hour buffer is in place for both needs.</dd>
         <dt>Simulation settings: ...</dt><dd>The values the mod uses. In co-op, every player's line must read the same.</dd>
       </dl>
-      <p>After each in-game day a summary line says how often each rule fired. It looks like this (an example from the test colony; your numbers will differ):</p>
+      <p>After each in-game day, a summary line says how often each rule fired. It looks like this (made-up numbers):</p>
 <pre><code>[HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.</code></pre>
       <div class="callout note">
         <strong class="t">Beta</strong>
-        <p>One 355-beaver colony has run the mod for 36 in-game days, nearly all as a BeaverBuddies host, and the one error found there is fixed. That is still one colony, and the newest changes haven't been played in a live colony yet. Try it on a copy of your save first, and if the mod says it <a href="troubleshooting.html#switched-off">switched off</a>, please <a href="troubleshooting.html#report">report it</a> with the lines that follow the warning.</p>
+        <p>One 355-beaver colony has run the mod for 36 in-game days, nearly all as a BeaverBuddies host. The one error found there is fixed. The current release hasn't been played in a live colony yet, so try it on a copy of your save first.</p>
       </div>
-      <p>If something doesn't look right, head to <a href="troubleshooting.html">Troubleshooting</a>.</p>
+      <p>If something doesn't look right, see <a href="troubleshooting.html">Troubleshooting</a>.</p>
 
       <h2 id="settings">Settings</h2>
-      <p>Everything lives in <code>version-1.1\HungryPathing.cfg</code>, plain <code>key = value</code> lines with comments. The defaults are the behavior described on the <a href="index.html">overview</a>. The ones people are most likely to touch:</p>
+      <p>Settings are <code>key = value</code> lines in <code>version-1.1\HungryPathing.cfg</code>. The defaults give the behavior on the <a href="index.html">overview</a>. The ones you're most likely to change:</p>
       <table>
         <tbody>
           <tr><th scope="row"><code>WarningHours</code></th><td>The buffer. <code>0</code> uses the blueprints' 3 hours; any other value overrides it.</td></tr>
           <tr><th scope="row"><code>PreFuel</code>, <code>JustInTime</code>, <code>BuilderJobCheck</code>, <code>WorkTimeClosestFood</code>, <code>RedirectCriticalTrips</code></th><td>Each rule on or off, to try them one at a time.</td></tr>
-          <tr><th scope="row"><code>Diagnostics</code></th><td><code>true</code> logs one line per trip the mod starts. Verbose; useful for a first look.</td></tr>
+          <tr><th scope="row"><code>Diagnostics</code></th><td><code>true</code> logs one line per trip the mod starts. Verbose.</td></tr>
           <tr><th scope="row"><code>Enabled</code></th><td><code>false</code> leaves the game's behavior untouched while the mod stays installed.</td></tr>
         </tbody>
       </table>
-      <p>Restart the game after editing. The full list with tuning notes is in <a href="https://github.com/timbermods/HungryPathing/blob/main/CONFIGURATION.md">CONFIGURATION.md</a>.</p>
+      <p>Restart the game after editing. <a href="https://github.com/timbermods/HungryPathing/blob/main/CONFIGURATION.md">CONFIGURATION.md</a> lists every key, with tuning notes.</p>
 
       <h2 id="coop">Using it in co-op</h2>
       <p>The mod changes what beavers decide, so it is part of the simulation.</p>
       <div class="callout note">
         <strong class="t">Same version, same settings file, every player</strong>
-        <p>Every player installs the same version of the mod, runs the same game version and uses an identical <code>HungryPathing.cfg</code>. At startup the log prints one <code>Simulation settings:</code> line; if two players' lines differ, their games will drift apart. The <code>DailyReport</code> and <code>Diagnostics</code> keys are the only ones that may differ.</p>
+        <p>Every player installs the same version of the mod, runs the same game version and uses an identical <code>HungryPathing.cfg</code>. Only <code>DailyReport</code> and <code>Diagnostics</code> may differ. At startup the log prints one <code>Simulation settings:</code> line. If two players' lines differ, their games will drift apart.</p>
       </div>
       <p>For a first co-op session with this beta, load a single-player copy of the save first and read the log.</p>
-      <p>If a Hungry Pathing dialog says the mod switched off after an error, that computer now plays without the mod while the others may not. Tell the host: the host saves and hosts that save again, and every player joins it. The load turns the mod back on for everyone.</p>
+      <p>If a Hungry Pathing dialog says the mod switched off, see <a href="troubleshooting.html#switched-off">what to do in co-op</a>.</p>
 
       <h2 id="update">Updating</h2>
       <ol>
         <li>Close Timberborn.</li>
-        <li>Download the zip from the <a href="https://github.com/timbermods/HungryPathing/releases/latest">latest release</a>, the same one the download button above gives. In co-op, every player updates to the same version.</li>
-        <li>Extract it into the same <code>Mods</code> folder and choose <strong>Replace</strong> when asked about existing files. If you edited <code>HungryPathing.cfg</code>, keep a copy: the zip ships the defaults.</li>
+        <li>Download the zip from the <a href="https://github.com/timbermods/HungryPathing/releases/latest">latest release</a>. In co-op, every player updates to the same version.</li>
+        <li>If you edited <code>HungryPathing.cfg</code>, keep a copy: the zip ships the defaults.</li>
+        <li>Extract the zip into the same <code>Mods</code> folder and choose <strong>Replace</strong> when asked about existing files.</li>
         <li>Start the game and confirm <strong>Hungry Pathing</strong> is still enabled in the mod manager.</li>
       </ol>
       <p>Nothing is stored in saves, so there's nothing to migrate.</p>
 
       <h2 id="uninstall">Uninstalling</h2>
-      <p>Disable the mod in the mod manager, or close the game and delete <code>Documents\Timberborn\Mods\HungryPathing</code>. Your saves are unaffected because the mod never writes to them. Beavers go back to the game's own behavior the next time you load.</p>
+      <p>Disable the mod in the mod manager, or close the game and delete <code>Documents\Timberborn\Mods\HungryPathing</code>. Your saves are unaffected. Beavers go back to the game's own behavior the next time you load.</p>
     </div>
   </div>
 </main>

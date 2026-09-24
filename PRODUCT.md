@@ -177,7 +177,8 @@ against any.
 ## Brand Commitments
 
 - **Voice:** a fellow player explaining a useful mod: plain, exact, a little dry, numbers where they exist. Never
-  hype, never "smart AI beavers". The mod decides; the game does the walking.
+  hype, never "smart AI beavers". The mod decides; the game does the walking. Short and plain: one idea per
+  sentence, each thing said once, no internals and no history (see CLAUDE.md, *Writing README and website text*).
 - **No official Timberborn logos or key art.** The game's own item icons (food, water, goods) are allowed where used,
   credited as Timberborn's; the current site uses none. The site's own art is original: the inline SVG brand mark
   (a hunger bar and a walk arc), the slate board's chalk SVG, and procedural textures from

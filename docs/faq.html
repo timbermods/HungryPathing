@@ -50,23 +50,23 @@
         <h2>The basics</h2>
         <details class="q" id="what">
           <summary>What does Hungry Pathing do?</summary>
-          <div class="a"><p>During working hours it gives employed beavers a three-hour buffer on hunger and thirst, has them leave far jobs early enough to reach food before the penalty, tops them off before a shift they could not finish when food is near, and sends them to the closest stocked storage for the need at hand. Off duty the game's own behavior runs unchanged.</p></div>
+          <div class="a"><p>During working hours, employed beavers keep a three-hour buffer on hunger and thirst. They leave far jobs in time to reach food before the penalty, top off when food is near, and eat at the closest stocked storage. Off duty the game's own behavior runs unchanged.</p></div>
         </details>
         <details class="q" id="why-far">
           <summary>Why do beavers walk so far to eat in the base game?</summary>
-          <div class="a"><p>Two reasons. A working beaver only leaves the job once the need is already at zero. And when it does, the game scores each <em>food group</em> by how many need points it would restore and only then picks the closest storage of the winning group. Sixteen of the seventeen foods carry a second "variety" need that is almost never full, so plain berries next to the site lose to bread at the district center nearly every time. Which food wins changes as variety needs fill up, so the long walks look random.</p></div>
+          <div class="a"><p>A working beaver leaves the job only once the need is already at zero. Then it picks the food that restores the most need points, and only then the closest storage that has it. Most foods also fill a "variety" need, so plain berries next to the site lose to bread at the district center nearly every time.</p></div>
         </details>
         <details class="q" id="consumption">
           <summary>Do beavers eat more with this mod?</summary>
-          <div class="a"><p>No. A unit of food restores a fixed 0.3 hunger and the game refuses to eat when a full unit would not fit, so nothing is wasted by eating earlier. Consumption per day equals the decay rate either way; only the timing moves. The mod's own checks simulate this over 300 days.</p></div>
+          <div class="a"><p>No. The game lets a beaver eat only when a whole unit fits, so eating earlier wastes nothing. Daily consumption stays the same; only the timing moves.</p></div>
         </details>
         <details class="q" id="water">
           <summary>Does it handle water too?</summary>
-          <div class="a"><p>Yes. Thirst is treated exactly like hunger, with its own buffer, and water is the only good that satisfies it, so those trips already go to the nearest water in the base game. The mod's gain for thirst is leaving early enough to avoid the movement penalty and topping off before a shift.</p></div>
+          <div class="a"><p>Yes. Thirst gets its own three-hour buffer, like hunger. Water is the only drink, so the base game already goes to the nearest water; the gain is leaving in time to avoid the movement penalty, and topping off before a shift.</p></div>
         </details>
         <details class="q" id="evening">
           <summary>What happens in the evening and on days off?</summary>
-          <div class="a"><p>Nothing new. The planner only runs for employed beavers during working hours. Evenings still use the game's own picking, which is where beavers chase variety and wellbeing buildings.</p></div>
+          <div class="a"><p>Nothing new. The mod acts only for employed beavers during working hours. Evenings still use the game's own picking, which is where beavers chase variety and wellbeing buildings.</p></div>
         </details>
       </div>
 
@@ -74,19 +74,19 @@
         <h2>The buffer and the settings</h2>
         <details class="q" id="buffer">
           <summary>What is the three-hour buffer, and where does the number come from?</summary>
-          <div class="a"><p>Every need blueprint has an <code>HoursWarningThreshold</code> field. The base game sets it to 3.5 and 4.5 hours for bots' Energy and Biofuel and reads it for them, but ships every beaver need at zero and never reads it for beavers. The mod sets Hunger and Thirst to 3 hours through two partial blueprints and honors the value. Three hours at 0.8 hunger a day is 0.1 of the bar: the beaver leaves early enough to arrive with that still in hand.</p></div>
+          <div class="a"><p>The game gives every need an "hours of warning" value. Bots use it, but every beaver need ships at zero and beavers ignore it. The mod sets Hunger and Thirst to three hours, so a working beaver reaches food with about a tenth of the bar left.</p></div>
         </details>
         <details class="q" id="change-buffer">
           <summary>Can I change the buffer?</summary>
-          <div class="a"><p>Yes, two ways. <code>WarningHours</code> in <code>HungryPathing.cfg</code> overrides it for every tracked need, or another data mod can set the blueprint field to a different value. Larger buffers mean beavers eat with more of the bar left, which is more walking during the shift with no penalty benefit unless storages are very far apart.</p></div>
+          <div class="a"><p>Yes. Set <code>WarningHours</code> in <code>HungryPathing.cfg</code> to the hours you want; <code>0</code> keeps the three hours. A bigger buffer means more walking during the shift, and pays off only when storages are very far apart.</p></div>
         </details>
         <details class="q" id="one-rule">
           <summary>Can I try one rule at a time?</summary>
-          <div class="a"><p>Yes. <code>JustInTime</code>, <code>PreFuel</code>, <code>BuilderJobCheck</code>, <code>WorkTimeClosestFood</code> and <code>RedirectCriticalTrips</code> each switch one rule. The daily log line says how often each fired, so you can see what a rule does for your colony. See <a href="https://github.com/timbermods/HungryPathing/blob/main/CONFIGURATION.md">CONFIGURATION.md</a> for all keys.</p></div>
+          <div class="a"><p>Yes. <code>JustInTime</code>, <code>PreFuel</code>, <code>BuilderJobCheck</code>, <code>WorkTimeClosestFood</code> and <code>RedirectCriticalTrips</code> each switch one rule. The daily log line says how often each fired. <a href="https://github.com/timbermods/HungryPathing/blob/main/CONFIGURATION.md">CONFIGURATION.md</a> lists every key.</p></div>
         </details>
         <details class="q" id="other-needs">
           <summary>Can I add other needs to the list?</summary>
-          <div class="a"><p>The <code>Needs</code> key takes any need that is satisfied by a consumable good in a storage. Hunger and Thirst are the ones that matter for work; the variety needs are better left to the evening.</p></div>
+          <div class="a"><p>The <code>Needs</code> key takes any need met by a good in a storage. Hunger and Thirst are the ones that matter for work; variety needs are better left to the evening.</p></div>
         </details>
       </div>
 
@@ -94,23 +94,23 @@
         <h2>Compatibility</h2>
         <details class="q" id="coop">
           <summary>Does it work in co-op with BeaverBuddies?</summary>
-          <div class="a"><p>It is built for it. Every decision reads only the simulation and the game's own path queries, with fixed ordering and tie-breaks, and nothing depends on the clock, the frame rate or random numbers. The condition is that every player installs the same version of the mod, runs the same game version and uses an identical settings file; the log prints one <code>Simulation settings:</code> line to compare. The first live run was a BeaverBuddies session, and the host's replay of the same three days produced identical counters and consistency hashes with and without the guest.</p><p>If the mod switches itself off after an error on one computer only, that computer runs the base game while the others run the mod, and a dialog on that computer says so. The host then saves and hosts that save again, and every player joins it; the load turns the mod back on for everyone.</p></div>
+          <div class="a"><p>Yes, it's built for co-op. Every player needs the same version of the mod, the same game version and an identical settings file (<a href="install.html#coop">co-op setup</a>). The first live run was a BeaverBuddies session, and three replayed days gave identical counters and co-op hashes with and without the guest.</p><p>If a dialog says the mod switched off on one computer, see <a href="troubleshooting.html#switched-off">what to do</a>.</p></div>
         </details>
         <details class="q" id="saves">
           <summary>Is it safe to add to or remove from an existing colony?</summary>
-          <div class="a"><p>Yes. The mod stores nothing in saves; both of its components keep only caches rebuilt from the simulation. Even a save made while a beaver is on a trip the mod started records that trip as the game's own storage behavior.</p></div>
+          <div class="a"><p>Yes. The mod stores nothing in saves. A trip the mod started is saved as an ordinary game trip.</p></div>
         </details>
         <details class="q" id="other-mods">
           <summary>Does it conflict with other mods?</summary>
-          <div class="a"><p>It requires Harmony. A mod that also edits the Hunger or Thirst blueprint merges with this one in load order, and the buffer can always be forced with <code>WarningHours</code>. A mod that replaces the game's need-picking behavior for beavers would overlap with this one. Mods that change storages, goods or districts are fine: the planner reads the same registrations the game does.</p></div>
+          <div class="a"><p>It requires Harmony. Mods that change storages, goods or districts are fine. A mod that also edits the Hunger or Thirst blueprint can change the buffer (<code>WarningHours</code> forces it), and one that replaces how beavers pick food would overlap.</p></div>
         </details>
         <details class="q" id="factions">
           <summary>Folktails and Iron Teeth?</summary>
-          <div class="a"><p>Folktails tested; Iron Teeth expected to work, untested. Hunger and Thirst are shared beaver needs and no rule looks at the faction, but every run so far has been a Folktails colony. The part to watch is tubeways: they carry beavers much faster than walking, while the planner picks which storages are worth a path query by straight-line distance, so in a colony built around tubeways it can overlook the storage a tube reaches soonest. Folktails ziplines do the same on a smaller scale, so a Folktails colony built around them has the same caveat. At worst a rule then does not fire, or sends a beaver to a storage that is closer on foot. Bots are untouched: they have their own picker and already use the warning field.</p></div>
+          <div class="a"><p>Folktails tested; Iron Teeth expected to work, untested. Bots are untouched. The mod measures only the storages nearest in a straight line, so in a colony built around tubeways or ziplines it can miss the one they reach soonest: a rule may not fire, or a beaver goes to a storage that is closer on foot.</p></div>
         </details>
         <details class="q" id="pathfinding">
           <summary>Does it change pathfinding?</summary>
-          <div class="a"><p>No. Nothing in the navigation code is touched. The mod asks the game's own walker how long a walk would take and uses the answer to decide when to go and where.</p></div>
+          <div class="a"><p>No. The mod only asks the game how long a walk would take, and uses the answer to decide when and where to go.</p></div>
         </details>
       </div>
 
@@ -118,11 +118,11 @@
         <h2>Status</h2>
         <details class="q" id="alpha">
           <summary>Why is it called a beta?</summary>
-          <div class="a"><p>It builds against 1.1.2.4 with no warnings, every hook resolves against the game's assemblies, and the planner arithmetic passes its checks. It ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, with identical results when days were replayed and the before-and-after numbers on the <a href="index.html#results">overview</a>; the one error found there is fixed. The newest changes, which refine which storage a beaver picks, have offline checks but haven't been played in a live colony yet. One colony is still one colony, and the builder rule has not yet seen a construction-heavy day, so it is a beta rather than a 1.0. "Beta" here does not mean a GitHub pre-release: the release marked Latest on GitHub is a regular release, and the label means the mod is still being tested and tuned. If anything in it throws, it logs the stack trace once, switches itself off for the rest of that game and says so in a dialog.</p></div>
+          <div class="a"><p>It ran 36 in-game days in one 355-beaver colony, nearly all as a BeaverBuddies host with a guest, and the one error found there is fixed (<a href="index.html#results">the numbers</a>). The current release has offline checks but hasn't been played in a live colony yet, and the builder rule hasn't seen a construction-heavy day. "Beta" is the mod's label, not a GitHub pre-release: the Latest release on GitHub is a regular release.</p></div>
         </details>
         <details class="q" id="help">
           <summary>How can I help?</summary>
-          <div class="a"><p>Run it in a colony that does a lot of building, so the builder job check gets exercised, and post the daily <code>[HungryPathing]</code> lines from the log on the <a href="https://github.com/timbermods/HungryPathing/issues">issue tracker</a> together with anything that looked wrong. A save from an hour before the end of the shift, with and without the mod, is what the before-and-after numbers were made from.</p></div>
+          <div class="a"><p>Play it in a colony that builds a lot, so the builder job check gets used. Post the daily <code>[HungryPathing]</code> lines and anything that looked wrong on the <a href="https://github.com/timbermods/HungryPathing/issues">issue tracker</a>. Saves from an hour before the shift ends, with and without the mod, help too.</p></div>
         </details>
       </div>
     </div>

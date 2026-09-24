@@ -1,128 +1,99 @@
 # Hungry Pathing
 
-**Beta.** A Timberborn mod that makes working beavers plan food and water around their shift instead of waiting
-for the hunger penalty, and makes them eat at the closest stocked storage while on the job instead of walking
-across the map for a fancier meal.
+**Beta.** A Timberborn mod that times working beavers' food and water to their shift. They eat before the hunger
+penalty, at the closest stocked storage, instead of crossing the map for a fancier meal.
 
-Game version 1.1.2.4. Requires the [Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=3284904751)
-mod. Nothing is written to save files, so the mod can be added to or removed from any colony.
+- **Game:** Timberborn 1.1.2.4.
+- **Requires:** the [Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=3284904751) mod, 2.4.1 or newer.
+- **Saves:** untouched, so you can add or remove the mod in any colony.
+- **Website:** install guide, troubleshooting and FAQ at
+  [timbermods.github.io/HungryPathing](https://timbermods.github.io/HungryPathing/).
 
-Website with install guide, troubleshooting and FAQ: [timbermods.github.io/HungryPathing](https://timbermods.github.io/HungryPathing/).
-Part of [Timbermods](https://timbermods.github.io/).
+## Why beavers walk so far
 
-## What the base game does
+In the base game a working beaver leaves its job only once hunger or thirst hits zero. It then picks the food that
+restores the most need points, and only then the closest storage that has it. Most foods also fill a variety need,
+so bread at the district center beats berries next to the site. [DESIGN.md](DESIGN.md) has the numbers.
 
-Every beaver need is a bar that drains at a fixed rate. Hunger drains 0.8 per day, thirst 0.7, from a full bar of
-1.0. A unit of any food restores 0.3 hunger; a unit of water restores 0.33 thirst. The penalty starts the moment
-the bar hits zero: half working speed for hunger, a quarter off movement speed for thirst.
+## What it changes
 
-Two things decide when a working beaver goes to eat and where:
+During working hours, for employed adults:
 
-- **When.** A beaver at work only interrupts the job once a need is already at zero. The game has a per-need
-  "hours of warning" field and uses it for bots (they refuel 3.5 to 4.5 hours early) but every beaver need ships
-  with it set to zero, and the beaver's own picker never reads it.
-- **Where.** The district service scores each *food group* by how many need points it would restore, sorts the
-  groups by score, and only then takes the closest storage of the winning group. Sixteen of the seventeen foods
-  carry a second, "variety" need (Bread, Grilled Potatoes, Maple Pastry and so on) that is almost never full, so
-  plain berries next to the construction site lose to bread at the district center nearly every time. Which food
-  wins rotates as variety needs fill up, which is why the long trips look random.
+1. **A three-hour buffer.** Hunger and Thirst get three hours of warning, a setting the game already uses for bots.
+   Working beavers keep that buffer instead of running the bar to zero.
+2. **Just in time.** A beaver measures the walk to the closest stocked storage. It leaves early enough to arrive with
+   the buffer still in hand.
+3. **Pre-fuel.** If food or water is within half an hour's walk and the beaver won't last the rest of the shift plus
+   the buffer, it tops off now.
+4. **Builder job check.** A builder who has just taken a site it would not last at lets the site go and tops off
+   first.
+5. **Closest storage while working.** The mod's trips, and the game's own penalty-state trips, go to the storage with
+   the shortest walk. A higher-scoring food still wins if it costs at most a quarter hour more walking.
 
-In a 357-beaver save at the end of a 16-hour shift, 90 adults were within three hours of the hunger penalty and 11
-were already in it. Of the last 200 eating trips in the beavers' behavior logs, 193 started during working hours
-and the median trip took about an in-game hour of walking. See [DESIGN.md](DESIGN.md) for the numbers
-and the code paths behind them.
-
-## What this mod changes
-
-All four rules apply only to employed adults during working hours. Off duty, the game's own behavior runs
-unchanged, so the variety-seeking that makes evenings pleasant is not lost.
-
-1. **A buffer, from the game's own field.** Two tiny blueprint patches set `HoursWarningThreshold` to 3 hours for
-   Hunger and Thirst, and the mod's planner honors it the way the game already does for bots. Another data mod can
-   change the value, or `WarningHours` in the settings file overrides it.
-2. **Just in time.** While working, a beaver measures the walk to the closest stocked storage and leaves early
-   enough to arrive with the buffer still in hand, instead of after the penalty has started.
-3. **Pre-fuel.** When food or water is within half an hour's walk and the beaver would not last the rest of the
-   shift plus the buffer, it tops off now rather than after walking off to a far job. At the start of a shift this
-   is a breakfast rule; mid-shift it catches a hauler passing a stocked warehouse. A builder who has just reserved
-   a construction site and would run out before getting there, working a while and walking back lets the site go
-   through the game's own "could not get there" path and tops off first.
-4. **Closest storage while working.** For every trip the mod starts, and for the game's own penalty-state trips
-   during working hours, the storage is chosen by walking time for the need at hand. A higher-scoring food still
-   wins when it costs at most a quarter hour more walking; pre-fuel and the builder's top-off choose only among the
-   storages within half an hour's walk.
-
-A unit of food restores a fixed amount and the game already refuses to eat when a full unit would not fit, so
-eating earlier does not eat more. Total consumption per day is unchanged; only its timing moves.
+Off duty, the game's own behavior runs, so evenings keep their variety. Beavers don't eat more; only the timing
+moves.
 
 ## Install
 
-1. Download `HungryPathing-X.Y.Z.zip` from **Assets** on the [latest release](https://github.com/timbermods/HungryPathing/releases/latest),
-   not the *Source code* archive.
-2. With the game closed, extract it into `Documents\Timberborn\Mods` so that you have
-   `Mods\HungryPathing\version-1.1\manifest.json`.
-3. Start the game and enable Hungry Pathing in the mod manager. Harmony must be installed and enabled as well.
+1. Download `HungryPathing-X.Y.Z.zip` from **Assets** on the
+   [latest release](https://github.com/timbermods/HungryPathing/releases/latest), not *Source code*.
+2. Close the game. Extract the zip into `Documents\Timberborn\Mods`, so that
+   `Mods\HungryPathing\version-1.1\manifest.json` exists.
+3. Start the game. In the mod manager, enable **Harmony** and **Hungry Pathing**.
 
-The [install guide](https://timbermods.github.io/HungryPathing/install.html) has the full folder layout and how to check
-that the mod loaded.
+The [install guide](https://timbermods.github.io/HungryPathing/install.html) covers the folder layout, updating and
+removing the mod.
+
+## Check that it works
+
+Load a colony, then search `%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log` for
+`[HungryPathing]`. These lines mean it works:
+
+```
+[HungryPathing] <version> loading.
+[HungryPathing] Hooks installed (5/5).
+[HungryPathing] Needs in this game: Hunger: buffer 3h, ...; Thirst: buffer 3h, ...
+```
+
+After each in-game day, a `Day N: trips started by rule: ...` line says how often each rule fired. If a line is
+missing, see [Troubleshooting](https://timbermods.github.io/HungryPathing/troubleshooting.html).
 
 ## Settings
 
-`version-1.1\HungryPathing.cfg` next to the manifest. Every value changes what beavers decide; the defaults are the
-ones described above. [CONFIGURATION.md](CONFIGURATION.md) explains each key.
+Settings are `key = value` lines in `version-1.1\HungryPathing.cfg`, next to `manifest.json`. There is no in-game
+settings screen. Restart the game after editing. [CONFIGURATION.md](CONFIGURATION.md) explains every key.
 
-## Multiplayer
+## Co-op
 
-Every rule reads only the simulation and the game's own path queries; nothing depends on the clock, the frame rate
-or random numbers, and storages are ranked in a fixed order with fixed tie-breaks. The counters in the daily log
-line never feed back into a decision. When every player installs the same version of the mod, runs the same game
-version and uses an identical settings file, every player makes identical decisions. At startup the log prints one
-`Simulation settings:` line; if two players' lines differ, their games will drift apart.
+Hungry Pathing is built for co-op with BeaverBuddies. Every player needs the same version of the mod, the same game
+version and an identical `HungryPathing.cfg`.
 
-If the mod switches itself off after an error, it is built to do so on every player at the same moment, since the
-code that threw reads only the simulation, and it is back on for everyone after the next load, which all players
-make together when they join or rehost. An error that only one computer hits is the exception: that computer then
-runs the base game's behavior while the others run the mod. So a switch-off is also said in the game, on the
-computer where it happened, with a dialog that asks the host to save and host that save again, and every player to
-join it, before playing on. The log repeats it on every later in-game day of that game
-(`Day N: switched off on this computer ...`).
+Each player's Player.log prints one `Simulation settings:` line at startup. If two players' lines differ, their
+games will drift apart.
 
-Decisions also read the cheapest path cost per tile from the buildings the game loaded, placed or not, so they
-depend on the faction and on any mods that add buildings. The first time a beaver measures a walk in a game, the log
-prints one `Cheapest travel here:` line; every player's should match, and if they differ, the players do not have
-the same buildings loaded.
+With [Timber Together](https://timbermods.github.io/TimberTogether/) and separate colonies, each beaver plans by its
+own colony's working hours. Beavers only use storages in their own district, so colonies never eat from each other's
+storage. Timber Together is optional; the `Timber Together:` line in Player.log says whether it is in use.
 
-### Timber Together
+## If something goes wrong
 
-Timber Together gives each colony its own working hours. The mod already goes through the per-beaver working-hours test
-Timber Together patches, and its storage index is per district, so beavers never eat from the other colony's storages.
-Since 0.2.2 the "hours left in the shift" used by the pre-fuel rule also comes from the beaver's own colony when
-Timber Together is present, asked through reflection with no dependency; without it, or if Timber Together's API changes,
-the game's single value is used and the log says so.
+- If a game update moves one of the mod's five hooks, the mod stays off and the log says
+  `A hook could not be installed`.
+- If the mod hits an error, it switches itself off for the rest of that game and shows a dialog. Loading a game
+  turns it back on.
+- In co-op, the other players may still be running the mod. Before playing on, the host saves and hosts that save
+  again, and every player joins it.
 
-## Performance
-
-A beaver far from any trigger sleeps until it could reach one (three hours at most), and a beaver inside the window
-re-checks every half hour of game time (`RetryHours`). A check costs at most `CandidateLimit` (default 8) path
-queries for each need it looks at, taken from the storages nearest by straight line, and only after the game's own
-appraiser confirmed the beaver can take a full unit. The daily log line reports evaluations, failed launches (a
-chosen storage that could not start a trip after all) and path queries so the cost is visible.
-
-## Saves
-
-The mod adds two components (one per adult beaver, one per district center) that keep only caches and short
-per-beaver timers (which storages to leave alone for a while, when to look again), all started afresh when a game
-loads. Nothing is saved. A save made with the mod loads without it and the other way around.
+Report problems on the [issue tracker](https://github.com/timbermods/HungryPathing/issues) with every
+`[HungryPathing]` line from Player.log.
 
 ## What it did in a real colony
 
-36 in-game days in a single-district Folktails colony of 330 to 355 adults, nearly all of them as a BeaverBuddies
-host with a guest connected: 33 on 0.1.0 and the first days of 0.2.0. All five hooks installed and the buffer read
-3h. There was one exception, on 0.2.0, and 0.2.1 fixes it (see below). Three of the early days were played twice
-from the same save and produced identical daily counters and identical co-op consistency hashes both times, which is
-what the multiplayer section relies on.
+One single-district Folktails colony of 330 to 355 adults ran it for 36 in-game days, nearly all as a BeaverBuddies
+host with a guest. Three days replayed from the same save gave identical counters and co-op hashes. The one error
+found there, in the builder job check, is fixed.
 
-Measured an hour before the end of the shift, from the saves themselves:
+Measured an hour before the end of the shift, from the saves:
 
 | | Without the mod | With the mod |
 |---|---|---|
@@ -133,51 +104,25 @@ Measured an hour before the end of the shift, from the saves themselves:
 | Trips started in the last 4 hours of the shift | 49 | 21 |
 | Beavers mid-trip walking past a closer stocked storage | 2 of 18 | 0 of 11 |
 
-Over the 33-day run the rules fired on average 49 just-in-time trips, 133 pre-fuel trips and 15 penalty-state
-redirects a day. Path queries were about 8,300 a day on 0.1.0 and 7,500 on 0.2.0, which measures fewer walks that
-could not change the answer. The walks that remain are distance to any stocked storage at all: in that colony the
-median beaver works 84 tiles from the nearest food. [TESTING.md](TESTING.md) has the full numbers and the method.
-The first day with construction queued found a second site-lookup bug in the builder job check; the circuit
-breaker caught it, the session carried on with the game's own behavior, and 0.2.1 fixes it. What the builder rule
-decides on a construction day is still to be observed. If anything in the mod throws, it logs the stack trace once,
-switches itself off for the rest of that game and says so in a dialog; loading a game turns it back on.
+The walks that remain are distance to any stocked storage: the median beaver there works 84 tiles from food.
+[TESTING.md](TESTING.md) has the full numbers and the method.
 
-## Checking that it works
-
-Player.log (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`) shows, in order:
-
-```
-[HungryPathing] <version> loading.
-[HungryPathing] Settings read from ...
-[HungryPathing] Simulation settings: ...
-[HungryPathing] Hooks installed (5/5).
-[HungryPathing] Active. ...
-[HungryPathing] Needs in this game: Hunger: buffer 3h, decays 0.8/day so a full bar lasts 30h; Thirst: ...
-[HungryPathing] Timber Together: ...
-[HungryPathing] Day 319: trips started by rule: just-in-time 41, pre-fuel 87, builder job 3 (of 60 job checks), critical redirected 9. 2160 evaluations, 4 failed launches, 3104 path queries.
-```
-
-`<version>` is the version you installed. The `Day` line is illustrative: its numbers show the format, not a
-measured day ([TESTING.md](TESTING.md) has measured ones). If the `Needs in this game` line shows a buffer of 0h,
-the blueprint patches did not load. A `Switched off for the rest of this game` warning, a dialog in the game and
-`Day N: switched off on this computer` lines mean the mod hit an error; see the Multiplayer section.
-`Diagnostics = true` logs one line per trip the mod starts. `tools\run-save.ps1` asks Steam to launch the game straight into a save; Steam shows a prompt to confirm the extra
-arguments.
-
-## Building
-
-`.\build.ps1` builds against the game folder, lays the mod out under `dist\` and zips it. `-Install` copies it into
-`Documents\Timberborn\Mods`; `-Test` also runs the planner checks, which compile the planner and the failure switches
-on their own and need no game files. [TESTING.md](TESTING.md) covers the in-game checks.
+**Not played yet:** the current release (offline checks only), the builder rule on a construction-heavy day, a
+Timber Together game where a colony sets its own working hours, the switch-off dialog, Iron Teeth, and anything but
+Windows. Try it on a copy of your save first.
 
 ## Known limits
 
-- The builder job check knows the destination; other jobs are covered by the shift-based pre-fuel and the
-  just-in-time rule, which do not know where the beaver is about to go.
-- Storages are ranked by walking time from the beaver to the storage. Return legs assume the beaver goes back to
-  where it is now, which is right during a shift and is why off-duty trips are left to the game.
-- Only needs satisfied by consumable goods in storages make sense in `Needs`; Hunger and Thirst are the defaults.
+- Only the builder job check knows where a beaver goes next. Other jobs rely on the shift and the just-in-time rule.
+- Tubeways and ziplines can hide the quickest storage from the mod
+  ([FAQ](https://timbermods.github.io/HungryPathing/faq.html#factions)).
+
+## For developers
+
+[TESTING.md](TESTING.md) covers building and the checks. [DESIGN.md](DESIGN.md) explains how the mod decides, and
+[CHANGELOG.md](CHANGELOG.md) lists every release.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT, copyright Timbermods ([LICENSE](LICENSE)). Part of [Timbermods](https://timbermods.github.io/): an unofficial
+community mod, not affiliated with or endorsed by Mechanistry.
