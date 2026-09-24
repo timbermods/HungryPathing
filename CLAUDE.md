@@ -12,7 +12,7 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
 ## Standing rules
 
 - Never launch or drive Timberborn, and never touch installed mods or saves. The maintainer (Kyler) playtests himself.
-- Commit on a branch and open a PR. Merge only when Kyler says so in the chat.
+- Commit on a branch and open a PR. Kyler has said to merge PRs automatically: merge, then check the page live.
 - Assume fresh games: no old-save compatibility notes. Version history goes in CHANGELOG.md, never on player pages.
 - **There are two DESIGN.md files.** The root `DESIGN.md` is the MOD's design document (game code paths, the planner's
   reasoning); never touch it for site work. The SITE's design record is `docs/DESIGN.md`.
@@ -24,6 +24,11 @@ packaging in `packaging/`, tests in `tests/`, the project site in `docs/`. Chang
   Live at https://timbermods.github.io/HungryPathing/.
 - **Published:** GitHub Pages serves `main:/docs` (legacy build), so merging to main publishes; no deploy script. A
   build takes about a minute.
+- **Latest releases update themselves:** when a release becomes GitHub's Latest, `.github/workflows/latest-release.yml`
+  (the shared timbermods workflow) appends the standard footer to its notes, sets the site's
+  `data-release="version|tag|asset-name"` fallback text and the README lines ending in `<!-- latest -->` to the new
+  version, runs the site checks and commits to main. Pre-releases change nothing. Descriptions, status lists and FAQs
+  stay manual (the checklist below). Dry run: Actions → Latest release → Run workflow.
 - **Look:** "The Works Canteen": the canteen yard of a timber mill at the end of a shift. Enamel yard signs (cobalt on
   cream), a slate tally board in chalk with coral for hunger, timber frames, a wood-chip yard ground. The look is fixed:
   updates extend it and never restyle it.
