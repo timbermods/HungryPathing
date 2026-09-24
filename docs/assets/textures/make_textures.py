@@ -1,5 +1,4 @@
-"""Makes the Hungry Pathing site's surfaces: the canteen's slate board (with old chalk dust wiped across it), the
-enamel sign plate (cream vitreous enamel in a cobalt border, chipped to iron at the corners, used as a nine-slice),
+"""Makes the Hungry Pathing site's surfaces: the enamel sign plate (cream vitreous enamel in a cobalt border, chipped to iron at the corners, used as a nine-slice),
 and the works-yard ground by day and night. Procedural (numpy and Pillow, fixed seeds); no source images and no
 generative model. Run from this folder: python make_textures.py"""
 import numpy as np
@@ -14,43 +13,35 @@ def wrap_noise(rng, n, cell):
 def save(img, name, **kw):
     img.save(name, **kw); print("made", name)
 
-# ---- slate: blue-black, a fine cleft grain running one way, and wide soft chalk smears from old wiping
-rng = np.random.default_rng(4201); N = 512
-y, x = np.mgrid[0:N, 0:N].astype(float)
-grain = wrap_noise(rng, N, 4) * .6 + np.sin((y + 6 * wrap_noise(rng, N, 64) * 20) / 2.2) * .12
-smear = np.zeros((N, N))
-for _ in range(9):   # wiped arcs of dust, as a cloth leaves them
-    cx, cy, r, w, a = rng.uniform(0, N), rng.uniform(0, N), rng.uniform(120, 300), rng.uniform(14, 40), rng.uniform(.03, .08)
-    dx = np.minimum(abs(x - cx), N - abs(x - cx)); dy = np.minimum(abs(y - cy), N - abs(y - cy))
-    smear += a * np.exp(-((np.sqrt(dx * dx + dy * dy) - r) / w) ** 2)
-smear *= (.6 + wrap_noise(rng, N, 16) * 1.2).clip(0, 2)
-base = np.array([35, 41, 45], float)
-rgb = base + grain[..., None] * 6 + smear[..., None] * np.array([150, 150, 145]) + rng.normal(0, 1.4, (N, N, 1))
-save(Image.fromarray(rgb.clip(0, 255).astype(np.uint8)), "slate.webp", quality=88, method=6)
+# No slate texture: the slate is a flat colour (#23292d). Its chalk smears read as smoke (Kyler, 2026-09-24).
 
 # ---- enamel plate, 96x96 nine-slice (slice 24): cream field with a faint speckle, a cobalt border with a thin cream
 # inner line, and dark iron showing through small chips at the corners
-rng = np.random.default_rng(4202); S = 96
-img = np.zeros((S, S, 4), float)
-yy, xx = np.mgrid[0:S, 0:S].astype(float)
-edge = np.minimum.reduce([xx, yy, S - 1 - xx, S - 1 - yy])
-field = np.array([239, 232, 214], float) + rng.normal(0, 2.2, (S, S, 1)) + wrap_noise(rng, S, 8)[..., None] * 6
-cobalt = np.array([29, 74, 134], float) + rng.normal(0, 3, (S, S, 1))
-img[..., :3] = np.where((edge < 9)[..., None], cobalt, field)
-img[..., :3] = np.where(((edge >= 11) & (edge < 12.5))[..., None], cobalt * .9 + 20, img[..., :3])   # the inner keyline
-img[..., 3] = 255
-iron = np.array([46, 40, 36], float)
-for cx, cy in ((3, 5), (S - 6, 3), (4, S - 5), (S - 4, S - 7), (14, 2), (S - 2, 18)):
-    r = rng.uniform(2.2, 4.2)
-    d = np.sqrt((xx - cx) ** 2 + ((yy - cy) * rng.uniform(.8, 1.3)) ** 2)
-    chip = d < r + wrap_noise(rng, S, 4) * 2
-    img[..., :3] = np.where(chip[..., None], iron + rng.normal(0, 6, (S, S, 1)), img[..., :3])
-# the plate's corners are rounded off, as pressed enamel is
-corner = 5
-for cx, cy in ((corner, corner), (S - 1 - corner, corner), (corner, S - 1 - corner), (S - 1 - corner, S - 1 - corner)):
-    q = ((xx - cx) * np.sign(cx - S / 2) > 0) & ((yy - cy) * np.sign(cy - S / 2) > 0)
-    img[..., 3] = np.where(q & (np.hypot(xx - cx, yy - cy) > corner + .5), 0, img[..., 3])
-save(Image.fromarray(img.clip(0, 255).astype(np.uint8), "RGBA"), "enamel.png", optimize=True)
+def enamel_plate(field_rgb, keyline_lift, name):
+    rng = np.random.default_rng(4202); S = 96
+    img = np.zeros((S, S, 4), float)
+    yy, xx = np.mgrid[0:S, 0:S].astype(float)
+    edge = np.minimum.reduce([xx, yy, S - 1 - xx, S - 1 - yy])
+    field = np.array(field_rgb, float) + rng.normal(0, 2.2, (S, S, 1)) + wrap_noise(rng, S, 8)[..., None] * 6
+    cobalt = np.array([29, 74, 134], float) + rng.normal(0, 3, (S, S, 1))
+    img[..., :3] = np.where((edge < 9)[..., None], cobalt, field)
+    img[..., :3] = np.where(((edge >= 11) & (edge < 12.5))[..., None], cobalt * .9 + keyline_lift, img[..., :3])   # the inner keyline
+    img[..., 3] = 255
+    iron = np.array([46, 40, 36], float)
+    for cx, cy in ((3, 5), (S - 6, 3), (4, S - 5), (S - 4, S - 7), (14, 2), (S - 2, 18)):
+        r = rng.uniform(2.2, 4.2)
+        d = np.sqrt((xx - cx) ** 2 + ((yy - cy) * rng.uniform(.8, 1.3)) ** 2)
+        chip = d < r + wrap_noise(rng, S, 4) * 2
+        img[..., :3] = np.where(chip[..., None], iron + rng.normal(0, 6, (S, S, 1)), img[..., :3])
+    # the plate's corners are rounded off, as pressed enamel is
+    corner = 5
+    for cx, cy in ((corner, corner), (S - 1 - corner, corner), (corner, S - 1 - corner), (S - 1 - corner, S - 1 - corner)):
+        q = ((xx - cx) * np.sign(cx - S / 2) > 0) & ((yy - cy) * np.sign(cy - S / 2) > 0)
+        img[..., 3] = np.where(q & (np.hypot(xx - cx, yy - cy) > corner + .5), 0, img[..., 3])
+    save(Image.fromarray(img.clip(0, 255).astype(np.uint8), "RGBA"), name, optimize=True)
+
+enamel_plate([239, 232, 214], 20, "enamel.png")          # day: cream enamel
+enamel_plate([30, 38, 52], 60, "enamel-night.png")       # night: dark enamel, a lighter keyline (Kyler, 2026-09-24)
 
 # ---- the works yard: sawdust-grey by day, a sooty timber shed by night. Short chips of wood at random angles, drawn
 # antialiased at four times the size and wrapped at the edges so the tile repeats; low contrast, so text sits on it easily
