@@ -2,8 +2,9 @@
  * The slate board on the home page: one made-up beaver's working shift, drawn from the mod's rules. Its Hunger bar is
  * 13.5 hours from empty at the start of a 16-hour shift and falls an hour an hour. With the mod it keeps a 3-hour buffer:
  * if food is within half an hour's walk it tops off before work, otherwise it leaves early enough to arrive with the
- * buffer in hand. The game's own timing works until the bar is empty, then walks in the penalty (25% slower). An arrow
- * marks each meal; how far the bar refills depends on the food, so the board does not draw it.
+ * buffer in hand. The game's own timing works until the bar is empty, then walks to food in the penalty. Hunger's
+ * penalty halves working speed and leaves walking speed alone (thirst's is the one that slows the walk), so the walk
+ * takes as long as the mod's. An arrow marks each meal; how far the bar refills depends on the food, so the board does not draw it.
  * Moving the slider changes the walk and redraws the board. The page is written with the one-hour walk already drawn,
  * so nothing is lost without this file. It uses only getElementById, setAttribute, textContent and one listener on
  * document, which is all the site test's stub page offers.
@@ -40,13 +41,13 @@
     p.eatX = (+X(eatAt) + 8).toFixed(1); p.eatY = (+Y(atEat + 3.4) + 4).toFixed(1);
     p.eatText = (leave === 0 ? 'tops off before work, ' : 'eats, ') + clock(atEat) + ' left';
 
-    var penaltyWalk = walk / 0.75, gameEat = START + penaltyWalk, penEnd = Math.min(gameEat, SHIFT);
+    var gameEat = START + walk, penEnd = Math.min(gameEat, SHIFT);
     p.game = 'M' + pt(0, START) + ' L' + pt(START, 0);
     p.penalty = 'M' + pt(START, 0) + ' L' + pt(penEnd, 0);
     p.gameEat = gameEat <= SHIFT ? 'M' + pt(gameEat, 0) + ' L' + pt(gameEat, 3.4) : 'M0 0';
     p.penX = X((START + penEnd) / 2); p.penY = '338';
     p.gameRead = 'The game’s own timing: it works until the bar is empty ' + clock(START) + ' into the shift, then walks ' +
-      clock(penaltyWalk) + ' in the penalty, at three-quarter speed' + (gameEat > SHIFT ? ', and is still walking when the whistle goes.' : '.');
+      clock(walk) + ' to food in the penalty' + (gameEat > SHIFT ? ', and is still walking when the whistle goes.' : '.');
     p.out = clock(walk);
     return p;
   }

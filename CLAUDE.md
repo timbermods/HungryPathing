@@ -95,12 +95,14 @@ text and the player docs follows these rules.
   teal-and-gold palette; a theme toggle; game art or faked screenshots; other Big Shoulders weights or body text in it.
 - New components: build from these tokens and components, match the neighbours, and add them to `docs/DESIGN.md` and
   `docs/.impeccable/design.json`.
-- `docs/assets/og.png` has no generator in the repo (a Playwright capture of the home hero at 1200x630): re-capture it
-  whenever the hero changes, then `embed-prompt` it again.
+- `docs/assets/og.png` has no generator in the repo (a Playwright capture of the home hero at 1200x630,
+  light, JavaScript off so the board shows its no-script state): re-capture it whenever the hero or the board's
+  default state changes, then `embed-prompt` it again.
 
 ### The slate board and the site test's stub DOM
 
-- `docs/assets/shift.js` `plan(walk)` (START 13.5 h, BUFFER 3, SHIFT 16, TOP_OFF_WALK 0.5, penalty at 0.75 speed)
+- `docs/assets/shift.js` `plan(walk)` (START 13.5 h, BUFFER 3, SHIFT 16, TOP_OFF_WALK 0.5; the game's walk in the
+  hunger penalty takes as long as the mod's, since hunger halves working speed and only thirst slows walking)
   redraws the SVG elements with ids `sh-*` and the live-region text. **Nothing generates the no-JS state.** The markup
   in `index.html` is `plan(60 min)` copied by hand, with the controls `hidden` until the script runs. After changing
   shift.js or the board, print the state (Git Bash, repo root; the argument is minutes) and paste every `d`, `x`, `y`

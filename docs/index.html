@@ -60,7 +60,7 @@
         <div class="board-head"><b>One shift, one beaver</b><span>Hunger over a 16-hour shift</span></div>
         <svg class="shift" viewBox="0 0 640 372" role="img" aria-labelledby="sh-title sh-desc">
           <title id="sh-title">A working shift on the slate board</title>
-          <desc id="sh-desc">A line for hours of food left falls through the shift. With the mod the beaver leaves in time, walks to the closest storage and eats with three hours still in hand. The game's own timing works until the bar is empty, then walks in the penalty.</desc>
+          <desc id="sh-desc">A line for hours of food left falls through the shift. With the mod the beaver leaves in time, walks to the closest storage and eats with three hours still in hand. The game's own timing works until the bar is empty, then walks to food in the penalty.</desc>
           <defs>
             <marker id="up" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1L9 5L1 9z" fill="#ece9e1"/></marker>
             <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
@@ -82,8 +82,8 @@
           <text class="lbl" x="335" y="36" text-anchor="middle">hours of food left</text>
           <g class="chalk">
             <path id="sh-game" class="game" d="M70.0 87.5 L517.2 290.0"/>
-            <path id="sh-penalty" class="penalty" d="M517.2 290.0 L561.4 290.0"/>
-            <path id="sh-game-eat" class="eat" d="M561.4 290.0 L561.4 239.0"/>
+            <path id="sh-penalty" class="penalty" d="M517.2 290.0 L550.3 290.0"/>
+            <path id="sh-game-eat" class="eat" d="M550.3 290.0 L550.3 239.0"/>
             <path id="sh-mod" class="mod" d="M70.0 87.5 L384.7 230.0"/>
             <path id="sh-drop" class="drop" d="M384.7 230.0 L384.7 296"/>
             <path id="sh-walk" class="walk" d="M384.7 230.0 L417.8 245.0"/>
@@ -91,7 +91,7 @@
           </g>
           <text id="sh-leave" class="lbl-strong" x="384.7" y="338" text-anchor="middle">leaves 9:30</text>
           <text id="sh-eat-label" class="lbl-strong" x="425.8" y="198.0">eats, 3:00 left</text>
-          <text id="sh-pen-label" class="lbl pen" x="539.3" y="338" text-anchor="middle">penalty</text>
+          <text id="sh-pen-label" class="lbl pen" x="533.8" y="338" text-anchor="middle">penalty</text>
         </svg>
         <div class="board-controls" id="sh-controls" hidden>
           <label for="sh-walk-range">Walk to the closest stocked storage</label>
@@ -100,7 +100,7 @@
         </div>
         <div class="board-read" aria-live="polite">
           <p class="mod-read" id="sh-read-mod">It leaves 9:30 into the shift, walks 1:00, and eats with 3:00 still in hand.</p>
-          <p class="game-read" id="sh-read-game">The game’s own timing: it works until the bar is empty 13:30 into the shift, then walks 1:20 in the penalty, at three-quarter speed.</p>
+          <p class="game-read" id="sh-read-game">The game’s own timing: it works until the bar is empty 13:30 into the shift, then walks 1:00 to food in the penalty.</p>
         </div>
         <figcaption id="fig-cap">An illustration drawn from the mod's rules, for one made-up beaver whose bar is 13½ hours from empty at the start of the shift. The white line is the mod; the dotted line is the game's own timing. Arrows mark meals; how far the bar refills depends on the food.</figcaption>
       </figure>
